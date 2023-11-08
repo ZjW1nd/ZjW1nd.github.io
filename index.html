@@ -1,412 +1,964 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
 <head>
-  <meta charset="utf-8">
-  
-  
-  <title>Hexo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta property="og:type" content="website">
 <meta property="og:title" content="Hexo">
 <meta property="og:url" content="http://example.com/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
     
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+    <title>fi3ework&#39;s Studio</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
 
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
 
-  
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
     
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
 
-  
-  
 <meta name="generator" content="Hexo 6.3.0"></head>
 
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
-      </h1>
-      
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="home-body">
+    
+        <!-- header -->
+        <header class="header header-mobile index-header">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+    <!-- sidebar menu button -->
+    <div class="header-element">
         
-          <a class="main-nav-link" href="/">Home</a>
+            <div class="header-sidebar-menu">
         
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-        
-          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
-        
-        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
-      </div>
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
     </div>
-  </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>fi3ework's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
 </header>
 
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-pwntools的shellcode逻辑详解" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/" class="article-date">
-  <time class="dt-published" datetime="2023-10-26T13:21:09.000Z" itemprop="datePublished">2023-10-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+        <!-- fixed footer -->
+        <footer class="footer-fixed index-footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
         
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>先看看pwntools的<code>shellcraft.amd64.sh()</code>为我们提供了怎样的一段代码</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* execve(path=&#x27;/bin///sh&#x27;, argv=[&#x27;sh&#x27;], envp=0) */</span></span><br><span class="line"><span class="comment">/* push b&#x27;/bin///sh\x00&#x27; */</span></span><br><span class="line">push <span class="number">0x68</span></span><br><span class="line">mov rax, <span class="number">0x732f2f2f6e69622f</span></span><br><span class="line">push rax <span class="comment">//64位数据不能直接push</span></span><br><span class="line">mov rdi, rsp <span class="comment">//第一个参数设置成了/bin///sh\x00的地址</span></span><br><span class="line"><span class="comment">/* push argument array [&#x27;sh\x00&#x27;] */</span></span><br><span class="line"><span class="comment">/* push b&#x27;sh\x00&#x27; */</span></span><br><span class="line">push <span class="number">0x1010101</span> ^ <span class="number">0x6873</span></span><br><span class="line">xor dword ptr [rsp], <span class="number">0x1010101</span></span><br><span class="line">xor esi, esi <span class="comment">/* 0 */</span></span><br><span class="line">push rsi <span class="comment">/* null terminate */</span></span><br><span class="line">push <span class="number">8</span> </span><br><span class="line">pop rsi</span><br><span class="line">add rsi, rsp</span><br><span class="line">push rsi <span class="comment">/* &#x27;sh\x00&#x27; */</span></span><br><span class="line">mov rsi, rsp</span><br><span class="line">xor edx, edx <span class="comment">/* 0 */</span></span><br><span class="line"><span class="comment">/* call execve() */</span></span><br><span class="line">push SYS_execve <span class="comment">/* 0x3b */</span></span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
-
-<p>可以看到这段代码是为了执行<code>execve(path=&#39;/bin///sh&#39;, argv=[&#39;sh&#39;], envp=0)</code>，但是似乎看起来有些长了，我们看看它干了些什么  </p>
-<hr>
-<p>0x68732f2f2f6e69622f 是&#x2F;bin&#x2F;sh的逆序hs&#x2F;&#x2F;&#x2F;nib&#x2F;，也就是首先将我们等下要调用的参数压栈。可以理解的是这段shellcode在尽可能的避免出现\x00字符，但是似乎使用&#x2F;bin&#x2F;&#x2F;sh就够了？简单的<code>mov rdi,rsp</code>后，第一个参数就控制完成了</p>
-<hr>
-<p>然后是令人疑惑的一步异或操作，首先<code>execve(&quot;/bin/sh&quot;,0,0)</code>就可以运行，这里的shellcode想把入口参数设为sh也可，但是采用了先疑惑一下入栈再异或回来，没有看懂<br>然后通过<code>push 8;pop rsi</code>实现了<code>mov rsi,8</code>的效果，然后rsi和rsp相加，令rsi（第二个参数）指向了栈上上一个元素–”sh”（此时栈顶是0）<br>然后的<code>push rsi;mov rsi, rsp</code>令rsi存放了“sh”的地址，至此，第一个和第二个参数的控制都完成了</p>
-<hr>
-<p>第三个参数很简单，只需要清空edx就行。最后通过栈将<code>execve</code>的系统调用号传入rax，执行调用就可以拿到shell。</p>
-<h3 id="事情到这里似乎结束了？"><a href="#事情到这里似乎结束了？" class="headerlink" title="事情到这里似乎结束了？"></a>事情到这里似乎结束了？</h3><p>这段代码有48字节长：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0000000000401000</span> &lt;_start&gt;:</span><br><span class="line">  <span class="number">401000</span>:       <span class="number">6</span>a <span class="number">68</span>                   push   <span class="number">0x68</span></span><br><span class="line">  <span class="number">401002</span>:       <span class="number">48</span> b8 <span class="number">2f</span> <span class="number">62</span> <span class="number">69</span> <span class="number">6</span>e <span class="number">2f</span>    movabs rax,<span class="number">0x732f2f2f6e69622f</span></span><br><span class="line">  <span class="number">401009</span>:       <span class="number">2f</span> <span class="number">2f</span> <span class="number">73</span> </span><br><span class="line">  <span class="number">40100</span>c:       <span class="number">50</span>                      push   rax</span><br><span class="line">  <span class="number">40100</span>d:       <span class="number">48</span> <span class="number">89</span> e7                mov    rdi,rsp</span><br><span class="line">  <span class="number">401010</span>:       <span class="number">68</span> <span class="number">72</span> <span class="number">69</span> <span class="number">01</span> <span class="number">01</span>          push   <span class="number">0x1016972</span></span><br><span class="line">  <span class="number">401015</span>:       <span class="number">81</span> <span class="number">34</span> <span class="number">24</span> <span class="number">01</span> <span class="number">01</span> <span class="number">01</span> <span class="number">01</span>    xor    DWORD PTR [rsp],<span class="number">0x1010101</span></span><br><span class="line">  <span class="number">40101</span>c:       <span class="number">31</span> f6                   xor    esi,esi</span><br><span class="line">  <span class="number">40101</span>e:       <span class="number">56</span>                      push   rsi</span><br><span class="line">  <span class="number">40101f</span>:       <span class="number">6</span>a <span class="number">08</span>                   push   <span class="number">0x8</span></span><br><span class="line">  <span class="number">401021</span>:       <span class="number">5</span>e                      pop    rsi</span><br><span class="line">  <span class="number">401022</span>:       <span class="number">48</span> <span class="number">01</span> e6                add    rsi,rsp</span><br><span class="line">  <span class="number">401025</span>:       <span class="number">56</span>                      push   rsi</span><br><span class="line">  <span class="number">401026</span>:       <span class="number">48</span> <span class="number">89</span> e6                mov    rsi,rsp</span><br><span class="line">  <span class="number">401029</span>:       <span class="number">31</span> d2                   xor    edx,edx</span><br><span class="line">  <span class="number">40102b</span>:       <span class="number">6</span>a <span class="number">3b</span>                   push   <span class="number">0x3b</span></span><br><span class="line">  <span class="number">40102</span>d:       <span class="number">58</span>                      pop    rax</span><br><span class="line">  <span class="number">40102</span>e:       <span class="number">0f</span> <span class="number">05</span>                   syscall</span><br></pre></td></tr></table></figure>
-
-<p>它借助了栈来实现执行了<code>execve(&quot;/bin///sh&quot;,&quot;sh&quot;,0)</code>。但是里面采用了很多怪怪的操作，我们试试能不能通过优化这些操作来减少shellcode的大小。<br>在将异或操作改成直接push 0x6873后，手动编译成功的文件照样成功运行了。但是在objdump的时候就能发现，shellcode里出现了\x00:  </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">401010</span>:       <span class="number">68</span> <span class="number">73</span> <span class="number">68</span> <span class="number">00</span> <span class="number">00</span>          push   <span class="number">0x6873</span></span><br></pre></td></tr></table></figure>
-
-<p>不太妙，看来pwntools成为经典是有原因的。那干脆如果允许读入\x00，我们能否再精简shellcode呢？我们做一些尝试：  </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">global _start</span><br><span class="line">_start:</span><br><span class="line">    mov rax, <span class="number">0x68732f2f6e69622f</span></span><br><span class="line">    push rax</span><br><span class="line">    mov rdi, rsp ;rdi <span class="built_in">set</span> successfully</span><br><span class="line">    xor rsi,rsi</span><br><span class="line">    ;try</span><br><span class="line">    xor rdx,rdx</span><br><span class="line">    mov rax,<span class="number">0x3b</span></span><br><span class="line">    syscall</span><br></pre></td></tr></table></figure>
-
-<p>这样写是不行的，syscall并不会进入shell。了解之后知道，<code>execve</code>的第二个参数必须以一个指向空的指针结尾，也就是说第二个参数也要传入一个合法的地址。查到了一个这样的shellcode：  </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">401000</span>:       <span class="number">48</span> <span class="number">31</span> d2                xor    rdx,rdx</span><br><span class="line"><span class="number">401003</span>:       <span class="number">52</span>                      push   rdx</span><br><span class="line"><span class="number">401004</span>:       <span class="number">48</span> <span class="number">89</span> e6                mov    rsi,rsp</span><br><span class="line"><span class="number">401007</span>:       <span class="number">48</span> b8 <span class="number">2f</span> <span class="number">62</span> <span class="number">69</span> <span class="number">6</span>e <span class="number">2f</span>    movabs rax,<span class="number">0x68732f2f6e69622f</span></span><br><span class="line"><span class="number">40100</span>e:       <span class="number">2f</span> <span class="number">73</span> <span class="number">68</span> </span><br><span class="line"><span class="number">401011</span>:       <span class="number">50</span>                      push   rax</span><br><span class="line"><span class="number">401012</span>:       <span class="number">48</span> <span class="number">89</span> e7                mov    rdi,rsp</span><br><span class="line"><span class="number">401015</span>:       b8 <span class="number">3b</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    eax,<span class="number">0x3b</span></span><br><span class="line"><span class="number">40101</span>a:       <span class="number">0f</span> <span class="number">05</span>                   syscall</span><br></pre></td></tr></table></figure>
-
-<p>看完确实令人感叹。这个shellcode的巧妙在于，将第二个参数和第三个参数的设置过程进行了融合复用，环境变量数组为0看来是合法的，那就将0先入栈然后将地址传给rsi，同时这样写也实现了’&#x2F;bin&#x2F;sh’最后在栈中以\x00结束，非常的巧妙。我们看到这样写的shellcode只有26字节大小，只是在mov eax,0x3b设置系统调用的地方有三个\x00。如果这里我们使用pwntools的栈的方法优化一下？  </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">401000</span>:       <span class="number">48</span> <span class="number">31</span> d2                xor    rdx,rdx</span><br><span class="line"><span class="number">401003</span>:       <span class="number">52</span>                      push   rdx</span><br><span class="line"><span class="number">401004</span>:       <span class="number">48</span> <span class="number">89</span> e6                mov    rsi,rsp</span><br><span class="line"><span class="number">401007</span>:       <span class="number">48</span> b8 <span class="number">2f</span> <span class="number">62</span> <span class="number">69</span> <span class="number">6</span>e <span class="number">2f</span>    movabs rax,<span class="number">0x68732f2f6e69622f</span></span><br><span class="line"><span class="number">40100</span>e:       <span class="number">2f</span> <span class="number">73</span> <span class="number">68</span> </span><br><span class="line"><span class="number">401011</span>:       <span class="number">50</span>                      push   rax</span><br><span class="line"><span class="number">401012</span>:       <span class="number">48</span> <span class="number">89</span> e7                mov    rdi,rsp</span><br><span class="line"><span class="number">401015</span>:       <span class="number">6</span>a <span class="number">3b</span>                   push   <span class="number">0x3b</span></span><br><span class="line"><span class="number">401017</span>:       <span class="number">58</span>                      pop    rax</span><br><span class="line"><span class="number">401018</span>:       <span class="number">0f</span> <span class="number">05</span>                   syscall</span><br></pre></td></tr></table></figure>
-
-<p>没有\x00!而且只要24字节就能实现。不觉得这很酷吗？我觉得这太酷了。shellcode也没那么复杂。<br>x86传参，网上看到的教程似乎都是__fastcall调用方式,最终两个参数好像是用ecx和ebx在传递而不是栈。逻辑也是类似的。</p>
-
-      
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/" data-id="clo78465k0000rsld4u1s208g" data-title="pwntools的shellcode逻辑详解" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-安卓逆向学习记录" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" class="article-date">
-  <time class="dt-published" datetime="2023-10-26T13:20:33.000Z" itemprop="datePublished">2023-10-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">安卓逆向学习记录</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" data-id="clo78465o0001rsldfuqyegp4" data-title="安卓逆向学习记录" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-my-first-blog" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/26/my-first-blog/" class="article-date">
-  <time class="dt-published" datetime="2023-10-26T11:58:33.000Z" itemprop="datePublished">2023-10-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="My-First-Blog"><a href="#My-First-Blog" class="headerlink" title="My First Blog"></a>My First Blog</h1><h2 id="段落"><a href="#段落" class="headerlink" title="段落"></a>段落</h2><p>居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言<br>这样没法换行<br>这样可以换行“两个空格加一个回车或者回车加空行”</p>
-<hr>
-<p>这样是分割线“***”<br><em>这是斜体“两个星号包起来”</em><br><strong>这是加粗“两个星号”</strong><br><em><strong>这是加粗斜体“三个星号包起来”</strong></em><br><del>这是删除线 “一对波浪线包起来”</del><br><u>这是下划线，用html的一对u标签实现</u><br>这是脚注<a href="%E4%B8%80%E5%AF%B9%E4%B8%AD%E6%8B%AC%E5%8F%B7%E5%8A%A0%5Etag">^1</a></p>
-<h2 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h2><p>非常符合直觉的设计：  </p>
-<ul>
-<li>只用星号或加号或减号+空格就可以创建无序列表  </li>
-<li>像这样</li>
-</ul>
-<ol>
-<li>而有序列表使用数字加点加空格</li>
-<li>像这样<br>嵌套只需要前面加四个空格  </li>
-<li>像这样<ul>
-<li>这样</li>
-<li>这样</li>
-</ul>
-</li>
-<li>像这样<ul>
-<li>这样，无需换行两空格标记</li>
-</ul>
-</li>
-</ol>
-<h2 id="区块"><a href="#区块" class="headerlink" title="区块"></a>区块</h2><p>需要使用大于号标记 数量表示层数</p>
-<blockquote>
-<p>这样是第一层<br>第一层继续</p>
-<blockquote>
-<p>这样是第二层</p>
-<blockquote>
-<p>这样是第三层  </p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>上述所有符号都是可嵌套的</p>
-<blockquote>
-<ul>
-<li>像这样</li>
-</ul>
-</blockquote>
-<ul>
-<li><blockquote>
-<p>或者这样</p>
-</blockquote>
-</li>
-<li>或者<blockquote>
-<p>这样</p>
-</blockquote>
-</li>
-</ul>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>简单的引用用反引号标记（键盘左上角）<code>printf</code>这样<br>代码块使用三个引号加语言类型（可选）进行标记 </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="comment">//像这样&#x27;&#x27;&#x27;C开头</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="链接引用"><a href="#链接引用" class="headerlink" title="链接引用"></a>链接引用</h2><p>这是一个链接 <a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页重定向</a><br>或者<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">http://zjw1nd.github.io</a><br>变量的机制？<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页</a>  </p>
-<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/10/26/my-first-blog/" data-id="clo77iky70000ncld2qwc0q1i" data-title="my_first_blog" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2023/10/26/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2023-10-26T11:47:40.285Z" itemprop="datePublished">2023-10-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2023/10/26/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2023/10/26/hello-world/" data-id="clo74l7sz000070ld4x3p0pii" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
-          </li>
-        
-          <li>
-            <a href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">安卓逆向学习记录</a>
-          </li>
-        
-          <li>
-            <a href="/2023/10/26/my-first-blog/">my_first_blog</a>
-          </li>
-        
-          <li>
-            <a href="/2023/10/26/hello-world/">Hello World</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2023 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
 </footer>
 
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 文章页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                fi3ework's Studio.
+            <!-- 文章页  -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+                    it's better to burn out than to fade away
+                
+            <!-- 文章页  -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
     </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main index-page">
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">
+                
+                <span class="abstract-title-text">对跳表机制及其静态逆向的一些想法</span>
+            </a>
+            <div class="abstract-content">
+                之前没有听说过跳转表这个词，查了查什么是跳转表，看起来是个用到一些数据结构思想的有点意思的编译机制🤔。  
+什么是跳表？跳转表（jump table）是GCC编译器在汇编时针对C语言的switch语句采用的一种汇编机制。查资料的时候发现CSAPP上有讲，这里就结合书上的内容和自己的理解给出一点解释，那我们先来看看switch是如何在汇编层面实现的吧。
+
+switch开关语句可以根据一个整数索引值进行多重分支，提高了C代码的可读性。通过使用跳转表，它的实现可以更加高效。跳转表是一个数组，表项 i 是一个代码片段的地址，这个片段实现当开关索引值为 i 的时候程序应采取的动作。程序代码使用开...
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/11/06">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/11/06</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn IDA 逆向">pwn IDA 逆向</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">
+                
+                <span class="abstract-title-text">pwntools的shellcode逻辑详解</span>
+            </a>
+            <div class="abstract-content">
+                先看看pwntools的shellcraft.amd64.sh()为我们提供了怎样的一段代码
+12345678910111213141516171819202122/* execve(path=&#x27;/bin///sh&#x27;, argv=[&#x27;sh&#x27;], envp=0) *//* push b&#x27;/bin///sh\x00&#x27; */push 0x68mov rax, 0x732f2f2f6e69622fpush rax //64位数据不能直接pushmov rdi, rsp //第一个参数设置成了/bin///sh\x00的地址/* push...
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/11/02">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
+                </div>
+                <!-- tags -->
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">
+                
+                <span class="abstract-title-text">安卓逆向学习记录</span>
+            </a>
+            <div class="abstract-content">
+                妈的，学个鸡
+
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/11/06">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="不会">不会</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/10/26/my-first-blog/">
+                
+                <span class="abstract-title-text">my_first_blog</span>
+            </a>
+            <div class="abstract-content">
+                My First Blog段落居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行这样可以换行“两个空格加一个回车或者回车加空行”
+
+这样是分割线“***”这是斜体“两个星号包起来”这是加粗“两个星号”这是加粗斜体“三个星号包起来”这是删除线 “一对波浪线包起来”这是下划线，用html的一对u标签实现这是脚注^1
+列表非常符合直觉的设计：  
+
+只用星号或加号或减号+空格就可以创建无序列表  
+像这样
+
+
+而有序列表使用数字加点加空格
+像这样嵌套只需要前面加四个空格  
+像这样
+这样
+这样
+
+
+像这样
+...
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/10/26">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
+                </div>
+                <!-- tags -->
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/10/26/hello-world/">
+                
+                <span class="abstract-title-text">Hello World</span>
+            </a>
+            <div class="abstract-content">
+                Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;
+
+More info: Writing
+Run server1$ hexo ...
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/10/26">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
+                </div>
+                <!-- tags -->
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+    <!-- paginator  -->
+    
+</main>
+
+                <!-- profile -->
+                
+                    <div class="profile">
+    <img class="profile-avatar" alt="avatar" src= /avatar/DP.jpg />
+    <div class="profile-name">Zj_W1nd</div>
+    
+        <div class="profile-signature">
+            Chaos.
+        </div>
+    
+    
+        <div class="profile-social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
     
 
 
-<script src="/js/jquery-3.6.4.min.js"></script>
+        </div>
+    
+    
+    
+        <div class="profile-link-item">
+            <a href="/about" class="about-me">
+                
+                ABOUT ME
+            </a>
+        </div>
+    
+    
+    
+</div>
+
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
 
 
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+            
+        </div>
+    	
+</footer>
 
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
+        </div>
+        <!-- toc -->
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 5
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">安卓逆向学习记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/hello-world/">Hello World</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="pwn IDA 逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn IDA 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="不会">
+                <span class="iconfont-archer">&#xe606;</span>
+                不会
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
 
 
-
-
-<script src="/js/script.js"></script>
-
-
-
-
-
-  </div>
-</body>
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+        <!-- mermaid -->
+        
+    </body>
 </html>
