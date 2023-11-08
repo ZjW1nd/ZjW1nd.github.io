@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
     
     <meta name="description" content="">
     <meta property="og:type" content="website">
@@ -30,7 +30,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>fi3ework&#39;s Studio</title>
+    <title>Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -242,7 +242,7 @@
         </span>
         <!-- back to home page text -->
         <span class="home-link header-element">
-            <a href=/>fi3ework's Studio.</a>
+            <a href=/>Zj_W1nd's BLOG</a>
         </span>
     </div>
     <!-- toggle banner for post layout -->
@@ -465,6 +465,7 @@ switch开关语句可以根据一个整数索引值进行多重分支，提高�
         
         
             
+            
         
         <article class="index-post">
             <a class="abstract-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">
@@ -472,17 +473,24 @@ switch开关语句可以根据一个整数索引值进行多重分支，提高�
                 <span class="abstract-title-text">pwntools的shellcode逻辑详解</span>
             </a>
             <div class="abstract-content">
-                先看看pwntools的shellcraft.amd64.sh()为我们提供了怎样的一段代码
-12345678910111213141516171819202122/* execve(path=&#x27;/bin///sh&#x27;, argv=[&#x27;sh&#x27;], envp=0) *//* push b&#x27;/bin///sh\x00&#x27; */push 0x68mov rax, 0x732f2f2f6e69622fpush rax //64位数据不能直接pushmov rdi, rsp //第一个参数设置成了/bin///sh\x00的地址/* push...
+                初步学习pwntools的shellcode逻辑，以及如何用更少的字节编写shellcode
             </div>
             <!-- read more -->
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2023/11/02">
+                <div class="abstract-date" title="Last updated: 2023/11/08">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
                 </div>
                 <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+</div>
+
                 
             </div>
         </article>
@@ -507,7 +515,7 @@ switch开关语句可以根据一个整数索引值进行多重分支，提高�
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2023/11/06">
+                <div class="abstract-date" title="Last updated: 2023/11/08">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/10/26</span>
                 </div>
                 <!-- tags -->
@@ -772,13 +780,13 @@ Run server1$ hexo ...
         
         <li class="archive-post-item">
             <span class="archive-post-date">10/26</span>
-            <a class="archive-post-title" href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">安卓逆向学习记录</a>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">10/26</span>
-            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+            <a class="archive-post-title" href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/">安卓逆向学习记录</a>
         </li>
     
         
@@ -807,6 +815,11 @@ Run server1$ hexo ...
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
             </span>
         
     </div>
