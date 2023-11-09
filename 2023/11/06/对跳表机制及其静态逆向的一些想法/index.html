@@ -26,14 +26,18 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="之前没有听说过跳转表这个词，查了查什么是跳转表，看起来是个用到一些数据结构思想的有点意思的编译机制🤔。   什么是跳表？跳转表（jump table）是GCC编译器在汇编时针对C语言的switch语句采用的一种汇编机制。查资料的时候发现CSAPP上有讲，这里就结合书上的内容和自己的理解给出一点解释，那我们先来看看switch是如何在汇编层面实现的吧。  switch开关语句可以根据一个整数索引值">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/">
-<meta property="og:image" content="http://example.com/">
+<meta property="og:image" content="http://example.com/images/jcc.png">
+<meta property="og:image" content="http://example.com/images/jpt.png">
+<meta property="og:image" content="http://example.com/images/jpt_example.png">
+<meta property="og:image" content="http://example.com/images/jpt_wrong.png">
 <meta property="article:published_time" content="2023-11-06T08:52:08.000Z">
-<meta property="article:modified_time" content="2023-11-08T04:09:55.880Z">
+<meta property="article:modified_time" content="2023-11-09T11:58:59.683Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="逆向">
+<meta property="article:tag" content="IDA">
+<meta property="article:tag" content="编译">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/">
+<meta name="twitter:image" content="http://example.com/images/jcc.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
@@ -332,6 +336,10 @@
     
         <a class="post-tag" href="javascript:void(0);" data-tags="逆向">逆向</a>
     
+        <a class="post-tag" href="javascript:void(0);" data-tags="IDA">IDA</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="编译">编译</a>
+    
 </div>
 
                 
@@ -502,11 +510,32 @@
 </blockquote>
 <p>先简单说，这就是一个 <em>O(1)</em> 的索引然后跳转。不这样的话，汇编层面会变成一连串的类似“if-else”的连续的 cmp + jcc 结构。那么编译器是怎么分别这两种情况的呢？  </p>
 <p>汇编器在遇到switch语句的时候会先评估case分支的“稀疏程度”，选择使用来进行编译，还是使用跳转表进行编译。这种判断，本质上是一种时间和空间的权衡。对于cmp+jcc结构的编译方法就不过多赘述，类似于下面这种:</p>
-<p><img src="/" alt="cmp+jcc编译结构"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">int</span> a=<span class="number">5</span>;</span><br><span class="line"> <span class="keyword">switch</span>(a)</span><br><span class="line"> &#123;</span><br><span class="line"> <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line"> <span class="built_in">puts</span>(<span class="string">&quot;check out disasm!&quot;</span>);</span><br><span class="line"> <span class="keyword">break</span>;</span><br><span class="line"> <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line"> <span class="built_in">puts</span>(<span class="string">&quot;check out disasm!&quot;</span>);</span><br><span class="line"> <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line"> <span class="built_in">puts</span>(<span class="string">&quot;check out disasm!&quot;</span>);</span><br><span class="line"> <span class="keyword">break</span>;</span><br><span class="line"> <span class="keyword">default</span>:</span><br><span class="line"> <span class="built_in">puts</span>(<span class="string">&quot;6&quot;</span>);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码汇编的结果是：</p>
+<p><img src="/images/jcc.png" alt="cmp+jcc编译结构"></p>
 <p>当汇编器认为开关数量比较多（部分版本是4个以上）并且跨度较小分布密集的时候，就会采用跳转表进行编译，类似下面这种。</p>
-<p><img src="/" alt="跳转表编译结构"></p>
-<p>汇编器首先将所有的整数索引值区间移动到一个“最小值从0开始”的区间上，然后用这个转化后的索引值作为数组下标去跳转表中搜寻地址。</p>
-<h2 id="IDA在面对跳表的时候出了什么问题？"><a href="#IDA在面对跳表的时候出了什么问题？" class="headerlink" title="IDA在面对跳表的时候出了什么问题？"></a>IDA在面对跳表的时候出了什么问题？</h2><h2 id="手动修复IDA跳表"><a href="#手动修复IDA跳表" class="headerlink" title="手动修复IDA跳表"></a>手动修复IDA跳表</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> a=<span class="number">0</span>, b=<span class="number">0</span>;</span><br><span class="line">    a=getchar();</span><br><span class="line">    <span class="keyword">switch</span>(a)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;a&#x27;</span>:</span><br><span class="line">            <span class="built_in">puts</span>(<span class="string">&quot;this is case a&quot;</span>);</span><br><span class="line">            b=a;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;b&#x27;</span>:</span><br><span class="line">            b=a;</span><br><span class="line">            b++;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;c&#x27;</span>:</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;%c&quot;</span>,b);<span class="comment">//被编译为了putchar</span></span><br><span class="line">            b=a;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;d&#x27;</span>:</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;this is case d&quot;</span>);</span><br><span class="line">            b=a;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;e&#x27;</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;f&#x27;</span>:</span><br><span class="line">            b=a;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;g&#x27;</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;h&#x27;</span>:</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;this is case h&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;i&#x27;</span>:</span><br><span class="line">            b++;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;j&#x27;</span>:</span><br><span class="line">            b=a;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码汇编的结果是：</p>
+<p><img src="/images/jpt.png" alt="跳转表编译结构"><br>跳转表：<br><img src="/images/jpt_example.png" alt="跳转表"></p>
+<p>汇编器首先将所有的整数索引值区间移动到一个“最小值从0开始”的区间上，然后用这个转化后的索引值作为数组下标去跳转表中搜寻地址。跳转表中存放的是“跳转表首地址”和程序段对应的case地址的偏移差值，索引过程中会将基地址和下标索引送入寄存器，加和之后取得绝对地址，最后<code>jmp rax</code>。<br>这里多查了查，发现涉及到了编译优化的一些知识，编译器对于switch的优化方法没有这么简单，甚至可能有二分查找（？？），不多写了摆了。</p>
+<h2 id="IDA在面对跳表的时候出了什么问题？"><a href="#IDA在面对跳表的时候出了什么问题？" class="headerlink" title="IDA在面对跳表的时候出了什么问题？"></a>IDA在面对跳表的时候出了什么问题？</h2><p>上面那段采用跳转表编译的代码，在IDA中按下F5之后变成了这样：</p>
+<p><img src="/images/jpt_wrong.png" alt="IDA反汇编"></p>
+<p>我们可以看到，源代码中对于b的一些赋值操作，自增操作在F5之后统统消失了。这导致如果我们不去观察汇编代码而是只用F5的话，IDA会因为跳表的原因丢失大量的源代码信息和操作（示例是自己随便写的，丢失的不多），如果类似<code>b++</code>这样的逻辑操作非常多而且关键的话，这种错误对我们程序分析是十分致命的。可能IDA会直接翻译出这样一段内容（来自<a target="_blank" rel="noopener" href="https://www.cjovi.icu/mess/1345.html">这篇文章</a>），这也代表它在识别跳表的时候出错了：  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (*v5 &lt;= <span class="number">0xC</span>u&gt;)</span><br><span class="line">    JUMPOUT(__CS__,(<span class="type">char</span> *)dword_403040 + dword_403040[*v5]);</span><br><span class="line"><span class="keyword">goto</span> LABEL_24</span><br></pre></td></tr></table></figure>
+
+<p>当然，汇编代码是完好的。那有没有什么办法能手动还原原来所有的内容？</p>
+<h2 id="手动修复IDA跳表"><a href="#手动修复IDA跳表" class="headerlink" title="手动修复IDA跳表"></a>手动修复IDA跳表</h2><p>首先不得不感叹，IDA<em>确实</em>太强了。它居然内置了手动识别switch跳表的功能。不过这里我用上面的代码进行复现的时候，似乎简单的自增和赋值如果后面没有用到的话依然不会被显示。试了几次之后决定摆烂，参考<a target="_blank" rel="noopener" href="https://www.cjovi.icu/mess/1345.html">上面提到的文章</a>，整理switch跳表手动识别窗口的一些内容，意思十分明了的略去：  </p>
+<ul>
+<li>Element shift amount: 元素偏移数值，和switch计算真实跳转地址有关。根据上面的分析我们可以看出，一般的搜寻地址操作只是简单的相加，根据博文推测这一项是最终计算绝对地址的时候加上的偏移。  </li>
+<li>Seperate Value table is present：不用管，勾选之后会让你单独设置一个case值表。  </li>
+<li>Signed jump table elements: 表中偏移值为有符号数（负数&#x2F;低减高）的时候勾选。  </li>
+<li>Subtract table elements: 减去表中元素？勾选之后得到的c代码没有了具体内容，全部是<code>JUMPOUT(addr)</code>的格式了。  </li>
+<li>Table element is insn：勾选之后没啥区别。意义不明</li>
+</ul>
+<p>这里手动设置了这样的参数之后伪代码依然没显示自增，不知道为什么，可能需要更复杂的逻辑吧？不过跳表的手动修复方法大体就是这样。后续遇到题目再更新。</p>
+
     </article>
     <!-- license -->
     
@@ -785,6 +814,21 @@
                 pwn
             </span>
         
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
     <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
@@ -795,6 +839,16 @@
 
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
