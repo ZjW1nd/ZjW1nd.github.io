@@ -19,22 +19,24 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
     
     <meta name="description" content="">
-    <meta name="description" content="My First Blog段落居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***”这是斜体“两个星号包起来”这是加粗“两个星号”这是加粗斜体“三个星号包起来”这是删除线 “一对波浪线包起来”这是下划线，用html的一对u标签实现这是脚注^1">
+    <meta name="description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的基础">
 <meta property="og:type" content="article">
-<meta property="og:title" content="my_first_blog">
-<meta property="og:url" content="http://example.com/2023/10/26/my-first-blog/index.html">
+<meta property="og:title" content="How2Heap(1)">
+<meta property="og:url" content="http://example.com/2023/11/09/How2Heap-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="My First Blog段落居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***”这是斜体“两个星号包起来”这是加粗“两个星号”这是加粗斜体“三个星号包起来”这是删除线 “一对波浪线包起来”这是下划线，用html的一对u标签实现这是脚注^1">
+<meta property="og:description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的基础">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-10-26T11:58:33.000Z">
-<meta property="article:modified_time" content="2023-11-09T08:48:10.427Z">
+<meta property="article:published_time" content="2023-11-09T13:28:19.000Z">
+<meta property="article:modified_time" content="2023-11-13T12:57:33.851Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="heap">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>my_first_blog · Zj_W1nd&#39;s BLOG</title>
+    <title>How2Heap(1) · Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -260,7 +262,7 @@
                 <a href="/">Zj_W1nd&#39;s BLOG</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">my_first_blog</a>
+                <a href="#" class="post-name">How2Heap(1)</a>
             </div>
         </div>
     
@@ -306,7 +308,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                my_first_blog
+                How2Heap(1)
             <!-- 404 -->
             
         </h1>
@@ -326,6 +328,10 @@
                     <div class= post-intro-tags >
     
     
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
 </div>
 
                 
@@ -334,7 +340,7 @@
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2023/10/26</span>
+                    <span class="post-intro-time">2023/11/09</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -489,58 +495,18 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="My-First-Blog"><a href="#My-First-Blog" class="headerlink" title="My First Blog"></a>My First Blog</h1><h2 id="段落"><a href="#段落" class="headerlink" title="段落"></a>段落</h2><p>居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言<br>这样没法换行<br>这样可以换行“两个空格加一个回车或者回车加空行”</p>
-<hr>
-<p>这样是分割线“***”<br><em>这是斜体“两个星号包起来”</em><br><strong>这是加粗“两个星号”</strong><br><em><strong>这是加粗斜体“三个星号包起来”</strong></em><br><del>这是删除线 “一对波浪线包起来”</del><br><u>这是下划线，用html的一对u标签实现</u><br>这是脚注<a href="%E4%B8%80%E5%AF%B9%E4%B8%AD%E6%8B%AC%E5%8F%B7%E5%8A%A0%5Etag">^1</a></p>
-<h2 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h2><p>非常符合直觉的设计：  </p>
+        <p>本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。<br>没想到还有<a target="_blank" rel="noopener" href="https://github.com/shellphish/how2heap">How2heap</a>这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。  </p>
+<h2 id="Fastbin-Double-Free-dup"><a href="#Fastbin-Double-Free-dup" class="headerlink" title="Fastbin Double Free(dup)"></a>Fastbin Double Free(dup)</h2><p>这是我们后面要谈的漏洞操作的基础。Fastbin中chunk的prev_inuse位不会被置空，这意味着我们可以多次释放同一个物理chunk从而在fastbin的逻辑链表中插入多个相同物理地址的chunk进行利用。引用CTF Wiki的说法：</p>
+<blockquote>
+<p>Fastbin Double Free 是指 fastbin 的 chunk 可以被多次释放，因此可以在 fastbin 链表中存在多次。这样导致的后果是多次分配可以从 fastbin 链表中取出同一个堆块，相当于多个指针指向同一个堆块，结合堆块的数据内容可以实现类似于类型混淆 (type confused) 的效果。<br>Fastbin Double Free 能够成功利用主要有两部分的原因:</p>
 <ul>
-<li>只用星号或加号或减号+空格就可以创建无序列表  </li>
-<li>像这样</li>
-</ul>
-<ol>
-<li>而有序列表使用数字加点加空格</li>
-<li>像这样<br>嵌套只需要前面加四个空格  </li>
-<li>像这样<ul>
-<li>这样</li>
-<li>这样</li>
-</ul>
-</li>
-<li>像这样<ul>
-<li>这样，无需换行两空格标记</li>
-</ul>
-</li>
-</ol>
-<h2 id="区块"><a href="#区块" class="headerlink" title="区块"></a>区块</h2><p>需要使用大于号标记 数量表示层数</p>
-<blockquote>
-<p>这样是第一层<br>第一层继续</p>
-<blockquote>
-<p>这样是第二层</p>
-<blockquote>
-<p>这样是第三层  </p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>上述所有符号都是可嵌套的</p>
-<blockquote>
-<ul>
-<li>像这样</li>
+<li>fastbin 的堆块被释放后 next_chunk 的 pre_inuse 位不会被清空  </li>
+<li>fastbin 在执行 free 的时候仅验证了 main_arena 直接指向的块，即链表指针头部的块。对于链表后面的块，并没有进行验证。——***<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/fastbin-attack/">CTF Wiki</a>***</li>
 </ul>
 </blockquote>
-<ul>
-<li><blockquote>
-<p>或者这样</p>
-</blockquote>
-</li>
-<li>或者<blockquote>
-<p>这样</p>
-</blockquote>
-</li>
-</ul>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>简单的引用用反引号标记（键盘左上角）<code>printf</code>这样<br>代码块使用三个引号加语言类型（可选）进行标记 </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="comment">//像这样&#x27;&#x27;&#x27;C开头</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="链接引用"><a href="#链接引用" class="headerlink" title="链接引用"></a>链接引用</h2><p>这是一个链接 <a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页重定向</a><br>或者<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">http://zjw1nd.github.io</a><br>变量的机制？<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页</a>  </p>
-<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2>
+<p>由于只对main_arena直接连接的chunk进行检查，所以在申请三个符合大小的chunk之后，只需要这样就可以达成doublefree的效果：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *a = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line"><span class="type">int</span> *b = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line"><span class="type">int</span> *c = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   <span class="built_in">free</span>(a);</span><br><span class="line">   <span class="built_in">free</span>(b);</span><br><span class="line">   <span class="built_in">free</span>(a);</span><br><span class="line">   <span class="comment">//此时fastbin中：main_arena-&gt;a-&gt;b-&gt;a,注意尾部的a也同样指向b</span></span><br><span class="line">   a=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   b=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   c=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   <span class="comment">//此时a和c应该同样指向一块物理chunk</span></span><br></pre></td></tr></table></figure>
+<h2 id="Fastbin-dup-consolidate（进阶）"><a href="#Fastbin-dup-consolidate（进阶）" class="headerlink" title="Fastbin dup consolidate（进阶）"></a>Fastbin dup consolidate（进阶）</h2>
     </article>
     <!-- license -->
     
@@ -548,17 +514,12 @@
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2023/10/26/%E5%AE%89%E5%8D%93%E9%80%86%E5%90%91%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/" title="安卓逆向学习记录">
-                    <div class="nextTitle">安卓逆向学习记录</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2023/10/26/hello-world/" title="Hello World">
-                    <div class="prevTitle">Hello World</div>
+                <a href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/" title="对跳表机制及其静态逆向的一些想法">
+                    <div class="prevTitle">对跳表机制及其静态逆向的一些想法</div>
                 </a>
             
         </li>
@@ -695,7 +656,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#My-First-Blog"><span class="toc-number">1.</span> <span class="toc-text">My First Blog</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E8%90%BD"><span class="toc-number">1.1.</span> <span class="toc-text">段落</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%97%E8%A1%A8"><span class="toc-number">1.2.</span> <span class="toc-text">列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97"><span class="toc-number">1.3.</span> <span class="toc-text">区块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%BC%95%E7%94%A8"><span class="toc-number">1.5.</span> <span class="toc-text">链接引用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E7%89%87"><span class="toc-number">1.6.</span> <span class="toc-text">图片</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-Double-Free-dup"><span class="toc-number">1.</span> <span class="toc-text">Fastbin Double Free(dup)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-dup-consolidate%EF%BC%88%E8%BF%9B%E9%98%B6%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">Fastbin dup consolidate（进阶）</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
