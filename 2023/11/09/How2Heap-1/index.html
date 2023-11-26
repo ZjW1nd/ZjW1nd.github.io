@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
     
     <meta name="description" content="">
-    <meta name="description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的基础">
+    <meta name="description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。  没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap(1)">
 <meta property="og:url" content="http://example.com/2023/11/09/How2Heap-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的基础">
+<meta property="og:description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。  没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-11-09T13:28:19.000Z">
-<meta property="article:modified_time" content="2023-11-13T12:57:33.851Z">
+<meta property="article:modified_time" content="2023-11-26T04:03:47.686Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -495,7 +495,9 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <p>本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。<br>没想到还有<a target="_blank" rel="noopener" href="https://github.com/shellphish/how2heap">How2heap</a>这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。  </p>
+        <p>本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。</p>
+<hr>
+<p>没想到还有<a target="_blank" rel="noopener" href="https://github.com/shellphish/how2heap">How2heap</a>这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。  </p>
 <h2 id="Fastbin-Double-Free-dup"><a href="#Fastbin-Double-Free-dup" class="headerlink" title="Fastbin Double Free(dup)"></a>Fastbin Double Free(dup)</h2><p>这是我们后面要谈的漏洞操作的基础。Fastbin中chunk的prev_inuse位不会被置空，这意味着我们可以多次释放同一个物理chunk从而在fastbin的逻辑链表中插入多个相同物理地址的chunk进行利用。引用CTF Wiki的说法：</p>
 <blockquote>
 <p>Fastbin Double Free 是指 fastbin 的 chunk 可以被多次释放，因此可以在 fastbin 链表中存在多次。这样导致的后果是多次分配可以从 fastbin 链表中取出同一个堆块，相当于多个指针指向同一个堆块，结合堆块的数据内容可以实现类似于类型混淆 (type confused) 的效果。<br>Fastbin Double Free 能够成功利用主要有两部分的原因:</p>
@@ -506,13 +508,44 @@
 </blockquote>
 <p>由于只对main_arena直接连接的chunk进行检查，所以在申请三个符合大小的chunk之后，只需要这样就可以达成doublefree的效果：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *a = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line"><span class="type">int</span> *b = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line"><span class="type">int</span> *c = <span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   <span class="built_in">free</span>(a);</span><br><span class="line">   <span class="built_in">free</span>(b);</span><br><span class="line">   <span class="built_in">free</span>(a);</span><br><span class="line">   <span class="comment">//此时fastbin中：main_arena-&gt;a-&gt;b-&gt;a,注意尾部的a也同样指向b</span></span><br><span class="line">   a=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   b=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   c=<span class="built_in">malloc</span>(<span class="number">8</span>);</span><br><span class="line">   <span class="comment">//此时a和c应该同样指向一块物理chunk</span></span><br></pre></td></tr></table></figure>
-<h2 id="Fastbin-dup-consolidate（进阶）"><a href="#Fastbin-dup-consolidate（进阶）" class="headerlink" title="Fastbin dup consolidate（进阶）"></a>Fastbin dup consolidate（进阶）</h2>
+<h2 id="Fastbin-dup-consolidate-malloc-consolidate-vul"><a href="#Fastbin-dup-consolidate-malloc-consolidate-vul" class="headerlink" title="Fastbin dup consolidate (malloc_consolidate vul)"></a>Fastbin dup consolidate (malloc_consolidate vul)</h2><p><strong>开始之前，先来谈一些前置的知识：</strong></p>
+<p>这个漏洞的标题指的是<code>malloc_consolidate()</code>函数。consolidate意为“整合”，这个函数专门用于处理合并fastbin中的chunk，是我们取largebin大小chunk前ptmalloc所谓的“大循环”操作调用的一个重要函数。同时它还兼具初始化（设置一些宏）fastbin的作用。这里我们根据how2heap的提示，学习它关于fastbin的一些漏洞利用。</p>
+<p>如果申请的chunk大小smallbin也无法满足，在调用largebin之前，<code>malloc()</code>就会调用这个函数对fastbin进行整理，将他们合并到unsorted_bin或者topchunk。这个函数网上的分析感觉都非常会乱或者有的地方有矛盾，这里参考了一篇<a target="_blank" rel="noopener" href="https://kiprey.gitee.io/2020/05/heap-11-malloc_consolidate/">带完整源码的文章</a>。大概过程是这样：  </p>
+<ol>
+<li>调用<code>clear_fastchunks()</code>清空fastbin的prev_inuse标志位</li>
+<li>用二层循环（表头数组＋链表）遍历所有的fastbin，检查物理地址的前后是个什么状况</li>
+<li>如果物理相邻的前一个chunk也是free的，就将p从bin中unlink后将其合并到前一个chunk，否则不管</li>
+<li>如果物理地址相邻后一个chunk是topchunk，就直接放进去然后退出循环</li>
+<li>如果不是topchunk，就对后一个chunk重复3，把他们合并。</li>
+<li>最后放入unsorted_bin中</li>
+</ol>
+<blockquote>
+<p>几个小细节：topchunk是地址最高的那块；同时上面提到的所有所谓“合并”操作，基本就是将对应chunk解链unlink出来后更新相邻chunk的size大小而已。</p>
+</blockquote>
+<p>这个漏洞的利用还涉及一些fastbin的小细节：</p>
+<blockquote>
+<p>默认情况下（32 位系统为例），fastbin 中默认支持最大的 chunk 的数据空间大小为 64 字节。<br>但是其可以支持的 chunk 的数据空间最大为 80 字节。除此之外， fastbin 最多可以支持的 bin 的个数为 10 个，<br>从数据空间为 8 字节开始一直到 80 字节（注意这里说的是数据空间大小，也即除去 prev_size 和 size 字段部分的大小）——***<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/heap-structure/#fast-bin">CTF Wiki</a>***</p>
+</blockquote>
+<p>虽然代码中写的这是用于绕过tcache double free检测的，但是tcache是glibc-2.26之后引入的技术，所以我们复现漏洞时使用的glibc-2.23这里应该还是利用了fastbin漏洞。</p>
+<p>*没懂，过程是先向fastbin中插入一个chunk然后分配一个稍大块触发consolidate，让fastbin这个进入topchunk。然后分配得到的地址就和第一次分配的一样？？凭什么</p>
+<p>然后来看代码，这里之前没懂的地方都打上注释：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// reference: https://valsamaras.medium.com/the-toddlers-introduction-to-heap-exploitation-fastbin-dup-consolidate-part-4-2-ce6d68136aa8</span></span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;This is a powerful technique that bypasses the double free check in tcachebin.&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Fill up the tcache list to force the fastbin usage...\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">void</span>* p1 = <span class="built_in">calloc</span>(<span class="number">1</span>,<span class="number">0x40</span>);<span class="comment">//第一次调用malloc，紧邻topchunk</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Allocate another chunk of the same size p1=%p \n&quot;</span>, p1);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Freeing p1 will add this chunk to the fastbin list...\n\n&quot;</span>);</span><br><span class="line">        <span class="built_in">free</span>(p1);<span class="comment">//目前fastbin中有一个p1</span></span><br><span class="line"></span><br><span class="line">        <span class="type">void</span>* p3 = <span class="built_in">malloc</span>(<span class="number">0x400</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Allocating a tcache-sized chunk (p3=%p)\n&quot;</span>, p3);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;will trigger the malloc_consolidate and merge\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;the fastbin chunks into the top chunk, thus\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;p1 and p3 are now pointing to the same chunk !\n\n&quot;</span>);</span><br><span class="line">        <span class="comment">//讲一下为什么p1=p3，本来p1就是挨着topchunk，触发consolidate之后p1直接指向topchunk，而p3又是从</span></span><br><span class="line">        <span class="comment">//topchunk中切出来的，所以p1和p3本质指向一块内存，即free(p1)后的topchunk地址</span></span><br><span class="line">        assert(p1 == p3);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Triggering the double free vulnerability!\n\n&quot;</span>);</span><br><span class="line">        <span class="built_in">free</span>(p1);</span><br><span class="line">        <span class="comment">//p1和p3本质没区别，就是重新把p3塞回topchunk，p4就是把p3又取出来</span></span><br><span class="line">        <span class="type">void</span> *p4 = <span class="built_in">malloc</span>(<span class="number">0x400</span>);</span><br><span class="line"></span><br><span class="line">        assert(p4 == p3);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;The double free added the chunk referenced by p1 \n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;to the tcache thus the next similar-size malloc will\n&quot;</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;point to p3: p3=%p, p4=%p\n\n&quot;</span>,p3, p4);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个漏洞的关键是<code>malloc_consolidate()</code>的这段代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> &#123; <span class="comment">//判断紧邻topchunk之后的动作</span></span><br><span class="line">  size += nextsize;</span><br><span class="line">  set_head(p, size | PREV_INUSE);</span><br><span class="line">  av-&gt;top = p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因此上述演示本质是在topchunk边缘不停地取chunk再放回去再取出来再放回去的过程。</p>
+
     </article>
     <!-- license -->
     
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/" title="逆向杂谈（持续更新）">
+                    <div class="nextTitle">逆向杂谈（持续更新）</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -656,7 +689,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-Double-Free-dup"><span class="toc-number">1.</span> <span class="toc-text">Fastbin Double Free(dup)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-dup-consolidate%EF%BC%88%E8%BF%9B%E9%98%B6%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">Fastbin dup consolidate（进阶）</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-Double-Free-dup"><span class="toc-number">1.</span> <span class="toc-text">Fastbin Double Free(dup)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin-dup-consolidate-malloc-consolidate-vul"><span class="toc-number">2.</span> <span class="toc-text">Fastbin dup consolidate (malloc_consolidate vul)</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -700,7 +733,29 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -731,7 +786,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 6
+        Total : 8
         </div>
         <!-- search  -->
         
@@ -745,6 +800,18 @@
             <div class="archive-year"> 2023 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E4%B9%8B%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/09</span>
@@ -822,6 +889,16 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="OS">
+                <span class="iconfont-archer">&#xe606;</span>
+                OS
+            </span>
+        
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
     <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
@@ -843,9 +920,9 @@
             Reverse
         </span>
     
-        <span class="sidebar-category-name" data-categories="Heap">
+        <span class="sidebar-category-name" data-categories="linux">
             <span class="iconfont-archer">&#xe60a;</span>
-            Heap
+            linux
         </span>
     
     </div>
