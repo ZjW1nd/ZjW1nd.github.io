@@ -442,6 +442,33 @@
         
         
             
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2023/12/03/How2Heap-2/">
+                
+                <span class="abstract-title-text">How2Heap(2)-?</span>
+            </a>
+            <div class="abstract-content">
+                
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/12/03">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/12/03</span>
+                </div>
+                <!-- tags -->
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
             
         
         <article class="index-post">
@@ -518,6 +545,7 @@
         
         
             
+            
         
         <article class="index-post">
             <a class="abstract-title" href="/2023/11/09/How2Heap-1/">
@@ -525,10 +553,7 @@
                 <span class="abstract-title-text">How2Heap(1)-fastbin（完整版）</span>
             </a>
             <div class="abstract-content">
-                本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。
-
-没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。  
-Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的基础。Fastbin中chunk的prev_inuse位不会被置空，这意味着我们可以多次释放同一个物理chunk从而在fastbin的逻辑链表中插入多个相同物理地址的chunk进行利用。引用CT...
+                堆漏洞利用之fastbin。glibc-2.23下fastbin的consolidate,doublefree,dup_into_stack以及house_of_spirit的利用
             </div>
             <!-- read more -->
             
@@ -941,7 +966,20 @@ Run server1$ hexo ...
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -984,7 +1022,7 @@ Run server1$ hexo ...
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 8
+        Total : 9
         </div>
         <!-- search  -->
         
@@ -998,6 +1036,12 @@ Run server1$ hexo ...
             <div class="archive-year"> 2023 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-?</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/25</span>
