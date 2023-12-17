@@ -21,25 +21,24 @@
     <meta name="description" content="">
     <meta name="description" content="原理分析介绍这个利用和House of Spirit不同，不是通过伪造chunk来实现的，而是直接利用top chunk进行攻击。因为这个漏洞非常的简单粗暴。它的核心原理也是令人觉得非常幽默：堆管理器从top chunk中为我们分配空间的时候，只检查top chunk是不是太小了不够用而不检查top chunk是不是太大了。_int_malloc()中的源码大概是这样子： 123456789101">
 <meta property="og:type" content="article">
-<meta property="og:title" content="How2Heap(3)——House of Force &amp; etc.">
+<meta property="og:title" content="How2Heap(3)—House of Force &amp; etc.">
 <meta property="og:url" content="http://example.com/2023/12/17/How2Heap-3/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="原理分析介绍这个利用和House of Spirit不同，不是通过伪造chunk来实现的，而是直接利用top chunk进行攻击。因为这个漏洞非常的简单粗暴。它的核心原理也是令人觉得非常幽默：堆管理器从top chunk中为我们分配空间的时候，只检查top chunk是不是太小了不够用而不检查top chunk是不是太大了。_int_malloc()中的源码大概是这样子： 123456789101">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/house_of_force.png">
-<meta property="og:image" content="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/house-of-force/#2">
+<meta property="og:image" content="http://example.com/images/house_of_force.png">
 <meta property="article:published_time" content="2023-12-17T08:01:06.000Z">
-<meta property="article:modified_time" content="2023-12-17T10:45:20.476Z">
+<meta property="article:modified_time" content="2023-12-17T10:48:06.956Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/house_of_force.png">
+<meta name="twitter:image" content="http://example.com/images/house_of_force.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>How2Heap(3)——House of Force &amp; etc. · Zj_W1nd&#39;s BLOG</title>
+    <title>How2Heap(3)—House of Force &amp; etc. · Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -265,7 +264,7 @@
                 <a href="/">Zj_W1nd&#39;s BLOG</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">How2Heap(3)——House of Force & etc.</a>
+                <a href="#" class="post-name">How2Heap(3)—House of Force & etc.</a>
             </div>
         </div>
     
@@ -311,7 +310,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                How2Heap(3)——House of Force & etc.
+                How2Heap(3)—House of Force & etc.
             <!-- 404 -->
             
         </h1>
@@ -514,10 +513,10 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="type">void</span> *p = sysmalloc(nb, av);</span><br><span class="line">    <span class="keyword">if</span> (p != <span class="literal">NULL</span>) alloc_perturb(p, bytes);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>malloc会直接调用系统函数返回新的内存空间给我们，就没有办法实现任意地址写了。</p>
 <p>size拉满之后，我们首先做的是分配一个evil_size大小的chunk。分配这个evil_size大小chunk的目的是为了让我们再下一次的malloc的指针能直接往里写入数据。如图所示</p>
-<p><img src="/./house_of_force.png" alt="house_of_force.png"></p>
+<p><img src="/images/house_of_force.png" alt="house_of_force.png"></p>
 <p>这个evil_size的计算见源码中的注释。简单说就是目前topchunk和overwrite地址的差，减去四个字段大小（topchunk的prev_size和size以及等下我们malloc之后overwrite地址前面的prev_size和size）。<br>然后malloc一个evil_size的chunk，就会把topchunk的地址推进到我们代写地址-2的位置。此时直接分配一个合适大小的chunk，然后向内写入数据，我们就能改写任意地址的数据了。</p>
 <h2 id="怎么能让malloc向低地址分配chunk呢？"><a href="#怎么能让malloc向低地址分配chunk呢？" class="headerlink" title="怎么能让malloc向低地址分配chunk呢？"></a>怎么能让malloc向低地址分配chunk呢？</h2><p>那么，进程虚拟地址空间分布数据段和bss段等都在堆的下方（低地址处），我们怎么能这样修改呢？难道malloc传进负数也会照样计算向低地址分配吗？</p>
-<p>这里就又要看libc源码了······首先可以肯定的是，<code>__libc_malloc()</code>接收size_t参数，负数会被作为无符号数传入，不会报错的。那么为什么top chunk能被抬高到bss段处（换言之，任意地址处）呢？<br>这里参考了<img src="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/house-of-force/#2" alt="CTFWiki">。malloc会有这样的检查：</p>
+<p>这里就又要看libc源码了······首先可以肯定的是，<code>__libc_malloc()</code>接收size_t参数，负数会被作为无符号数传入，不会报错的。那么为什么top chunk能被抬高到bss段处（换言之，任意地址处）呢？<br>这里参考了<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/house-of-force/#2">CTFWiki</a>。malloc会有这样的检查：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">   Check if a request is so large that it would wrap around zero when</span></span><br><span class="line"><span class="comment">   padded and aligned. To simplify some other code, the bound is made</span></span><br><span class="line"><span class="comment">   low enough so that adding MINSIZE will also not wrap around zero.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> REQUEST_OUT_OF_RANGE(req)                                              \</span></span><br><span class="line"><span class="meta">    ((unsigned long) (req) &gt;= (unsigned long) (INTERNAL_SIZE_T)(-2 * MINSIZE))</span></span><br><span class="line"><span class="comment">/* pad request bytes into a usable size -- internal version */</span></span><br><span class="line"><span class="comment">//MALLOC_ALIGN_MASK = 2 * SIZE_SZ -1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> request2size(req)                                                      \</span></span><br><span class="line"><span class="meta">    (((req) + SIZE_SZ + MALLOC_ALIGN_MASK &lt; MINSIZE)                           \</span></span><br><span class="line"><span class="meta">         ? MINSIZE                                                             \</span></span><br><span class="line"><span class="meta">         : ((req) + SIZE_SZ + MALLOC_ALIGN_MASK) &amp; ~MALLOC_ALIGN_MASK)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*  Same, except also perform argument check */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> checked_request2size(req, sz)                                          \</span></span><br><span class="line"><span class="meta">    <span class="keyword">if</span> (REQUEST_OUT_OF_RANGE(req)) &#123;                                           \</span></span><br><span class="line"><span class="meta">        __set_errno(ENOMEM);                                                   \</span></span><br><span class="line"><span class="meta">        return 0;                                                              \</span></span><br><span class="line"><span class="meta">    &#125;                                                                          \</span></span><br><span class="line"><span class="meta">    (sz) = request2size(req);</span></span><br></pre></td></tr></table></figure>
 <p>负数范围内只要绝对值够大（？）就不用担心<code>REQUEST_OUT_OF_RANGE(req)</code>检查，因为只卡到-2*MINSIZE的大小，取补之后只要绝对值够大就能通过。<br>另外，evil_size还需要考虑对齐，这个就不多讲了我也没太搞懂，碰见题怎么都打不通再说吧（）。</p>
 <p>而且，evil_chunk的唯一目的就是让topchunk指向我们将要改写的region，让下一个可写chunk合法的覆盖数据。我们并不会往evil_chunk中实际写入任何数据，所以它只是一个指针。ptmalloc也只是进行了一些chunk头的更新，evil_chunk里面的内容没动。如果真的全写上东西了估计程序早就崩溃了。后续遇到题目也会更新在这里。</p>
@@ -824,7 +823,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/17</span>
-            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)——House of Force & etc.</a>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & etc.</a>
         </li>
     
         
