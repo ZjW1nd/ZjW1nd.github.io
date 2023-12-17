@@ -26,12 +26,14 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="本来想用docker实现的，装了ubuntu 16.04之后发现kali开不开了，查了下才知道docker启用了一种叫HYPER V的东西，和VM冲突了。。这俩不能同时开。  没想到还有How2heap这种好东西，对我这种堆问题的苦手帮助很大。从Fastbin的DoubleFree开始，先来看看Fastbin的漏洞。   Fastbin Double Free(dup)这是我们后面要谈的漏洞操作的">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://dl.packetstormsecurity.net/papers/attack/MallocMaleficarum.txt">
 <meta property="article:published_time" content="2023-11-09T13:28:19.000Z">
-<meta property="article:modified_time" content="2023-12-03T09:32:00.913Z">
+<meta property="article:modified_time" content="2023-12-17T08:00:16.443Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dl.packetstormsecurity.net/papers/attack/MallocMaleficarum.txt">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
@@ -533,7 +535,8 @@
 <p>这个漏洞的关键是<code>malloc_consolidate()</code>的这段代码：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> &#123; <span class="comment">//判断紧邻topchunk之后的动作</span></span><br><span class="line">  size += nextsize;</span><br><span class="line">  set_head(p, size | PREV_INUSE);</span><br><span class="line">  av-&gt;top = p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>因此上述漏洞的本质就是在topchunk边缘不停地取chunk再放回去再取出来再放回去的过程。</p>
-<h2 id="House-of-Spirit"><a href="#House-of-Spirit" class="headerlink" title="House of Spirit"></a>House of Spirit</h2><p>首先写点没用的，在堆漏洞的利用中，house of xx一般代表的是通过伪造chunk来达到攻击目的。只不过手段各不相同，针对的点也都各不一样。House of Spirit就是一种把我们精心伪造的chunk通过<code>free()</code>放进fastbin中，再通过<code>malloc()</code>从里面“取出”实现任意地址分配chunk的攻击方式。</p>
+<h2 id="House-of-Spirit"><a href="#House-of-Spirit" class="headerlink" title="House of Spirit"></a>House of Spirit</h2><p>首先写点没用的，在堆漏洞的利用中，house of xx一般代表的是通过伪造chunk来达到攻击目的。这种说法最早出自于2004 年<img src="https://dl.packetstormsecurity.net/papers/attack/MallocMaleficarum.txt" alt="《The Malloc Maleficarum-Glibc Malloc Exploitation Techniques》">中提出的一系列针对 glibc 堆分配器的利用方法。</p>
+<p>不过现在我们说的House of XX的利用和最初提出时候的说法显然是大不相同了。这些漏洞利用手段各不相同，针对的点也都各不一样。House of Spirit就是一种把我们精心伪造的chunk通过<code>free()</code>放进fastbin中，再通过<code>malloc()</code>从里面“取出”实现任意地址分配chunk的攻击方式。</p>
 <h3 id="检查原理？"><a href="#检查原理？" class="headerlink" title="检查原理？"></a>检查原理？</h3><p>思想很简单，但具体怎么构造这个fake_chunk就要考虑<code>free()</code>函数的检查方式了，到了最痛苦的glibc源码环节，我们先只看fastbin的部分。先来个CTFWiki的省流版本，后面一点点看：</p>
 <blockquote>
 <p>要想构造 fastbin fake chunk，并且将其释放时，可以将其放入到对应的 fastbin 链表中，需要绕过一些必要的检测，即</p>
@@ -776,7 +779,33 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -827,7 +856,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 9
+        Total : 11
         </div>
         <!-- search  -->
         
@@ -841,6 +870,18 @@
             <div class="archive-year"> 2023 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)——House of Force & etc.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/03</span>
@@ -944,6 +985,16 @@
             <span class="sidebar-tag-name" data-tags="OS">
                 <span class="iconfont-archer">&#xe606;</span>
                 OS
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
             </span>
         
     </div>
