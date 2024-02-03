@@ -28,7 +28,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/fmt_vuln.png">
 <meta property="article:published_time" content="2023-11-25T13:30:26.000Z">
-<meta property="article:modified_time" content="2023-11-25T15:18:27.655Z">
+<meta property="article:modified_time" content="2024-02-03T03:04:24.026Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="逆向">
 <meta property="article:tag" content="IDA">
@@ -504,7 +504,7 @@
 <p>程序原本的格式化字符串漏洞很简单，flag已经被读取到了栈上，用格式化字符串把内容泄露出来就可以了。现在我们要修复这个漏洞，就要控制<code>printf()</code>的参数传入。原本的汇编漏洞如下：</p>
 <p><img src="/images/fmt_vuln.png" alt="原来的代码"></p>
 <p>现在我们用keypatch，随便找个有名字的字符串，把这个地址push进去。</p>
-
+<h2 id="2024-2-3-hitctf-camp-逆向"><a href="#2024-2-3-hitctf-camp-逆向" class="headerlink" title="2024.2.3 hitctf_camp 逆向"></a>2024.2.3 hitctf_camp 逆向</h2>
     </article>
     <!-- license -->
     
@@ -659,7 +659,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-25-KeyPatch%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.</span> <span class="toc-text">2023.11.25 KeyPatch实践</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-25-KeyPatch%E5%AE%9E%E8%B7%B5"><span class="toc-number">1.</span> <span class="toc-text">2023.11.25 KeyPatch实践</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-2-3-hitctf-camp-%E9%80%86%E5%90%91"><span class="toc-number">2.</span> <span class="toc-text">2024.2.3 hitctf_camp 逆向</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -738,7 +738,61 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -821,7 +875,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 13
+        Total : 17
         </div>
         <!-- search  -->
         
@@ -832,9 +886,42 @@
         
             
             
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE?</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
             <div class="archive-year"> 2023 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">12/27</span>
@@ -1003,6 +1090,11 @@
         <span class="sidebar-category-name" data-categories="linux">
             <span class="iconfont-archer">&#xe60a;</span>
             linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
         </span>
     
     </div>
