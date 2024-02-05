@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
     
     <meta name="description" content="">
-    <meta name="description" content="首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用malloc()和free()这样的函数手动进行内存分配和释放。垃圾收集器：而Rust使用其独特的所有权系统来管理内存。其包含一种在编译时检查的规则，而不在运行时检查，因此没有开销，不会降低程序运行的速度。 所有权可">
+    <meta name="description" content="简介首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用malloc()和free()这样的函数手动进行内存分配和释放。垃圾收集器：（考虑单开一篇写？）而Rust使用其独特的所有权系统来管理内存。其包含一种在编译时检查的规则，而不在运行时检查，因此没有开销，不会降低程">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Rust？Rust！(2)">
 <meta property="og:url" content="http://example.com/2023/12/26/Rust-Rust-2/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用malloc()和free()这样的函数手动进行内存分配和释放。垃圾收集器：而Rust使用其独特的所有权系统来管理内存。其包含一种在编译时检查的规则，而不在运行时检查，因此没有开销，不会降低程序运行的速度。 所有权可">
+<meta property="og:description" content="简介首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用malloc()和free()这样的函数手动进行内存分配和释放。垃圾收集器：（考虑单开一篇写？）而Rust使用其独特的所有权系统来管理内存。其包含一种在编译时检查的规则，而不在运行时检查，因此没有开销，不会降低程">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-26T05:56:32.000Z">
-<meta property="article:modified_time" content="2023-12-26T10:11:08.599Z">
+<meta property="article:modified_time" content="2024-02-05T08:13:20.803Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Develop">
 <meta property="article:tag" content="Rust">
@@ -495,10 +495,81 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <p>首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用<code>malloc()</code>和<code>free()</code>这样的函数手动进行内存分配和释放。<br>垃圾收集器：<br>而Rust使用其独特的<strong>所有权系统</strong>来管理内存。其包含一种<em>在编译时</em>检查的规则，而不在运行时检查，因此没有开销，不会降低程序运行的速度。</p>
-<p>所有权可以跟踪代码哪些部分正在使用堆上的哪些数据，同时最小化堆上的重复数据量，清理堆上的未使用数据。类似一个编译时运行的堆管理器？</p>
-<p>在Stack上的数据必须拥有固定的大小</p>
-<p>每</p>
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>首先，对于那些没有手动分配释放内存的语言例如Java和C#（当然也包括python），它们拥有自动的垃圾收集器，用于寻找和收集没使用的内存，对内存进行管理。而像C这样的语言，程序员使用<code>malloc()</code>和<code>free()</code>这样的函数手动进行内存分配和释放。<br>垃圾收集器：（考虑单开一篇写？）<br>而Rust使用其独特的<strong>所有权系统</strong>来管理内存。其包含一种<em>在编译时</em>检查的规则，而不在运行时检查，因此没有开销，不会降低程序运行的速度。</p>
+<blockquote>
+<p>在Stack上的数据必须拥有固定的大小，这个课讲的stack和heap很浅显不太涉及操作系统，更多像是数据结构层面的内容。指令在内存中跳转次数越少，访问速度就越快。而且类似于<code>_cdecl</code>方式，函数本地变量压栈结束回复</p>
+</blockquote>
+<p>所有权可以跟踪代码哪些部分正在使用堆上的哪些数据，同时最小化堆上的重复数据量，清理堆上的未使用数据。类似一个编译时运行的堆管理器？“管理堆是所有权存在的原因。”</p>
+<h1 id="所有权规则"><a href="#所有权规则" class="headerlink" title="所有权规则"></a>所有权规则</h1><blockquote>
+<p>scope:作用域</p>
+</blockquote>
+<ol>
+<li><strong>每个值都有一个变量，我们称这个变量是这个值的所有者</strong></li>
+<li><strong>每个值同时只能有一个所有者</strong></li>
+<li><strong>当所有者超出作用域时，该值即被删除</strong></li>
+</ol>
+<blockquote>
+<p>以string类型为例，string类型可以一定程度上代替所有预先定义或自己创建的复杂数据类型。<br>下面看一个简单的例子：</p>
+</blockquote>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s</span>= <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello&quot;</span>);<span class="comment">//通过from()函数实现申请堆内存（可变大小）</span></span><br><span class="line">    s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;, World&quot;</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, s);</span><br><span class="line">&#125;<span class="comment">//如何将s指向的空间free掉呢？</span></span><br></pre></td></tr></table></figure>
+<p>rust没有GC，因此使用所有权机制来管理内存的释放，而且能避免double free。参考规则3，变量离开作用域的时候，rust会调用<code>drop()</code>函数直接对齐进行释放。</p>
+<h2 id="移动Move"><a href="#移动Move" class="headerlink" title="移动Move"></a>移动Move</h2><p>首先看这样的代码：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">x</span>=<span class="number">5</span>;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">y</span>=x;</span><br><span class="line"><span class="comment">//向栈中压入两个5</span></span><br></pre></td></tr></table></figure>
+<p>而在面对复杂数据类型的时候就不一样了，string类型本身类似于一个结构体：</p>
+<table>
+<thead>
+<tr>
+<th align="center">字段</th>
+<th align="center">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ptr</td>
+<td align="center">指向实际内容</td>
+</tr>
+<tr>
+<td align="center">len</td>
+<td align="center">字符串长度</td>
+</tr>
+<tr>
+<td align="center">capacity</td>
+<td align="center">总申请的容量</td>
+</tr>
+<tr>
+<td align="center">而聪明的编译器在下面的代码中：</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s2</span>=s1;<span class="comment">//s1失效了</span></span><br><span class="line"><span class="comment">//println!(&quot;&#123;&#125;&quot;,s1)l; &lt;--直接会报错</span></span><br></pre></td></tr></table></figure>
+<p>对s2只复制ptr而不复制整个一份内容，但如果按照先前的简单规则，s2和s1离开作用域的时候都会尝试释放一块内存，直接double free了。显然我们不允许这种情况发生，那么rust<br>采用的是让s1<strong>失效</strong>，即将s1“移动”到了s2。s2在这样声明后s1直接就用不了了。如果要想在s2声明后再使用s1，需要调用特定的方法如<code>clone()</code>。UAF达咩。<br>这里也体现了rust的思想：不自动为任何数据自动创建深拷贝，换言之，<strong>就运行时性能而言，任何自动赋值的操作都是廉价的</strong>。</p>
+<h2 id="复制与克隆"><a href="#复制与克隆" class="headerlink" title="复制与克隆"></a>复制与克隆</h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s2</span>=s1.<span class="title function_ invoke__">clone</span>();<span class="comment">//s2和s1都有效，复制数据</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">x</span>=<span class="number">5</span>;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">y</span>=x;<span class="comment">//复制copy</span></span><br></pre></td></tr></table></figure>
+<p>rust真的嗯限制，它有一个trait（接口？）叫做copy能实现我们一般意义上的赋值。但是实现了copy的类型就不会有drop，实现了drop就不允许有copy了。<br>所以不要指望堆上分配的东西能copy了。一般来说简单的标量（整型浮点型boolchar）都可copy，由可copy变量构成的tuple可copy。</p>
+<h2 id="函数传参"><a href="#函数传参" class="headerlink" title="函数传参"></a>函数传参</h2><p>传值给函数将发生<strong>移动</strong>或<strong>复制</strong>。将可复制的量传给函数就会发生复制，不可复制的量传给函数就会发生移动，即传完后后面就不能用了。所有权发生转移。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">    <span class="title function_ invoke__">take_ownership</span>(s1);<span class="comment">//s1在该代码块这之后就不可用了</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">x</span>=<span class="number">5</span>;</span><br><span class="line">    <span class="title function_ invoke__">make_copy</span>(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//函数定义</span></span><br></pre></td></tr></table></figure>
+
+<p>同样，函数返回值也会发生所有权转移。思路和传参类似：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">gives_ownership</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Move!&quot;</span>);</span><br><span class="line">    s<span class="comment">//返回值</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>()&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s1</span>=<span class="title function_ invoke__">gives_ownership</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>s的所有权此时就会转移给s1。综上，所有权的转移遵循这样的模式：</p>
+<ul>
+<li>将一个值赋给第二个变量时，所有权就会转移（一般发生移动）</li>
+<li>堆变量离开作用域时，rust会调用drop函数对它进行清理除非它的所有权被移动到另一个变量上了。</li>
+</ul>
+<h2 id="传递参数但是不给予所有权？"><a href="#传递参数但是不给予所有权？" class="headerlink" title="传递参数但是不给予所有权？"></a>传递参数但是不给予所有权？</h2><p>基于上面的理解一种最简单的方法是将参数传进去然后再返回来：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">take_and_giveback</span>(s1: <span class="type">String</span>) <span class="punctuation">-&gt;</span> (<span class="type">String</span>, <span class="type">u64</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">length</span>: <span class="type">u64</span> = s1.<span class="title function_ invoke__">len</span>() <span class="keyword">as</span> <span class="type">u64</span>;</span><br><span class="line">    (s1, length)<span class="comment">//用元组的方式传回两个参数，其中s1要传回是因为所有权要交还主函数</span></span><br><span class="line">    <span class="comment">//这是纯纯的浪费，所以我们有了引用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="引用和借用"><a href="#引用和借用" class="headerlink" title="引用和借用"></a>引用和借用</h1><p>即不取得所有权而使用值。<br>用<code>&amp;String</code>类型传入参数，这种行为称为借用。借用的变量默认不可修改，想引用修改必须要这样设置：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;text&quot;</span>);<span class="comment">//1. 创建的时候变量本身可变</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">len</span>=<span class="title function_ invoke__">cal_len</span>(&amp;<span class="keyword">mut</span> s1);<span class="comment">//2. 传入的时候声明可变</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">cal_len</span>(s:&amp;<span class="keyword">mut</span> <span class="type">String</span>)<span class="punctuation">-&gt;</span><span class="type">usize</span>&#123; <span class="comment">//3. 函数参数定义可变 </span></span><br><span class="line">    s.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot;add&quot;</span>);</span><br><span class="line">    s.<span class="title function_ invoke__">len</span>()<span class="comment">//返回值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而且rust还有这样的限制：</p>
+<ol>
+<li>特定作用域内对某一数据只允许同时存在至多一个可变引用。</li>
+<li>不允许同时存在可变引用和不可变引用。但多个读（不可变引用）可以同时存在。<br>即下面的操作是非法的：<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;text&quot;</span>);<span class="comment">//1. 创建的时候变量本身可变</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">s2</span>=&amp;<span class="keyword">mut</span> s1;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s3</span>=&amp;<span class="keyword">mut</span> s1;<span class="comment">//非法</span></span><br></pre></td></tr></table></figure>
+防止了数据竞争（数据库？）。要想同时使用两个或以上的可变引用则需要手动控制作用域：<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">s1</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;text&quot;</span>);<span class="comment">//1. 创建的时候变量本身可变</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s2</span>=&amp;<span class="keyword">mut</span> s1;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">s3</span>=&amp;<span class="keyword">mut</span> s1;<span class="comment">//这样控制作用域时允许的</span></span><br></pre></td></tr></table></figure>
+也就是要么就一个可变引用要么就没有可变引用。<br>这种类似编译加锁的机制防止UAF存在？真能？</li>
+</ol>
+<h1 id="切片slice"><a href="#切片slice" class="headerlink" title="切片slice"></a>切片slice</h1><p>这种操作是单独针对字符串（或数组）的，类似python的切片方法，它不获得所有权。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">s</span>=<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Hello World&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">hello</span>=&amp;s[<span class="number">0</span>..<span class="number">5</span>];<span class="comment">//[..5]</span></span><br><span class="line"><span class="keyword">let</span> <span class="variable">world</span>=&amp;s[<span class="number">6</span>..<span class="number">11</span>];<span class="comment">//[6..]</span></span><br><span class="line"><span class="comment">//s=&amp;s[..]</span></span><br></pre></td></tr></table></figure>
+<p>这样的形式称为字符串切片，是指向字符串中一部分内容的引用。它并不copy内容，也是返回一个包含指针的结构体类似的东西，含一个指针一个长度。它的类型是<code>&amp;str</code>，本质是个不可变引用，而<strong>const字符串在rust中是<code>&amp;str</code>类型</strong>，即一个二进制程序字节的切片。<br>这样写函数会好：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">all_type</span>(s:&amp;<span class="type">str</span>)<span class="punctuation">-&gt;</span>&amp;<span class="type">str</span>&#123;</span><br><span class="line">    <span class="comment">//传入String类型就创建整个字符串的切片</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数组同理<code>&amp;a[1..3]</code></p>
 
     </article>
     <!-- license -->
@@ -654,7 +725,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%80%E6%9C%89%E6%9D%83%E8%A7%84%E5%88%99"><span class="toc-number">2.</span> <span class="toc-text">所有权规则</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8Move"><span class="toc-number">2.1.</span> <span class="toc-text">移动Move</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E4%B8%8E%E5%85%8B%E9%9A%86"><span class="toc-number">2.2.</span> <span class="toc-text">复制与克隆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E4%BC%A0%E5%8F%82"><span class="toc-number">2.3.</span> <span class="toc-text">函数传参</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%A0%E9%80%92%E5%8F%82%E6%95%B0%E4%BD%86%E6%98%AF%E4%B8%8D%E7%BB%99%E4%BA%88%E6%89%80%E6%9C%89%E6%9D%83%EF%BC%9F"><span class="toc-number">2.4.</span> <span class="toc-text">传递参数但是不给予所有权？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E5%92%8C%E5%80%9F%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">引用和借用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%87%E7%89%87slice"><span class="toc-number">4.</span> <span class="toc-text">切片slice</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
