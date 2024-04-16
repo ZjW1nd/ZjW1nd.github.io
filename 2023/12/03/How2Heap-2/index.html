@@ -27,7 +27,7 @@
 <meta property="og:description" content="POC&#x2F;EXPHow2heap上有两个Overlapping的实例,阅读了源码之后发现本质逻辑是相同的，这里先一起贴出来： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-03T09:30:18.000Z">
-<meta property="article:modified_time" content="2024-03-25T11:57:25.515Z">
+<meta property="article:modified_time" content="2024-04-15T13:42:38.541Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -520,6 +520,8 @@
 <li>前向overlapping：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *ptr1,*ptr2,*ptr3,*ptr4;</span><br><span class="line">    ptr1=<span class="built_in">malloc</span>(<span class="number">128</span>);<span class="comment">//smallbin1</span></span><br><span class="line">    ptr2=<span class="built_in">malloc</span>(<span class="number">0x10</span>);<span class="comment">//fastbin1</span></span><br><span class="line">    ptr3=<span class="built_in">malloc</span>(<span class="number">0x10</span>);<span class="comment">//fastbin2</span></span><br><span class="line">    ptr4=<span class="built_in">malloc</span>(<span class="number">128</span>);<span class="comment">//smallbin2</span></span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">0x10</span>);<span class="comment">//防止与top合并</span></span><br><span class="line">    <span class="built_in">free</span>(ptr1);</span><br><span class="line">    *(<span class="type">int</span> *)((<span class="type">long</span> <span class="type">long</span>)ptr4<span class="number">-0x8</span>)=<span class="number">0x90</span>;<span class="comment">//修改pre_inuse域</span></span><br><span class="line">    *(<span class="type">int</span> *)((<span class="type">long</span> <span class="type">long</span>)ptr4<span class="number">-0x10</span>)=<span class="number">0xd0</span>;<span class="comment">//修改pre_size域</span></span><br><span class="line">    <span class="built_in">free</span>(ptr4);<span class="comment">//unlink进行前向extend</span></span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">0x150</span>);<span class="comment">//占位块</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 这个前向overlapping是利用了unlink机制实现的。先将prev_inuse位置为零，这样在free一个smallbin大小的chunk的时候会检查其前后是否能够合并，prev_inuse被置零就导致其会以prev_size为指导将p和前一个chunk合并。总之在遇到题目的时候再来更新这里吧。</li>
 </ol>
+<hr>
+<p>二编：沟槽的自己把自己绕晕了。首先我们知道64位下chunk是16字节对齐的，size域必定是0x_0这样的形式。我们说的NON_MAIN_ARENA, IS_MMAPPED和PREV_INUSE三位“最低位”，由于小端序的关系</p>
 
     </article>
     <!-- license -->
@@ -780,6 +782,14 @@
         
         
     
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         

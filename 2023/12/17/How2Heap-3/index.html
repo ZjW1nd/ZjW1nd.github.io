@@ -28,7 +28,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/house_of_force.png">
 <meta property="article:published_time" content="2023-12-17T08:01:06.000Z">
-<meta property="article:modified_time" content="2023-12-30T14:45:30.031Z">
+<meta property="article:modified_time" content="2024-04-16T02:51:26.704Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -527,7 +527,7 @@
 
 <p>所以arena就指代的是操作系统分配给程序的一块大内存池。但是从这个poc以及部分网上的资料来看，main_arena似乎指的是一个维护管理堆和bin的结构体malloc_state（二编：也有这种说法，arena多指这个结构体）。下面代码中提到的binmap就位于这个结构体中。这个结构体维护了主竞技场以及各个非主竞技场的信息，用里面的next指针连接各个分竞技场的其他信息。下面展示这个结构体里面可能对我们有用的几个字段。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_state</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"> <span class="comment">/* Fastbins */</span></span><br><span class="line"> mfastbinptr fastbinsY[NFASTBINS]; <span class="comment">//fastbin链的管理头，总共10个, 每个0x10字节</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Base of the topmost chunk -- not otherwise kept in a bin */</span></span><br><span class="line"> mchunkptr top;<span class="comment">//0x4 到此为止总共0x96字节</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* The remainder from the most recent split of a small request */</span></span><br><span class="line"> mchunkptr last_remainder;        <span class="comment">//切割后剩下的chunk链接到last_remainder</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Normal bins packed as described above */</span></span><br><span class="line"> mchunkptr bins[NBINS * <span class="number">2</span> - <span class="number">2</span>];   <span class="comment">// 每个bin头有fd和bk两个指针</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Bitmap of bins */</span></span><br><span class="line"> <span class="type">unsigned</span> <span class="type">int</span> binmap[BINMAPSIZE];   <span class="comment">//位图,BINMAPSIZE就是4。每一项用32bit来分别表示当前bin哪个链上有chunk，通过按位与的方式</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Linked list */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_state</span> *<span class="title">next</span>;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Linked list for free arenas. Access to this field is serialized</span></span><br><span class="line"><span class="comment">    by free_list_lock in arena.c. */</span></span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">malloc_state</span> *<span class="title">next_free</span>;</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/* Memory allocated from the system in this arena. */</span></span><br><span class="line"> INTERNAL_SIZE_T system_mem;</span><br><span class="line"> INTERNAL_SIZE_T max_system_mem;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这个漏洞似乎还涉及一些关于arena的管理机制。最核心的是函数<code>reused_arena()</code>。这个函数利用malloc_state的next字段进行遍历，返回一个新的没有锁的竞技场供我们使用，我们最后的目的就是让这个函数返回一个fake_arena给我们。第一次调用的时候它会返回main arena，第二次调用则会返回next指向的arena。但是要出发这个函数并不简单，系统凭什么给你新竞技场？这就要求我们篡改几个关键字段的数据。</p>
+<p>这个漏洞似乎还涉及一些关于arena的管理机制。最核心的是函数<code>reused_arena()</code>。这个函数利用malloc_state的next字段进行遍历，返回一个新的没有锁的竞技场供我们使用，我们最后的目的就是让这个函数返回一个fake_arena给我们。第一次调用的时候它会返回main arena，第二次调用则会返回next指向的arena。但是要触发这个函数并不简单，系统凭什么给你新竞技场？这就要求我们篡改几个关键字段的数据。</p>
 <p>首先是一个进程能有几个竞技场，我们要把这个narenas字段改的稍大一点，否则由于ptmalloc的设计理念，它会给我们原来有的arena而不是新的。其次是要申请一个大内存让malloc给我们新竞技场，但是也不能太大让系统来，所以应该是要先改掉system_mem字段，然后再申请一个比这个还大一点的内存。应该是这样。</p>
 <p>总之，看下作者的abstract（copilot翻译）:</p>
 <blockquote>
@@ -810,6 +810,14 @@
         
         
     
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
