@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
     <meta name="description" content="置顶：已卸载对于不是docker的请参考这篇文章，docker的自己加油吧。  在我写下这段话的时候，我的gdb 14.1正在编译安装…大概逐条整理一下都有什么雷吧。   pwndbg装不上，有类似于Invalid Syntax的问题首先，apt-get install gdb装上的是gdb 7.11版本好像是。然后他的默认python依赖是python3.5。  你可以通过这个命令查看gdb的p">
@@ -27,9 +27,10 @@
 <meta property="og:description" content="置顶：已卸载对于不是docker的请参考这篇文章，docker的自己加油吧。  在我写下这段话的时候，我的gdb 14.1正在编译安装…大概逐条整理一下都有什么雷吧。   pwndbg装不上，有类似于Invalid Syntax的问题首先，apt-get install gdb装上的是gdb 7.11版本好像是。然后他的默认python依赖是python3.5。  你可以通过这个命令查看gdb的p">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-12-27T14:00:18.000Z">
-<meta property="article:modified_time" content="2024-03-27T07:32:42.129Z">
+<meta property="article:modified_time" content="2024-04-16T11:32:29.688Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
+<meta property="article:tag" content="linux">
 <meta property="article:tag" content="Others">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -329,6 +330,8 @@
     
     
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="linux">linux</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="Others">Others</a>
     
@@ -914,7 +917,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/25</span>
-            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
         </li>
     
         
@@ -1040,11 +1043,6 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="OS">
-                <span class="iconfont-archer">&#xe606;</span>
-                OS
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="shellcode">
                 <span class="iconfont-archer">&#xe606;</span>
                 shellcode
@@ -1068,6 +1066,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
     </div>
@@ -1104,6 +1107,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>

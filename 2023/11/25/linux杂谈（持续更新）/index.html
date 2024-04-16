@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
     <meta name="description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？参考菜鸟教程的内容。简单谈点理解。“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文">
@@ -27,10 +27,9 @@
 <meta property="og:description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？参考菜鸟教程的内容。简单谈点理解。“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-11-25T15:38:16.000Z">
-<meta property="article:modified_time" content="2024-04-16T10:39:27.686Z">
+<meta property="article:modified_time" content="2024-04-16T11:32:05.775Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="linux">
-<meta property="article:tag" content="OS">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -329,8 +328,6 @@
     
     
         <a class="post-tag" href="javascript:void(0);" data-tags="linux">linux</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="OS">OS</a>
     
 </div>
 
@@ -904,7 +901,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/25</span>
-            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
         </li>
     
         
@@ -1030,11 +1027,6 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="OS">
-                <span class="iconfont-archer">&#xe606;</span>
-                OS
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="shellcode">
                 <span class="iconfont-archer">&#xe606;</span>
                 shellcode
@@ -1058,6 +1050,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
     </div>
@@ -1094,6 +1091,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>

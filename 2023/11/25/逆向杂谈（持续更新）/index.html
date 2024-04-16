@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
     <meta name="description" content="2023.11.25 KeyPatch实践也是好东西，由于GUI操作，大概知道这是干什么的了——这玩意能直接允许程序员跳过16进制机器码从汇编语言的层面对程序内容进行修改。我们的目的是修复一个ELF文件的格式化字符串漏洞。理论上应该是搜索ELF中已有的&quot;%s\0&quot;字符串地址，把那句给printf()传参的关键语句传递的地址修改成这个字符串的地址？但是这样简单修改会导致一个问题，">
@@ -900,7 +900,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/25</span>
-            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
         </li>
     
         
@@ -1026,11 +1026,6 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="OS">
-                <span class="iconfont-archer">&#xe606;</span>
-                OS
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="shellcode">
                 <span class="iconfont-archer">&#xe606;</span>
                 shellcode
@@ -1054,6 +1049,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
     </div>
@@ -1090,6 +1090,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>

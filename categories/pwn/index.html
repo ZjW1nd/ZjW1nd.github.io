@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
     <meta property="og:type" content="website">
@@ -430,12 +430,50 @@
             
         
         <article class="index-post">
-            <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
+            <a class="abstract-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">
                 
-                <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; Examples</span>
+                <span class="abstract-title-text">栈溢出ROP熟练度提升tips</span>
             </a>
             <div class="abstract-content">
-                堆漏洞利用之unsorted bin attack & House of Lore。Unsorted bin attack可以将一个任意地址写成一个大数（unsorted bin链头的地址，main arena+88或main arena+96）。House of Lore则可以实现任意地址的chunk分配。
+                有限做题经验的小总结
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/04/16">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/03/23</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="ROP">ROP</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
+                
+                <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; House of Lore</span>
+            </a>
+            <div class="abstract-content">
+                堆漏洞利用之unsorted bin attack & House of Lore。Unsorted bin attack可以将一个任意地址写成一个大数（unsorted bin链头的地址，main arena+88或main arena+96）。House of Lore则可以借助small bin实现任意地址的chunk分配。
             </div>
             <!-- read more -->
             
@@ -528,44 +566,6 @@
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
-    
-</div>
-
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
-        
-        
-        
-        
-            
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">
-                
-                <span class="abstract-title-text">ubuntu16.04 docker环境踩坑</span>
-            </a>
-            <div class="abstract-content">
-                唉，环境。
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/03/27">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/12/27</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Others">Others</a>
     
 </div>
 
@@ -1053,7 +1053,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/25</span>
-            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
         </li>
     
         
@@ -1179,11 +1179,6 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="OS">
-                <span class="iconfont-archer">&#xe606;</span>
-                OS
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="shellcode">
                 <span class="iconfont-archer">&#xe606;</span>
                 shellcode
@@ -1207,6 +1202,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
     </div>
@@ -1243,6 +1243,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>

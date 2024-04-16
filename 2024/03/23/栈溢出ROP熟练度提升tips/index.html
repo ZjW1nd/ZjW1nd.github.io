@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
     <meta name="description" content="大坑：Libc，一定要换！！！不要怀疑题目附件libc的正确性，注意程序运行环境（本机）的libc版本，gdb调试的时候libc版本不一样会出大问题而且意识不到这点极难排查。具体流程如下：    确定版本：拿到libc附件，题目有描述的看描述确定版本，没有描述的拖进IDA在字符串窗口搜索“GNU”确定libc版本。 更换libc：如果与环境libc不一致（大概率不一致），去glibc-all-in">
@@ -27,9 +27,10 @@
 <meta property="og:description" content="大坑：Libc，一定要换！！！不要怀疑题目附件libc的正确性，注意程序运行环境（本机）的libc版本，gdb调试的时候libc版本不一样会出大问题而且意识不到这点极难排查。具体流程如下：    确定版本：拿到libc附件，题目有描述的看描述确定版本，没有描述的拖进IDA在字符串窗口搜索“GNU”确定libc版本。 更换libc：如果与环境libc不一致（大概率不一致），去glibc-all-in">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-03-23T13:26:07.000Z">
-<meta property="article:modified_time" content="2024-03-23T15:20:29.081Z">
+<meta property="article:modified_time" content="2024-04-16T11:31:22.161Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
+<meta property="article:tag" content="ROP">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -328,6 +329,8 @@
     
     
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="ROP">ROP</a>
     
 </div>
 
@@ -904,7 +907,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/25</span>
-            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & Examples</a>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
         </li>
     
         
@@ -1030,11 +1033,6 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="OS">
-                <span class="iconfont-archer">&#xe606;</span>
-                OS
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="shellcode">
                 <span class="iconfont-archer">&#xe606;</span>
                 shellcode
@@ -1058,6 +1056,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
     </div>
@@ -1094,6 +1097,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>
