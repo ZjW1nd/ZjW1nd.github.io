@@ -432,10 +432,10 @@
         <article class="index-post">
             <a class="abstract-title" href="/2024/04/17/How2Heap-6/">
                 
-                <span class="abstract-title-text">How2Heap(6)——House of Roman</span>
+                <span class="abstract-title-text">How2Heap(6)——House of Roman &amp; House of Rabbit</span>
             </a>
             <div class="abstract-content">
-                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。
+                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。House of Rabbit是一种fastbin的overlap攻击，通过修改fastbin的size域或者fd指针然后触发malloc_consolidate，能够将我们伪造的chunk变成合法的chunk。
             </div>
             <!-- read more -->
             
@@ -1008,7 +1008,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/17</span>
-            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
         </li>
     
         

