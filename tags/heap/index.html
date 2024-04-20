@@ -430,6 +430,44 @@
             
         
         <article class="index-post">
+            <a class="abstract-title" href="/2024/04/17/How2Heap-6/">
+                
+                <span class="abstract-title-text">How2Heap(6)——House of Roman</span>
+            </a>
+            <div class="abstract-content">
+                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/04/20">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/04/17</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
             <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
                 
                 <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; House of Lore</span>
@@ -797,7 +835,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -904,7 +959,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 17
+        Total : 18
         </div>
         <!-- search  -->
         
@@ -918,6 +973,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/06</span>
@@ -1121,6 +1182,11 @@
             linux
         </span>
     
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
@@ -1129,11 +1195,6 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="pwn">
-            <span class="iconfont-archer">&#xe60a;</span>
-            pwn
         </span>
     
     </div>

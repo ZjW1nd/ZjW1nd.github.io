@@ -435,13 +435,19 @@
             </a>
             <div class="abstract-content">
                 2024.4.6: NAS复现RCE?听不懂一点 pythonhttps://hust-l3hsec.feishu.cn/docx/E3JtdTKtCoDrwzxyIIIc8LaYnCg
+2024.4.17：CFI（Control Flow Integrity）与绕过控制流保护，防止异常跳转。理想CFI：
 
+已知所有控制流跳转
+对所有间接跳转指令进行监控Canary就是一种后向跳转指令保护clang cfi：函数头签名写数据，跳转之前取校验无法强保证，代码段被篡改，强依赖于代码段不可写intel cet？shadow stack
+
+校验函数头clang——cfi类似的fine ibt
+绕...
             </div>
             <!-- read more -->
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/04/16">
+                <div class="abstract-date" title="Last updated: 2024/04/17">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/04/06</span>
                 </div>
                 <!-- tags -->
@@ -683,7 +689,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -790,7 +813,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 17
+        Total : 18
         </div>
         <!-- search  -->
         
@@ -804,6 +827,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/06</span>
@@ -1007,6 +1036,11 @@
             linux
         </span>
     
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
@@ -1015,11 +1049,6 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="pwn">
-            <span class="iconfont-archer">&#xe60a;</span>
-            pwn
         </span>
     
     </div>

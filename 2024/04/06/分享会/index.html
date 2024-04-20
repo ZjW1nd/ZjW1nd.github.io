@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
-    <meta name="description" content="2024.4.6: NAS复现RCE?听不懂一点 pythonhttps:&#x2F;&#x2F;hust-l3hsec.feishu.cn&#x2F;docx&#x2F;E3JtdTKtCoDrwzxyIIIc8LaYnCg">
+    <meta name="description" content="2024.4.6: NAS复现RCE?听不懂一点 pythonhttps:&#x2F;&#x2F;hust-l3hsec.feishu.cn&#x2F;docx&#x2F;E3JtdTKtCoDrwzxyIIIc8LaYnCg 2024.4.17：CFI（Control Flow Integrity）与绕过控制流保护，防止异常跳转。理想CFI：  已知所有控制流跳转 对所有间接跳转指令进行监控Canary就是一种后向跳转指令保护clan">
 <meta property="og:type" content="article">
 <meta property="og:title" content="分享会">
 <meta property="og:url" content="http://example.com/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="2024.4.6: NAS复现RCE?听不懂一点 pythonhttps:&#x2F;&#x2F;hust-l3hsec.feishu.cn&#x2F;docx&#x2F;E3JtdTKtCoDrwzxyIIIc8LaYnCg">
+<meta property="og:description" content="2024.4.6: NAS复现RCE?听不懂一点 pythonhttps:&#x2F;&#x2F;hust-l3hsec.feishu.cn&#x2F;docx&#x2F;E3JtdTKtCoDrwzxyIIIc8LaYnCg 2024.4.17：CFI（Control Flow Integrity）与绕过控制流保护，防止异常跳转。理想CFI：  已知所有控制流跳转 对所有间接跳转指令进行监控Canary就是一种后向跳转指令保护clan">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-04-06T12:02:14.000Z">
-<meta property="article:modified_time" content="2024-04-16T11:31:49.686Z">
+<meta property="article:modified_time" content="2024-04-17T12:23:11.268Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Others">
 <meta name="twitter:card" content="summary">
@@ -493,6 +493,13 @@
                 <main class="main post-page">
     <article class="article-entry">
         <h2 id="2024-4-6-NAS复现RCE"><a href="#2024-4-6-NAS复现RCE" class="headerlink" title="2024.4.6: NAS复现RCE?"></a>2024.4.6: NAS复现RCE?</h2><p>听不懂一点 python<br><a target="_blank" rel="noopener" href="https://hust-l3hsec.feishu.cn/docx/E3JtdTKtCoDrwzxyIIIc8LaYnCg">https://hust-l3hsec.feishu.cn/docx/E3JtdTKtCoDrwzxyIIIc8LaYnCg</a></p>
+<h2 id="2024-4-17：CFI（Control-Flow-Integrity）与绕过"><a href="#2024-4-17：CFI（Control-Flow-Integrity）与绕过" class="headerlink" title="2024.4.17：CFI（Control Flow Integrity）与绕过"></a>2024.4.17：CFI（Control Flow Integrity）与绕过</h2><p>控制流保护，防止异常跳转。理想CFI：</p>
+<ul>
+<li>已知所有控制流跳转</li>
+<li>对所有间接跳转指令进行监控<br>Canary就是一种后向跳转指令保护<br>clang cfi：函数头签名写数据，跳转之前取校验<br>无法强保证，代码段被篡改，强依赖于代码段不可写<br>intel cet？shadow stack</li>
+</ul>
+<p>校验函数头<br>clang——cfi类似的fine ibt</p>
+<p>绕过：<br>页表重映射</p>
 
     </article>
     <!-- license -->
@@ -500,6 +507,11 @@
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/04/17/How2Heap-6/" title="How2Heap(6)——House of Roman">
+                    <div class="nextTitle">How2Heap(6)——House of Roman</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -643,7 +655,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-4-6-NAS%E5%A4%8D%E7%8E%B0RCE"><span class="toc-number">1.</span> <span class="toc-text">2024.4.6: NAS复现RCE?</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-4-6-NAS%E5%A4%8D%E7%8E%B0RCE"><span class="toc-number">1.</span> <span class="toc-text">2024.4.6: NAS复现RCE?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-4-17%EF%BC%9ACFI%EF%BC%88Control-Flow-Integrity%EF%BC%89%E4%B8%8E%E7%BB%95%E8%BF%87"><span class="toc-number">2.</span> <span class="toc-text">2024.4.17：CFI（Control Flow Integrity）与绕过</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -742,7 +754,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -849,7 +878,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 17
+        Total : 18
         </div>
         <!-- search  -->
         
@@ -863,6 +892,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/06</span>
@@ -1066,6 +1101,11 @@
             linux
         </span>
     
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
@@ -1074,11 +1114,6 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="pwn">
-            <span class="iconfont-archer">&#xe60a;</span>
-            pwn
         </span>
     
     </div>
