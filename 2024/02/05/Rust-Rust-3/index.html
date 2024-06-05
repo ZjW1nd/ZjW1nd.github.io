@@ -27,7 +27,7 @@
 <meta property="og:description" content="说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊生命周期：引用一个比自己活得久的变量才会通过编译特征对象依托，反正知道闭包什么的复杂的类型直接先用Box包裹一下Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（可变）引">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-02-05T08:29:55.000Z">
-<meta property="article:modified_time" content="2024-04-15T12:54:01.545Z">
+<meta property="article:modified_time" content="2024-04-23T08:30:30.666Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Develop">
 <meta property="article:tag" content="Rust">
@@ -524,7 +524,10 @@
 <blockquote>
 <p>试了一下，Cell没啥用，c如果声明为mut直接改也可以，实现了Copy直接写赋值就行。<br>对于堆上的数据，借用规则在运行的时候仍然是生效的。使用RefCell只是在编译的时候不会报错，将问题推迟到了运行时（panic）。RefCell的使用只是在你坚信代码正确而编译器发电的时候，或者某个引用被大量的使用和修改难以管理的时候。</p>
 </blockquote>
-<h3 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h3>
+<hr>
+<p>weak: 不持有所有权的RC，这玩意不保证引用关系的存在（不持有所有权所以数据不在了也无所谓）。使用weak的<code>upgrade()</code>方法会返回一个Option&lt;RC(T)&gt;类型，有值是Some(RC(T)),没有就返回None。用weak和RC结合能够避免链表的循环引用问题发生，即子节点和父节点之间的引用使用weak和rc交替。</p>
+<p>看不懂 自引用和链表一坨大便</p>
+<h2 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h2><h3 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h3>
     </article>
     <!-- license -->
     
@@ -679,7 +682,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AD%E5%8C%85"><span class="toc-number">1.</span> <span class="toc-text">闭包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="toc-number">2.</span> <span class="toc-text">智能指针</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">2.1.</span> <span class="toc-text">生命周期</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AD%E5%8C%85"><span class="toc-number">1.</span> <span class="toc-text">闭包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="toc-number">2.</span> <span class="toc-text">智能指针</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91"><span class="toc-number">3.</span> <span class="toc-text">并发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">3.1.</span> <span class="toc-text">生命周期</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -783,7 +786,33 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -902,7 +931,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 18
+        Total : 20
         </div>
         <!-- search  -->
         
@@ -916,6 +945,18 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/17</span>
@@ -955,7 +996,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/22</span>
-            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE?——File Stream Oriented Programming</a>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
         </li>
     
         
@@ -1039,6 +1080,16 @@
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
         
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
@@ -1069,14 +1120,14 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="shellcode">
-                <span class="iconfont-archer">&#xe606;</span>
-                shellcode
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Others">
                 <span class="iconfont-archer">&#xe606;</span>
                 Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
             </span>
         
             <span class="sidebar-tag-name" data-tags="逆向">
@@ -1109,6 +1160,11 @@
 
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
     
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>

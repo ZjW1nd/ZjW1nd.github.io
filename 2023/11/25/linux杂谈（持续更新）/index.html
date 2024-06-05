@@ -27,7 +27,7 @@
 <meta property="og:description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？参考菜鸟教程的内容。简单谈点理解。“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-11-25T15:38:16.000Z">
-<meta property="article:modified_time" content="2024-04-16T11:32:05.775Z">
+<meta property="article:modified_time" content="2024-06-02T11:40:50.268Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="linux">
 <meta name="twitter:card" content="summary">
@@ -504,6 +504,7 @@
 <p>然后选择的最新的6.8.1内核。虽然是官方发布的内核但是没有发行版的签名，secure boot过不了，windows玩瓦那个b反作弊又要求开secure boot很烦，所以又要自己去签名内核。直接问了copilot加上自己搜索，执行以下几条命令：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj &quot;/CN=ZJ Secure Boot Signing Key/&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">可能会要求输入密码，等下uefi启动会用</span></span><br><span class="line">sudo mokutil --import MOK.der</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这里要先安装sbsign，apt就行 sudo apt install sbsigntool</span></span><br><span class="line">sudo sbsign --key MOK.priv --cert MOK.der --output /boot/vmlinuz-$(uname -r) /boot/vmlinuz-$(uname -r)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">报错了，问了copilot然后将证书改成.pem格式：</span></span><br><span class="line">openssl x509 -in MOK.der -inform DER -out MOK.pem -outform PEM</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">重新执行</span></span><br><span class="line">sudo sbsign --key MOK.priv --cert MOK.pem --output /boot/vmlinuz-$(uname -r) /boot/vmlinuz-$(uname -r)</span><br></pre></td></tr></table></figure>
 <p>重启即可，这时候就可以打开secure boot了。从linux重启的时候会进入一个引导界面，选择enroll key然后输入密码即可。但是第一次启动gui界面直接花屏了，吓得我以为显卡驱动模块也要单独签名，结果再重启一次一切就正常了。这是一个没有任何关于密码学、证书、签名、非对称加密经验的人手动签名内核的经历。</p>
+<h2 id="2024-6-2-Arch启动"><a href="#2024-6-2-Arch启动" class="headerlink" title="2024.6.2 Arch启动"></a>2024.6.2 Arch启动</h2><p>deepinV20的glibc版本太低了很难受，先是重装了一个V23，但是效果不是很理想，不太喜欢V23的UI风格，而且流畅度还有缺陷。犹豫了一下加入Arch神教，好在现在已经有archinstall的脚本可以快速配置。不得不说KDE plasma就是漂亮——但是涉及显示问题就很多了。<br>外接屏幕不好用，显卡切换的问题，英伟达对wayland不支持…太史了。还是决定以后用这个系统就integrated模式算了，流畅度什么的也很高用着很舒服。还需要把安装的软件优化一下精简一下体积。毕竟都用arch了多少还是得洁癖一下。</p>
 <h2 id="shell脚本学习"><a href="#shell脚本学习" class="headerlink" title="shell脚本学习"></a>shell脚本学习</h2><p>shell声明 <code>#! /bin/bash</code></p>
 
     </article>
@@ -660,7 +661,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-26-linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E9%82%A3%E4%BA%9B%E9%83%BD%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">2023.11.26 linux文件系统根目录下那些都是干什么的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-3-%E5%85%B3%E4%BA%8Elinux%E5%AE%89%E8%A3%85%E3%80%81%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E3%80%81%E6%98%BE%E5%8D%A1%E9%A9%B1%E5%8A%A8%E3%80%81%E5%86%85%E6%A0%B8%E7%AD%BE%E5%90%8D%E7%AD%89%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shell%E8%84%9A%E6%9C%AC%E5%AD%A6%E4%B9%A0"><span class="toc-number">3.</span> <span class="toc-text">shell脚本学习</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-26-linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E9%82%A3%E4%BA%9B%E9%83%BD%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">2023.11.26 linux文件系统根目录下那些都是干什么的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-3-%E5%85%B3%E4%BA%8Elinux%E5%AE%89%E8%A3%85%E3%80%81%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E3%80%81%E6%98%BE%E5%8D%A1%E9%A9%B1%E5%8A%A8%E3%80%81%E5%86%85%E6%A0%B8%E7%AD%BE%E5%90%8D%E7%AD%89%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-6-2-Arch%E5%90%AF%E5%8A%A8"><span class="toc-number">3.</span> <span class="toc-text">2024.6.2 Arch启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shell%E8%84%9A%E6%9C%AC%E5%AD%A6%E4%B9%A0"><span class="toc-number">4.</span> <span class="toc-text">shell脚本学习</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -764,7 +765,33 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -883,7 +910,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 18
+        Total : 20
         </div>
         <!-- search  -->
         
@@ -897,6 +924,18 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">04/17</span>
@@ -936,7 +975,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">01/22</span>
-            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE?——File Stream Oriented Programming</a>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
         </li>
     
         
@@ -1020,6 +1059,16 @@
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
         
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
@@ -1050,14 +1099,14 @@
                 linux
             </span>
         
-            <span class="sidebar-tag-name" data-tags="shellcode">
-                <span class="iconfont-archer">&#xe606;</span>
-                shellcode
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Others">
                 <span class="iconfont-archer">&#xe606;</span>
                 Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
             </span>
         
             <span class="sidebar-tag-name" data-tags="逆向">
@@ -1090,6 +1139,11 @@
 
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
     
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
