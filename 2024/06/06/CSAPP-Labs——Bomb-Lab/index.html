@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="介绍 https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;bomb-lab    年轻人的第一道逆向题目，目标是通过逆向分析出正确的输入从而让程序正确运行，拆除炸弹！由于已经有过简单的linux逆向经验，这里我们不再过多强调要求，直接扔进IDA开搞。其实实验给出了main函数的源码文件作为提示，但是我们其实并不需要（本身main函数也没有什么复杂的逻辑，是一个线性的）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSAPP Labs——Bomb Lab">
+<meta property="og:url" content="http://example.com/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="介绍 https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;bomb-lab    年轻人的第一道逆向题目，目标是通过逆向分析出正确的输入从而让程序正确运行，拆除炸弹！由于已经有过简单的linux逆向经验，这里我们不再过多强调要求，直接扔进IDA开搞。其实实验给出了main函数的源码文件作为提示，但是我们其实并不需要（本身main函数也没有什么复杂的逻辑，是一个线性的）">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-06-06T07:17:52.000Z">
+<meta property="article:modified_time" content="2024-06-06T09:17:24.954Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="CSAPP">
+<meta property="article:tag" content="Lab">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>CSAPP Labs——Bomb Lab · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">CSAPP Labs——Bomb Lab</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                CSAPP Labs——Bomb Lab
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="CSAPP">CSAPP</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Lab">Lab</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/06/06</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://hansimov.gitbook.io/csapp/labs/bomb-lab">https://hansimov.gitbook.io/csapp/labs/bomb-lab</a>  </p>
+</blockquote>
+<p>年轻人的第一道逆向题目，目标是通过逆向分析出正确的输入从而让程序正确运行，拆除炸弹！<br>由于已经有过简单的linux逆向经验，这里我们不再过多强调要求，直接扔进IDA开搞。其实实验给出了main函数的源码文件作为提示，但是我们其实并不需要（本身main函数也没有什么复杂的逻辑，是一个线性的）  </p>
+<h1 id="内容："><a href="#内容：" class="headerlink" title="内容："></a>内容：</h1><p>运行程序，随便输入点什么直接爆了，扔进IDA进行分析。给出的程序把符号表留下了，函数名都留着就很方便。能看到程序允许加一个文件参数然后依据文件内容自动执行，我们有pwntools所以不用管。程序每次调用一个readline然后有六个关卡（隐藏关最后再说）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">initialize_bomb();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Welcome to my fiendish little bomb. You have 6 phases with&quot;</span>);</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;which to blow yourself up. Have a nice day!&quot;</span>);</span><br><span class="line">line = (<span class="type">char</span> *)read_line();</span><br><span class="line">phase_1(line);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Phase 1 defused. How about the next one?&quot;</span>);</span><br><span class="line">v4 = read_line();</span><br><span class="line">phase_2((__int64)v4);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;That&#x27;s number 2.  Keep going!&quot;</span>);</span><br><span class="line">v5 = read_line();</span><br><span class="line">phase_3((__int64)v5);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Halfway there!&quot;</span>);</span><br><span class="line">v6 = read_line();</span><br><span class="line">phase_4((__int64)v6);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;So you got that one.  Try this one.&quot;</span>);</span><br><span class="line">v7 = read_line();</span><br><span class="line">phase_5((__int64)v7);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Good work!  On to the next...&quot;</span>);</span><br><span class="line">v8 = read_line();</span><br><span class="line">phase_6((__int64)v8);</span><br><span class="line">phase_defused();</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="phase1"><a href="#phase1" class="headerlink" title="phase1"></a>phase1</h2><p>跟进phase1，发现就是一个字符串比较。由于函数命名保留了直接这关就过了。输入就是这个串。  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">result = strings_not_equal(a1, <span class="string">&quot;Border relations with Canada have never been better.&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> ( (_DWORD)result )</span><br><span class="line">  explode_bomb();</span><br><span class="line"><span class="keyword">return</span> result;</span><br></pre></td></tr></table></figure>
+<p>我们也可以跟进一下<code>strings_not_equal()</code>，确实是一个字符串比较函数。这里也附上手动实现的stringlength。  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">string_length</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  _BYTE *v1; <span class="comment">// rdx</span></span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( !*a1 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">  v1 = a1;</span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    result = (<span class="type">unsigned</span> <span class="type">int</span>)((_DWORD)++v1 - (_DWORD)a1);</span><br><span class="line">  <span class="keyword">while</span> ( *v1 );</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">__int64 __fastcall <span class="title function_">strings_not_equal</span><span class="params">(_BYTE *a1, _BYTE *a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  _BYTE *char_ptr_input; <span class="comment">// rbx</span></span><br><span class="line">  _BYTE *char_ptr_key; <span class="comment">// rbp</span></span><br><span class="line">  <span class="type">int</span> input_len; <span class="comment">// r12d</span></span><br><span class="line">  <span class="type">int</span> key_len; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v6; <span class="comment">// edx</span></span><br><span class="line"></span><br><span class="line">  char_ptr_input = a1;</span><br><span class="line">  char_ptr_key = a2;</span><br><span class="line">  input_len = string_length(a1);</span><br><span class="line">  key_len = string_length(a2);</span><br><span class="line">  v6 = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> ( input_len == key_len )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( *a1 )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( *a1 == *a2 )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">do</span></span><br><span class="line">        &#123;</span><br><span class="line">          ++char_ptr_input;</span><br><span class="line">          ++char_ptr_key;</span><br><span class="line">          <span class="keyword">if</span> ( !*char_ptr_input )</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;                           <span class="comment">// 正确出口，比较的两字符串都相同返回0</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> ( *char_ptr_input == *char_ptr_key );</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;                                 <span class="comment">// 如果输入\0也能return0？</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> v6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="phase2"><a href="#phase2" class="headerlink" title="phase2"></a>phase2</h2><p>phase2是读六个数然后比较，IDA优化下数据类型后就是下面这样。要求读入六个数以空格分割，然后第一个数是1，并且后一个数是前一个的两倍，即输入1 2 4 8 16 32.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">phase_2</span><span class="params">(__int64 src)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">int</span> *ptr; <span class="comment">// rbx</span></span><br><span class="line">  <span class="type">int</span> arr[<span class="number">6</span>]; <span class="comment">// [rsp+0h] [rbp-38h] BYREF</span></span><br><span class="line">  <span class="type">char</span> end; <span class="comment">// [rsp+18h] [rbp-20h] BYREF</span></span><br><span class="line"></span><br><span class="line">  read_six_numbers(src, arr);</span><br><span class="line">  <span class="keyword">if</span> ( arr[<span class="number">0</span>] != <span class="number">1</span> )</span><br><span class="line">    ((<span class="type">void</span> (__fastcall __noreturn *)(__int64, <span class="type">int</span> *))explode_bomb)(src, arr);</span><br><span class="line">  ptr = &amp;arr[<span class="number">1</span>];                                <span class="comment">// 分配栈上数组，读入6个数，满足依次*2并且第一个是1就通过。也就是1 2 4 8 16 32</span></span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">  &#123;</span><br><span class="line">    result = (<span class="type">unsigned</span> <span class="type">int</span>)(<span class="number">2</span> * *(ptr - <span class="number">1</span>));    <span class="comment">// 这里不如直接看汇编，很清楚</span></span><br><span class="line">    <span class="keyword">if</span> ( *ptr != (_DWORD)result )</span><br><span class="line">      ((<span class="type">void</span> (__fastcall __noreturn *)(__int64, <span class="type">int</span> *))explode_bomb)(src, arr);</span><br><span class="line">    ++ptr;                                      <span class="comment">// ++ next one</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">while</span> ( ptr != (<span class="type">int</span> *)&amp;end );</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>直接看汇编也可以：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">mov     eax, [rbx-4]</span><br><span class="line">add     eax, eax ;二倍后比较</span><br><span class="line">cmp     [rbx], eax</span><br><span class="line">jz      short loc_400F25</span><br><span class="line">call    explode_bomb</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>其实我们也可以看下<code>read_six_numbers</code>,这玩意是用sscanf实现的绝对安全输入：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">read_six_numbers</span><span class="params">(__int64 src, <span class="type">int</span> *a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line">  result = __isoc99_sscanf(src, <span class="string">&quot;%d %d %d %d %d %d&quot;</span>, a2, a2 + <span class="number">1</span>, a2 + <span class="number">2</span>, a2 + <span class="number">3</span>, a2 + <span class="number">4</span>, a2 + <span class="number">5</span>);</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">int</span>)result &lt;= <span class="number">5</span> )</span><br><span class="line">    explode_bomb();</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="phase3"><a href="#phase3" class="headerlink" title="phase3"></a>phase3</h2><blockquote>
+<p>强大的IDA!</p>
+</blockquote>
+<p>这关是一个switch跳表，但是IDA直接识别了switch结构直接也是一眼顶针了。输入第一个数选择switch分支，然后只要第二个数和分支的result匹配即可。我选择输入0 207</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( (<span class="type">int</span>)__isoc99_sscanf(a1, <span class="string">&quot;%d %d&quot;</span>, &amp;v2, &amp;v3) &lt;= <span class="number">1</span> )</span><br><span class="line">   explode_bomb();</span><br><span class="line"> <span class="keyword">switch</span> ( v2 )                                 <span class="comment">// IDA伟大，一个简单的switch跳表结构</span></span><br><span class="line"> &#123;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">     result = <span class="number">207LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">     result = <span class="number">311LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">     result = <span class="number">707LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">     result = <span class="number">256LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">     result = <span class="number">389LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">     result = <span class="number">206LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">6</span>:</span><br><span class="line">     result = <span class="number">682LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">case</span> <span class="number">7</span>:</span><br><span class="line">     result = <span class="number">327LL</span>;</span><br><span class="line">     <span class="keyword">break</span>;</span><br><span class="line">   <span class="keyword">default</span>:</span><br><span class="line">     explode_bomb();</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">if</span> ( (_DWORD)result != v3 )</span><br><span class="line">   explode_bomb();</span><br></pre></td></tr></table></figure>
+<h2 id="phase4"><a href="#phase4" class="headerlink" title="phase4"></a>phase4</h2><p>这里开始就没有那么简单了。看看phase4的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">phase_4</span><span class="params">(__int64 a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v2; <span class="comment">// [rsp+8h] [rbp-10h] BYREF</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [rsp+Ch] [rbp-Ch] BYREF</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)__isoc99_sscanf(a1, <span class="string">&quot;%d %d&quot;</span>, &amp;v2, &amp;v3) != <span class="number">2</span> || v2 &gt; <span class="number">0xE</span> )<span class="comment">// V2&lt;14</span></span><br><span class="line">    explode_bomb();</span><br><span class="line">  result = func4(v2, <span class="number">0LL</span>, <span class="number">14LL</span>);</span><br><span class="line">  <span class="keyword">if</span> ( (_DWORD)result || v3 )                   <span class="comment">// 同时取0</span></span><br><span class="line">    explode_bomb();</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>传入两个数，第二个要求是0，第一个作为参数传入func4并要求func4最终返回0。我们看看func4是什么：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">func4</span><span class="params">(<span class="type">int</span> a1, <span class="type">int</span> a2, <span class="type">int</span> a3)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// ecx</span></span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line"></span><br><span class="line">  v3 = (a3 - a2) / <span class="number">2</span> + a2;                      <span class="comment">// 每次递归逼近a1</span></span><br><span class="line">  <span class="keyword">if</span> ( v3 &gt; a1 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> * (<span class="type">unsigned</span> <span class="type">int</span>)func4(a1, a2, v3 - <span class="number">1</span>);</span><br><span class="line">  result = <span class="number">0LL</span>;</span><br><span class="line">  <span class="keyword">if</span> ( v3 &lt; a1 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> * (<span class="type">unsigned</span> <span class="type">int</span>)func4(a1, v3 + <span class="number">1</span>, a3) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> result;                                <span class="comment">// 注意到没有给出v3=a1的逻辑分支，也就是说递归的终点会是v3=a1</span></span><br><span class="line">                                                <span class="comment">// 然后逐步返回2的幂次。传0试试过了</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>func4是一个递归函数，三个参数。我们自己传入的参数1会在每次递归时保留不变，a2和a3分别初值传入0和14.然后再每次递归的时候，会以当前的a2和a3取一个“中间值”，然后将中间值和a1比较，根据比较结果继续递归。我们发现每次判断v3大于a1继续递归，v3小于a1也继续递归，但是没有给出v3&#x3D;a1的逻辑分支，也就是说递归终点一定是v3&#x3D;a1，然后从0返回。<br>俗话说三分逆向七分猜，直接看肯定是看不出正确输入的。这里大概的感觉是a2和a3不断的向a1夹逼。这里其实就可以猜测了，我们拿python写个一样的脚本进行尝试，结果输入0直接返回就是0，因此这关输入0 0即可。 </p>
+<p>其实仔细分析，我们只要保证一直维持在v3&gt;a1的分支，最后返回的结果一定是0（因为没有任何从0到1的步骤）。因此0并不是唯一解。尝试了下0,1,3都可以。</p>
+<h2 id="phase5"><a href="#phase5" class="headerlink" title="phase5"></a>phase5</h2><p>代换密码。输入长度要求是6，最后代换过的字符串是”flyers”即可。对数据结构和数据类型修复之后得到如下代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">phase_5</span><span class="params">(<span class="type">char</span> *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 i; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">char</span> v3[<span class="number">8</span>]; <span class="comment">// [rsp+10h] [rbp-18h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v4; <span class="comment">// [rsp+18h] [rbp-10h]</span></span><br><span class="line"></span><br><span class="line">  v4 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)string_length(a1) != <span class="number">6</span> )</span><br><span class="line">    explode_bomb();</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0LL</span>; i != <span class="number">6</span>; ++i )</span><br><span class="line">    v3[i] = sbox[a1[i] &amp; <span class="number">0xF</span>];                  <span class="comment">// 代换（S盒？）</span></span><br><span class="line">  v3[<span class="number">6</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)strings_not_equal(v3, <span class="string">&quot;flyers&quot;</span>) )<span class="comment">// 偏移：9 15(F) 14(E) 5 6 7</span></span><br><span class="line">    explode_bomb();                             <span class="comment">// ASCII: IONEFG</span></span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于输入的字符，我们只取低4字节0-15用来在sbox中索引代换目标。数据段的sbox如下（非数组形式会显示对应的ascii字符）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.rodata:<span class="number">00000000004024B</span>0 ; _BYTE sbox[<span class="number">16</span>]</span><br><span class="line">.rodata:<span class="number">00000000004024B</span>0 sbox            db <span class="number">6</span>Dh, <span class="number">61</span>h, <span class="number">64</span>h, <span class="number">75</span>h, <span class="number">69</span>h, <span class="number">65</span>h, <span class="number">72</span>h, <span class="number">73</span>h, <span class="number">6</span>Eh, <span class="number">66</span>h, <span class="number">6F</span>h</span><br><span class="line">.rodata:<span class="number">00000000004024B</span>0                                         ; DATA XREF: phase_5+<span class="number">37</span>↑r</span><br><span class="line">.rodata:<span class="number">00000000004024B</span>B                 db <span class="number">74</span>h, <span class="number">76</span>h, <span class="number">62</span>h, <span class="number">79</span>h, <span class="number">6</span>Ch</span><br></pre></td></tr></table></figure>
+<p>查表可得我们需要的flyers是 9 15 14 5 6 7，因此看ASCII表，找低4位对应的字母输入即可。这里选择输入IONEFG(0x49,0x4F,0x4E,0x45,0x46,0x47)。这里用字母可以确定是ASCII，用标点符号的话可能会由于编码问题导致失败。</p>
+<h2 id="phase6"><a href="#phase6" class="headerlink" title="phase6"></a>phase6</h2><blockquote>
+<p>最难的一集。1打5说是。下面的IDA代码都是手动修复过变量类型、名字和结构体的，可放心食用。</p>
+</blockquote>
+<h3 id="输入检查"><a href="#输入检查" class="headerlink" title="输入检查"></a>输入检查</h3><p>打开函数，逻辑稍有一点复杂，一点点看。首先还是读6个数到栈上，第一个循环内检查所有的输入，每个数都要小于等于6并且通过嵌套循环检查是不是六个不同的数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">nums_ptr = input_nums;</span><br><span class="line">  read_six_numbers(input_line, input_nums);</span><br><span class="line">  idx = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)(*nums_ptr - <span class="number">1</span>) &gt; <span class="number">5</span> )    <span class="comment">// 两层循环，外层循环推进指针，这里要求每个数都小于等于6</span></span><br><span class="line">      explode_bomb();</span><br><span class="line">    <span class="keyword">if</span> ( ++idx == <span class="number">6</span> )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    idx_cpy = idx;</span><br><span class="line">    <span class="keyword">do</span>   <span class="comment">// 内层循环，检查后面所有的数是不是和标记的数一样，有一样的直接爆</span></span><br><span class="line">    &#123;    <span class="comment">// 我们反正输入6个不同的数就行</span></span><br><span class="line">      <span class="keyword">if</span> ( *nums_ptr == input_nums[idx_cpy] )</span><br><span class="line">        explode_bomb();</span><br><span class="line">      ++idx_cpy;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( idx_cpy &lt;= <span class="number">5</span> );</span><br><span class="line">    ++nums_ptr;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="输入处理"><a href="#输入处理" class="headerlink" title="输入处理"></a>输入处理</h3><p>接下来，将所有的输入对7取补</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">arr_ptr = input_nums;</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">&#123;</span><br><span class="line">  *arr_ptr = <span class="number">7</span> - *arr_ptr;                 <span class="comment">// 对每个数对7取补</span></span><br><span class="line">  ++arr_ptr;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">while</span> ( arr_ptr != (<span class="type">int</span> *)&amp;arr_end );</span><br></pre></td></tr></table></figure>
+<h3 id="链表指针数组初始化"><a href="#链表指针数组初始化" class="headerlink" title="链表指针数组初始化"></a>链表指针数组初始化</h3><p>下一块注意到从数据段读东西了，名字还叫node，跟进看下结果好家伙，数据段存了六个链表的节点。(node1-&gt;node2-&gt;node3-&gt;node4-&gt;node5-&gt;node6-&gt;0x0)</p>
+<p>IDA数据类型改qword自动识别出偏移了，而且这六个是连续存储的。  </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">.data:<span class="number">00000000006032</span>D0                 public node1</span><br><span class="line">.data:<span class="number">00000000006032</span>D0 node1           dd <span class="number">332</span>                  ; data</span><br><span class="line">.data:<span class="number">00000000006032</span>D0                                         ; DATA XREF: phase_6:loc_401183↑o</span><br><span class="line">.data:<span class="number">00000000006032</span>D0                                         ; phase_6+B0↑o</span><br><span class="line">.data:<span class="number">00000000006032</span>D4                 db <span class="number">1</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">00000000006032</span>D8                 dq <span class="number">6032E0</span>h              ; next</span><br><span class="line">.data:<span class="number">00000000006032E0</span>                 public node2</span><br><span class="line">.data:<span class="number">00000000006032E0</span> node2           dd <span class="number">168</span>                  ; data</span><br><span class="line">.data:<span class="number">00000000006032E4</span>                 db <span class="number">2</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">00000000006032E8</span>                 dq <span class="number">6032F</span>0h              ; next</span><br><span class="line">.data:<span class="number">00000000006032F</span>0                 public node3</span><br><span class="line">.data:<span class="number">00000000006032F</span>0 node3           dd <span class="number">924</span>                  ; data</span><br><span class="line">.data:<span class="number">00000000006032F</span>4                 db <span class="number">3</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">00000000006032F</span>8                 dq <span class="number">603300</span>h              ; next</span><br><span class="line">.data:<span class="number">0000000000603300</span>                 public node4</span><br><span class="line">.data:<span class="number">0000000000603300</span> node4           dd <span class="number">691</span>                  ; data</span><br><span class="line">.data:<span class="number">0000000000603304</span>                 db <span class="number">4</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">0000000000603308</span>                 dq <span class="number">603310</span>h              ; next</span><br><span class="line">.data:<span class="number">0000000000603310</span>                 public node5</span><br><span class="line">.data:<span class="number">0000000000603310</span> node5           dd <span class="number">477</span>                  ; data</span><br><span class="line">.data:<span class="number">0000000000603314</span>                 db <span class="number">5</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">0000000000603318</span>                 dq <span class="number">603320</span>h              ; next</span><br><span class="line">.data:<span class="number">0000000000603320</span>                 public node6</span><br><span class="line">.data:<span class="number">0000000000603320</span> node6           dd <span class="number">443</span>                  ; data</span><br><span class="line">.data:<span class="number">0000000000603324</span>                 db <span class="number">6</span>, <span class="number">3</span> dup(<span class="number">0</span>)</span><br><span class="line">.data:<span class="number">0000000000603328</span>                 dq <span class="number">0</span>                    ; next</span><br></pre></td></tr></table></figure>
+<p>然后看代码，这里是对结构体和指针做了优化。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> ( i = <span class="number">0LL</span>; i != <span class="number">6</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    num = input_nums[i];  <span class="comment">// 根据输入的6个数按对应的node初始化链表</span></span><br><span class="line">    <span class="keyword">if</span> ( num &lt;= <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      cur1 = &amp;node1;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>                  <span class="comment">// 进入else是根据输入数（7-input）取对应node</span></span><br><span class="line">    &#123;</span><br><span class="line">      idx1 = <span class="number">1</span>;</span><br><span class="line">      cur1 = &amp;node1;</span><br><span class="line">      <span class="keyword">do</span></span><br><span class="line">      &#123;</span><br><span class="line">        cur1 = (node *)cur1-&gt;next;  <span class="comment">// v6=v6-&gt;next</span></span><br><span class="line">        ++idx1;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">while</span> ( idx1 != num );<span class="comment">//该循环用于取到对应node，单向链表</span></span><br><span class="line">    &#125;</span><br><span class="line">    nodeptr_arr[i] = cur1; <span class="comment">// 写入栈上的结构体指针数组，最后一个元素是0x0</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>对7取补后根据输入的数，从data段选对应的node放在栈上的结构体指针数组里面  </p>
+<h3 id="链表连接"><a href="#链表连接" class="headerlink" title="链表连接"></a>链表连接</h3><blockquote>
+<p>下面这段由于反汇编f5的误差问题看了好久，它在一个关键的下标位置出错了，动调辅助理解的。不能全信IDA。</p>
+</blockquote>
+<p>这段开始由于IDA加自己的问题没看懂，于是起gdb动调了一下。结果发现这里是按照我们栈上的顺序，将链表结点的next域刷新一遍。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cur = nodeptr_arr[<span class="number">0</span>];</span><br><span class="line">next2 = &amp;nodeptr_arr[<span class="number">1</span>];</span><br><span class="line"><span class="keyword">for</span> ( node2 = nodeptr_arr[<span class="number">0</span>]; ; node2 = tmp_node )</span><br><span class="line">&#123;</span><br><span class="line">  tmp_node = *next2;</span><br><span class="line">  node2-&gt;next = (__int64)*next2++;   <span class="comment">//唯一的写，刷一遍next域，按照栈上的顺序</span></span><br><span class="line">  <span class="keyword">if</span> ( next2 == (node **)&amp;endarr )</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">tmp_node-&gt;next = <span class="number">0LL</span>;                <span class="comment">// 最后一项next置零</span></span><br></pre></td></tr></table></figure>
+<p>gdb动调输入123456后，发现data段原本的链接1-&gt;2-&gt;3…-&gt;6被改成了6-&gt;…-&gt;1，结合这段代码可以知道，这里是按我们输入的顺序将next域刷了一遍。</p>
+<h3 id="最后判断："><a href="#最后判断：" class="headerlink" title="最后判断："></a>最后判断：</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span></span><br><span class="line">&#123;</span><br><span class="line">  next_node = *(<span class="type">unsigned</span> <span class="type">int</span> *)cur-&gt;next;    </span><br><span class="line">  <span class="keyword">if</span> ( cur-&gt;data &lt; (<span class="type">int</span>)next_node )           <span class="comment">// 四字节小端数据</span></span><br><span class="line">    explode_bomb();</span><br><span class="line">  cur = (node *)cur-&gt;next;</span><br><span class="line">  --cnt_to_5;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">while</span> ( cnt_to_5 );</span><br></pre></td></tr></table></figure>
+<p>对我们搭建的链表进行判断，我们需要这个链表前一项的data一直比后一项大（注意这里的<code>(int)next_node</code>实质上是取了下一个node的data域）。而且这里有一个小陷阱，比较的是int类型，是四字节的数据，而data段的node中存的是qword，按4字节小端读一下之后node1~6依次是332,168,924,691,477,443。也就是说我们要从大到小的话需要按照3-&gt;4-&gt;5-&gt;6-&gt;1-&gt;2的顺序连接，结合前面的对7取补，因此我们最后要输入4 3 2 1 6 5。</p>
+<h2 id="secret-phase"><a href="#secret-phase" class="headerlink" title="secret phase"></a>secret phase</h2><h3 id="触发条件"><a href="#触发条件" class="headerlink" title="触发条件"></a>触发条件</h3><p>每次拆除结束后，都会调用一个<code>phase_defused()</code>函数，跟进发现有一个secret phase。看一下触发条件，需要input_strings这个量是6且用sscanf对一个莫名其妙的地址读两个数字加一个字符串，然后字符串要是”DrEvil”。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( num_input_strings == <span class="number">6</span> )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)__isoc99_sscanf(&amp;file_input_603870, <span class="string">&quot;%d %d %s&quot;</span>, &amp;v1, &amp;v2, v3) == <span class="number">3</span></span><br><span class="line">    &amp;&amp; !(<span class="type">unsigned</span> <span class="type">int</span>)strings_not_equal(v3, <span class="string">&quot;DrEvil&quot;</span>) )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Curses, you&#x27;ve found the secret phase!&quot;</span>);</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;But finding it and solving it are quite different...&quot;</span>);</span><br><span class="line">    secret_phase();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Congratulations! You&#x27;ve defused the bomb!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先交叉引用num_input_strings，定位read_line函数。仔细检查发现了真正的读取函数<code>skip()</code>，这个函数内部会从预定的输入流（stdin或者文件）循环读取80字节放入bss。而0x603780这个地址在加240后恰好就是上面secret_phase要取内容的地址。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从infile读80个字符到0x603870</span></span><br><span class="line"><span class="type">char</span> *<span class="title function_">skip</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *v0; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">char</span> *v1; <span class="comment">// rbx</span></span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">  &#123;</span><br><span class="line">    v0 = fgets((<span class="type">char</span> *)(<span class="number">80LL</span> * num_input_strings + <span class="number">0x603780</span>), <span class="number">80</span>, infile);<span class="comment">// 恰好在3次输入后指向0x603870</span></span><br><span class="line">    v1 = v0;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">while</span> ( v0 &amp;&amp; (<span class="type">unsigned</span> <span class="type">int</span>)blank_line(v0) );</span><br><span class="line">  <span class="keyword">return</span> v1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">char</span> *<span class="title function_">read_line</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v0; <span class="comment">// edx</span></span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *file_content; <span class="comment">// rsi</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 content_len; <span class="comment">// kr08_8</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// eax</span></span><br><span class="line">  __int64 v4; <span class="comment">// rax</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( !(__int64)skip() )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( infile == (FILE *)<span class="built_in">stdin</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Error: Premature EOF on stdin&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">8</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( getenv(<span class="string">&quot;GRADE_BOMB&quot;</span>) )</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    infile = (FILE *)<span class="built_in">stdin</span>;</span><br><span class="line">    <span class="keyword">if</span> ( !(__int64)skip() )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="built_in">puts</span>(<span class="string">&quot;Error: Premature EOF on stdin&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  v0 = num_input_strings;</span><br><span class="line">  file_content = (<span class="type">const</span> <span class="type">char</span> *)(<span class="number">80LL</span> * num_input_strings + <span class="number">0x603780</span>);</span><br><span class="line">  content_len = <span class="built_in">strlen</span>(file_content) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">int</span>)content_len - <span class="number">1</span> &gt; <span class="number">78</span> )              <span class="comment">// 80个或以上的字符</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Error: Input line too long&quot;</span>);</span><br><span class="line">    v3 = num_input_strings++;</span><br><span class="line">    v4 = <span class="number">10LL</span> * v3;</span><br><span class="line">    input_strings[v4] = <span class="number">0x636E7572742A2A2A</span>LL;</span><br><span class="line">    qword_603788[v4] = <span class="number">0x2A2A2A64657461</span>LL;</span><br><span class="line">    explode_bomb();</span><br><span class="line">  &#125;</span><br><span class="line">  *((_BYTE *)&amp;input_strings[<span class="number">10</span> * num_input_strings - <span class="number">1</span>] + (<span class="type">int</span>)content_len + <span class="number">6</span>) = <span class="number">0</span>;</span><br><span class="line">  num_input_strings = v0 + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> file_content;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>gdb动调一下确定num_input_strings代表输入的次数（动态确定会比较方便），并且正常跑一趟流程发现0x603870存的是0 0，也就是我们phase4的输入。因此确定触发secret_phase的条件是在phase4输入”0 0 DrEvil”</p>
+<h3 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h3><p>看看是个什么问题：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 <span class="title function_">secret_phase</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *line; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// ebx</span></span><br><span class="line"></span><br><span class="line">  line = read_line();</span><br><span class="line">  v1 = strtol(line, <span class="number">0LL</span>, <span class="number">10</span>);</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)(v1 - <span class="number">1</span>) &gt; <span class="number">1000</span> )</span><br><span class="line">    explode_bomb();</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)fun7((<span class="keyword">struct</span> jmp_num *)&amp;n1, v1) != <span class="number">2</span> )</span><br><span class="line">    explode_bomb();</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Wow! You&#x27;ve defused the secret stage!&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> phase_defused();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接着读一次输入，我们要输入一个1000以内的十进制数，然后传入func7并且要求func7返回2。func7又有一个设定好的参数。都跟进看看。</p>
+<p>首先看这个n1，取qword一看，又是结构体。从连续存储的数据段看，这是一个二叉树：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">.data:<span class="number">00000000006030F</span>0                 public n1</span><br><span class="line">.data:<span class="number">00000000006030F</span>0 n1              dd <span class="number">36</span>                   ; DATA XREF: secret_phase+<span class="number">2</span>C↑o</span><br><span class="line">.data:<span class="number">00000000006030F</span>4                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006030F</span>5                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006030F</span>6                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006030F</span>7                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006030F</span>8                 dq offset n21</span><br><span class="line">.data:<span class="number">0000000000603100</span>                 dq offset n22</span><br><span class="line">.data:<span class="number">0000000000603108</span>                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603110</span>                 public n21</span><br><span class="line">.data:<span class="number">0000000000603110</span> n21             dd <span class="number">8</span>                    ; DATA XREF: .data:<span class="number">00000000006030F</span>8↑o</span><br><span class="line">.data:<span class="number">0000000000603114</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603115</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603116</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603117</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603118</span>                 dq offset n31</span><br><span class="line">.data:<span class="number">0000000000603120</span>                 dq offset n32</span><br><span class="line">.data:<span class="number">0000000000603128</span>                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603130</span>                 public n22</span><br><span class="line">.data:<span class="number">0000000000603130</span> n22             dd <span class="number">50</span>                   ; DATA XREF: .data:<span class="number">0000000000603100</span>↑o</span><br><span class="line">.data:<span class="number">0000000000603134</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603135</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603136</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603137</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603138</span>                 dq offset n33</span><br><span class="line">.data:<span class="number">0000000000603140</span>                 dq offset n34</span><br><span class="line">.data:<span class="number">0000000000603148</span>                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603150</span>                 public n32</span><br><span class="line">.data:<span class="number">0000000000603150</span> n32             dd <span class="number">22</span>                   ; DATA XREF: .data:<span class="number">0000000000603120</span>↑o</span><br><span class="line">.data:<span class="number">0000000000603154</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603155</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603156</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603157</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603158</span>                 dq offset n43</span><br><span class="line">.data:<span class="number">0000000000603160</span>                 dq offset n44</span><br><span class="line">.data:<span class="number">0000000000603168</span>                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603170</span>                 public n33</span><br><span class="line">.data:<span class="number">0000000000603170</span> n33             dd <span class="number">45</span>                   ; DATA XREF: .data:<span class="number">0000000000603138</span>↑o</span><br><span class="line">.data:<span class="number">0000000000603174</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603175</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603176</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603177</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603178</span>                 dq offset n45</span><br><span class="line">.data:<span class="number">0000000000603180</span>                 dq offset n46</span><br><span class="line">.data:<span class="number">0000000000603188</span>                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603190</span>                 public n31</span><br><span class="line">.data:<span class="number">0000000000603190</span> n31             dd <span class="number">6</span>                    ; DATA XREF: .data:<span class="number">0000000000603118</span>↑o</span><br><span class="line">.data:<span class="number">0000000000603194</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603195</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603196</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603197</span>                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">0000000000603198</span>                 dq offset n41</span><br><span class="line">.data:<span class="number">00000000006031</span>A0                 dq offset n42</span><br><span class="line">.data:<span class="number">00000000006031</span>A8                 dq <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006031B</span>0                 public n34</span><br><span class="line">.data:<span class="number">00000000006031B</span>0 n34             dd <span class="number">107</span>                  ; DATA XREF: .data:<span class="number">0000000000603140</span>↑o</span><br><span class="line">.data:<span class="number">00000000006031B</span>4                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006031B</span>5                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006031B</span>6                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006031B</span>7                 db    <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000006031B</span>8                 dq offset n47</span><br><span class="line">.data:<span class="number">00000000006031</span>C0                 dq offset n48</span><br><span class="line">.data:<span class="number">00000000006031</span>C8                 dq <span class="number">0</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>后面的就不放了，nxy似乎能理解成第几层的第几个节点。然后看func7：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">fun7</span><span class="params">(<span class="keyword">struct</span> jmp_num *a1, <span class="type">int</span> a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 result; <span class="comment">// rax</span></span><br><span class="line">                                                <span class="comment">// 爆破！</span></span><br><span class="line">  <span class="keyword">if</span> ( !a1 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0xFFFFFFFF</span>LL;</span><br><span class="line">  <span class="keyword">if</span> ( a1-&gt;data &gt; a2 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> * (<span class="type">unsigned</span> <span class="type">int</span>)fun7(a1-&gt;next1, a2);</span><br><span class="line">  result = <span class="number">0LL</span>;</span><br><span class="line">  <span class="keyword">if</span> ( a1-&gt;data != a2 )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> * (<span class="type">unsigned</span> <span class="type">int</span>)fun7(a1-&gt;next2, a2) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>又是递归。从根节点开始，如果我们输的数比节点存的数小就以2*func的形式递归，然后如果不等于的话就以2*func+1的形式递归。同样找递归出口，最后是要通过两个if判断然后返回0.</p>
+<p>关键来了，要想pass第二个if，这就意味着我们的输入在最后一次递归一定等于某个节点存储的数据。因此正确结果一定就是二叉树中的某一个节点的data。一共也就15个数，排除最后一个1001，我们直接进行爆破拆弹（）最后得到正确结果是22.</p>
+<blockquote>
+<p>输出：</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 36</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 166)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 168</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 8</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 168)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 170</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 50</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 170)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 172</span><br><span class="line"># b&quot;Congratulations! You&#x27;ve defused the bomb!\n&quot;</span><br><span class="line"># 22</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 172)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 174</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 45</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 174)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 176</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 6</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 176)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 178</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 107</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 178)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 180</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 40</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 180)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 182</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 1</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 182)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 184</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 99</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 184)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 186</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 23</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 186)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 188</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 7</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 188)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 190</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 14</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 190)</span><br><span class="line"># [+] Starting local process &#x27;./bomb&#x27;: pid 192</span><br><span class="line"># b&#x27;BOOM!!!\n&#x27;</span><br><span class="line"># 47</span><br><span class="line"># [*] Stopped process &#x27;./bomb&#x27; (pid 192)</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>年轻人的第一道逆向题目。这道题虽然有linux逆向经验的话并不困难，但是通过这个lab我使用IDA分析结构体的水平极大提升了。</p>
+<h1 id="附EXP和i64文件"><a href="#附EXP和i64文件" class="headerlink" title="附EXP和i64文件"></a>附EXP和i64文件</h1><p>反汇编结果<br><a href="/files/bomb.i64">bomb.i64</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&#x27;info&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line"><span class="comment"># 没有删除符号表，函数功能命名清晰直接看就行</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_1</span>():</span><br><span class="line"><span class="comment"># phase_1是简单的字符串比较，key是明文存储，反汇编直接输入就行</span></span><br><span class="line"><span class="comment"># 疑似传入\0也会return 0</span></span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(<span class="string">&quot;Border relations with Canada have never been better.&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_2</span>():</span><br><span class="line"><span class="comment"># phase_2是在栈上分配一个数组读6个数，满足依次*2并且第一个是1就通过</span></span><br><span class="line"><span class="comment"># 看汇编比F5清楚（有一步add eax, eax)</span></span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(<span class="string">&quot;1 2 4 8 16 32&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_3</span>():</span><br><span class="line"><span class="comment"># phase_3是一个switch跳表，直接IDA F5，IDA伟大</span></span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(<span class="string">&quot;0 207&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_4</span>():</span><br><span class="line"><span class="comment"># phase_4里面有一个func4，是递归的。出口要求func4返回0</span></span><br><span class="line"><span class="comment"># 每次递归逼近a1,注意到没有给出v3=a1的逻辑分支，也就是说递归的终点会是v3=a1</span></span><br><span class="line"><span class="comment"># 然后逐步返回2的幂次。传0试试过了</span></span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(<span class="string">&quot;0 0 DrEvil&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_5</span>():</span><br><span class="line"><span class="comment"># S盒代换，比较输入和“flyers&quot;这个串</span></span><br><span class="line"><span class="comment"># 看数据确定偏移，它只取了低4位（0xF与了）在ASCII查字母输入即可</span></span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(<span class="string">&quot;IONEFG&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">phase_6</span>():</span><br><span class="line"><span class="comment"># 有些抽象，这里是对一个预定义在data段的链表进行操作，输入6个数但是不能相同</span></span><br><span class="line"><span class="comment"># 首先，预存了一个结构体指针数组。按照输入的6个数对7的补（7-x），从预定义的7个结构体进行初始化（1-&gt;2-&gt;3-&gt;4-&gt;5-&gt;6-&gt;0x0）</span></span><br><span class="line"><span class="comment"># 假如输入(1 2 3 4 5 6),栈上的结构体数组就对应node（6 5 4 3 2 1）</span></span><br><span class="line"><span class="comment"># 1-6:332,168,924,691,477,443，要想每一个都比下一个大，需要顺序345612，输入432165</span></span><br><span class="line">    p.recv()</span><br><span class="line">    <span class="comment">#gdb.attach(p)</span></span><br><span class="line">    p.sendline(<span class="string">&quot;4 3 2 1 6 5&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">secret_phase</span>(<span class="params">num</span>):</span><br><span class="line"><span class="comment"># answer: 22</span></span><br><span class="line">    num=<span class="built_in">str</span>(num)</span><br><span class="line">    p.recv()</span><br><span class="line">    p.sendline(num)</span><br><span class="line"></span><br><span class="line">num_list=[<span class="number">36</span>,<span class="number">8</span>,<span class="number">50</span>,<span class="number">22</span>,<span class="number">45</span>,<span class="number">6</span>,<span class="number">107</span>,<span class="number">40</span>,<span class="number">1</span>,<span class="number">99</span>,<span class="number">23</span>,<span class="number">7</span>,<span class="number">14</span>,<span class="number">47</span>]</span><br><span class="line"><span class="comment"># result: 22</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">14</span>):</span><br><span class="line">    p=process(<span class="string">&quot;./bomb&quot;</span>)</span><br><span class="line">    phase_1()</span><br><span class="line">    phase_2()</span><br><span class="line">    phase_3()</span><br><span class="line">    phase_4()</span><br><span class="line">    phase_5()</span><br><span class="line">    phase_6()</span><br><span class="line">    secret_phase(num_list[i])</span><br><span class="line">    p.recvline()</span><br><span class="line">    result=p.recvline()</span><br><span class="line">    <span class="built_in">print</span>(result)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;num_list[i]&#125;</span>&quot;</span>)</span><br><span class="line">    p.close()</span><br><span class="line"></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 36</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 166)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 168</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 8</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 168)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 170</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 50</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 170)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 172</span></span><br><span class="line"><span class="comment"># b&quot;Congratulations! You&#x27;ve defused the bomb!\n&quot;</span></span><br><span class="line"><span class="comment"># 22</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 172)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 174</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 45</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 174)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 176</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 6</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 176)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 178</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 107</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 178)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 180</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 40</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 180)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 182</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 1</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 182)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 184</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 99</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 184)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 186</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 23</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 186)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 188</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 7</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 188)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 190</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 14</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 190)</span></span><br><span class="line"><span class="comment"># [+] Starting local process &#x27;./bomb&#x27;: pid 192</span></span><br><span class="line"><span class="comment"># b&#x27;BOOM!!!\n&#x27;</span></span><br><span class="line"><span class="comment"># 47</span></span><br><span class="line"><span class="comment"># [*] Stopped process &#x27;./bomb&#x27; (pid 192)</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/" title="CSAPP Labs——Data Lab">
+                    <div class="prevTitle">CSAPP Labs——Data Lab</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%EF%BC%9A"><span class="toc-number">2.</span> <span class="toc-text">内容：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#phase1"><span class="toc-number">2.1.</span> <span class="toc-text">phase1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phase2"><span class="toc-number">2.2.</span> <span class="toc-text">phase2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phase3"><span class="toc-number">2.3.</span> <span class="toc-text">phase3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phase4"><span class="toc-number">2.4.</span> <span class="toc-text">phase4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phase5"><span class="toc-number">2.5.</span> <span class="toc-text">phase5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#phase6"><span class="toc-number">2.6.</span> <span class="toc-text">phase6</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E6%A3%80%E6%9F%A5"><span class="toc-number">2.6.1.</span> <span class="toc-text">输入检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E5%A4%84%E7%90%86"><span class="toc-number">2.6.2.</span> <span class="toc-text">输入处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E8%A1%A8%E6%8C%87%E9%92%88%E6%95%B0%E7%BB%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.6.3.</span> <span class="toc-text">链表指针数组初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E8%A1%A8%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.6.4.</span> <span class="toc-text">链表连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E5%88%A4%E6%96%AD%EF%BC%9A"><span class="toc-number">2.6.5.</span> <span class="toc-text">最后判断：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#secret-phase"><span class="toc-number">2.7.</span> <span class="toc-text">secret phase</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.7.1.</span> <span class="toc-text">触发条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3"><span class="toc-number">2.7.2.</span> <span class="toc-text">解决</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%84EXP%E5%92%8Ci64%E6%96%87%E4%BB%B6"><span class="toc-number">4.</span> <span class="toc-text">附EXP和i64文件</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 22
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
