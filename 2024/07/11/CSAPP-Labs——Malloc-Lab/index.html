@@ -27,7 +27,7 @@
 <meta property="og:description" content="写在前面：其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。 对于本lab的要求，请参考https:&#x2F;&#x2F;arthals.ink&#x2F;posts&#x2F;experience&#x2F;mallo">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-07-11T08:54:32.000Z">
-<meta property="article:modified_time" content="2024-07-16T13:54:50.381Z">
+<meta property="article:modified_time" content="2024-07-17T16:54:20.387Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="CSAPP">
 <meta property="article:tag" content="Lab">
@@ -587,7 +587,8 @@
 
 <h3 id="mm-realloc"><a href="#mm-realloc" class="headerlink" title="mm_realloc"></a>mm_realloc</h3><p>默认实现就够了感觉，realloc是调用free和malloc实现的。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mm_realloc</span><span class="params">(<span class="type">void</span> *ptr, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *oldp = ptr;</span><br><span class="line">    <span class="type">void</span> *p;</span><br><span class="line">    <span class="type">size_t</span> copySize;</span><br><span class="line">    </span><br><span class="line">    p = mm_malloc(size);</span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>) </span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    copySize = ((malloc_chunk*)oldp)-&gt;size<span class="number">-8</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt; copySize)</span><br><span class="line">      copySize = size;</span><br><span class="line">    <span class="built_in">memcpy</span>(p, oldp, copySize);</span><br><span class="line">    mm_free(oldp);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<p>看一下幽默得分</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Team Name:nothing</span><br><span class="line">Member 1 :Zj_W1nD:123123</span><br><span class="line">Member 2 :123:123</span><br><span class="line">Using default tracefiles <span class="keyword">in</span> ./</span><br><span class="line">Measuring performance with gettimeofday().</span><br><span class="line"></span><br><span class="line">Results <span class="keyword">for</span> mm malloc:</span><br><span class="line">trace  valid  util     ops      secs  Kops</span><br><span class="line"> 0       <span class="built_in">yes</span>    1%      32  0.000009  3441</span><br><span class="line"> 1       <span class="built_in">yes</span>    1%      12  0.000014   857</span><br><span class="line">Total           1%      44  0.000023  1888</span><br><span class="line"></span><br><span class="line">Perf index = 1 (util) + 40 (thru) = 41/100</span><br></pre></td></tr></table></figure>
 <h1 id="写在最后："><a href="#写在最后：" class="headerlink" title="写在最后："></a>写在最后：</h1><p>这个lab给我的感觉很糟糕，动态内存分配凹分的意义并不是很大，我也是大部分时间放在了看源码上。blog也不想多写没什么内容和心得好说。本来还想着试着能不能攻击一下我自己的堆分配器，但是实在懒得搞了，下次想玩了再说。</p>
 
     </article>
@@ -596,6 +597,11 @@
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/" title="How2Heap实战(1)——CISCN2024">
+                    <div class="nextTitle">How2Heap实战(1)——CISCN2024</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -873,7 +879,20 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1044,7 +1063,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 24
+        Total : 25
         </div>
         <!-- search  -->
         
@@ -1058,6 +1077,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/11</span>
@@ -1232,6 +1257,11 @@
                 pwn
             </span>
         
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="heap">
                 <span class="iconfont-archer">&#xe606;</span>
                 heap
@@ -1242,9 +1272,9 @@
                 Develop
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
+            <span class="sidebar-tag-name" data-tags="wp">
                 <span class="iconfont-archer">&#xe606;</span>
-                逆向
+                wp
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
@@ -1318,11 +1348,6 @@
             linux
         </span>
     
-        <span class="sidebar-category-name" data-categories="pwn">
-            <span class="iconfont-archer">&#xe60a;</span>
-            pwn
-        </span>
-    
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
@@ -1331,6 +1356,11 @@
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
     </div>
