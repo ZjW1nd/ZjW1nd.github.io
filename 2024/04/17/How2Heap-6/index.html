@@ -27,10 +27,10 @@
 <meta property="og:description" content="House of Roman参考看雪上的这篇关于House of Roman的讲解，这个攻击看起来似乎可能比较实用？    glibc 2.29后Unsorted bin attack无法使用，添加了新的检查。且glibc 2.34后移除了__malloc_hook()。这个攻击大致分为以下几个步骤：   分配一个在malloc_hook附近的chunk，通过一个fastbin的double fr">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-04-17T11:34:21.000Z">
-<meta property="article:modified_time" content="2024-04-20T10:07:01.660Z">
+<meta property="article:modified_time" content="2024-07-23T04:50:46.256Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
+<meta property="article:tag" content="pwn">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -328,9 +328,9 @@
                     <div class= post-intro-tags >
     
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
 </div>
 
@@ -513,7 +513,7 @@
 </blockquote>
 <p>在堆非常干净的情况下，作者是这么操作的，可以借助这个例子了解一下堆风水：</p>
 <ul>
-<li>拿一个0x60的fastbin chunk 1（实际大小0x70)</li>
+<li>拿一个0x60的fastbin chunk 1（实际大小0x70）</li>
 <li>分配一个不用的chunk，大小0x80，实际大小0x90，此时相对堆基址的偏移来到了0x100，这灵性的一步是为了待会我们改一个字节就能修改指针指向的chunk</li>
 <li>分配一个0x80的chunk 2，等会放入unsorted bin</li>
 <li>分配一个0x60的fastbin chunk 3，该chunk的偏移地址来到了0x190</li>
@@ -826,7 +826,48 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1005,7 +1046,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 25
+        Total : 28
         </div>
         <!-- search  -->
         
@@ -1019,6 +1060,24 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/">How2Heap(8)(end)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/18</span>
@@ -1194,6 +1253,16 @@
                 Lab
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
@@ -1202,16 +1271,6 @@
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="heap">
-                <span class="iconfont-archer">&#xe606;</span>
-                heap
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1290,14 +1349,14 @@
             linux
         </span>
     
-        <span class="sidebar-category-name" data-categories="others">
-            <span class="iconfont-archer">&#xe60a;</span>
-            others
-        </span>
-    
         <span class="sidebar-category-name" data-categories="Reverse">
             <span class="iconfont-archer">&#xe60a;</span>
             Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
         </span>
     
         <span class="sidebar-category-name" data-categories="pwn">
