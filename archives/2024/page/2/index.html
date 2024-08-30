@@ -429,6 +429,73 @@
             
         
         <article class="index-post">
+            <a class="abstract-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">
+                
+                <span class="abstract-title-text">电脑问题解决方案整理</span>
+            </a>
+            <div class="abstract-content">
+                突然某天开机之后“卡顿”开了Lenovo vantage的那个电池优化锁80电量导致的。一直开着无所谓，但是如果中间关闭了冲到100，开机后打开系统可能会判断一直处于断电或者什么别的状态反正会限制cpu主频导致非常卡。关了就行了。md亏我还检查系统。
+tpm重启自动关闭 ？不知道怎么解决的最后，在bios里将安全启动和ptt开开关关，清除ptt keys多搞几次就好了，忘了怎么解决的了
+
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/08/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/05/13</span>
+                </div>
+                <!-- tags -->
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2024/04/17/How2Heap-6/">
+                
+                <span class="abstract-title-text">How2Heap(6)——House of Roman &amp; House of Rabbit</span>
+            </a>
+            <div class="abstract-content">
+                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。House of Rabbit是一种fastbin的overlap攻击，通过修改fastbin的size域或者fd指针然后触发malloc_consolidate，能够将我们伪造的chunk变成合法的chunk。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/07/23">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/04/17</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+        
+        <article class="index-post">
             <a class="abstract-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">
                 
                 <span class="abstract-title-text">分享会</span>
@@ -567,9 +634,9 @@
                     <div class= abstract-tags >
     
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
     
 </div>
 
@@ -888,7 +955,43 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1093,7 +1196,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 28
+        Total : 30
         </div>
         <!-- search  -->
         
@@ -1107,6 +1210,18 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/">从0开始的Kernel Pwn</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/28</span>
@@ -1300,9 +1415,9 @@
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
+            <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
-                Develop
+                pwn
             </span>
         
             <span class="sidebar-tag-name" data-tags="heap">
@@ -1310,14 +1425,19 @@
                 heap
             </span>
         
-            <span class="sidebar-tag-name" data-tags="pwn">
-                <span class="iconfont-archer">&#xe606;</span>
-                pwn
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1328,11 +1448,6 @@
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="FSOP">
-                <span class="iconfont-archer">&#xe606;</span>
-                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="linux">
@@ -1386,14 +1501,19 @@
             pwn
         </span>
     
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
         <span class="sidebar-category-name" data-categories="Develop">
             <span class="iconfont-archer">&#xe60a;</span>
             Develop
         </span>
     
-        <span class="sidebar-category-name" data-categories="linux">
+        <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
-            linux
+            pwn
         </span>
     
         <span class="sidebar-category-name" data-categories="Reverse">
@@ -1404,11 +1524,6 @@
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="pwn">
-            <span class="iconfont-archer">&#xe60a;</span>
-            pwn
         </span>
     
     </div>

@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="介绍内核分为三种，linux内核属于宏内核，即内核本质是一个大的二进制文件加载在内存中来处理各种的系统调用。没有内核代码运行在用户态（windows就是一个混合内核，既有一个大的ring 0文件，也有部分代码运行在用户态）。有些汇编代码和寄存器只能在Ring 0被使用。内核永远加载在最高地址处，syscall并不改变内存的映射，只是最高地址的虚拟地址映射的具体部分需要Ring 0才能访问。 调用s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从0开始的Kernel Pwn">
+<meta property="og:url" content="http://example.com/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="介绍内核分为三种，linux内核属于宏内核，即内核本质是一个大的二进制文件加载在内存中来处理各种的系统调用。没有内核代码运行在用户态（windows就是一个混合内核，既有一个大的ring 0文件，也有部分代码运行在用户态）。有些汇编代码和寄存器只能在Ring 0被使用。内核永远加载在最高地址处，syscall并不改变内存的映射，只是最高地址的虚拟地址映射的具体部分需要Ring 0才能访问。 调用s">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-07-31T09:18:00.000Z">
+<meta property="article:modified_time" content="2024-08-08T09:31:29.526Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>从0开始的Kernel Pwn · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">从0开始的Kernel Pwn</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                从0开始的Kernel Pwn
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/31</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>内核分为三种，linux内核属于宏内核，即内核本质是一个大的二进制文件加载在内存中来处理各种的系统调用。没有内核代码运行在用户态（windows就是一个混合内核，既有一个大的ring 0文件，也有部分代码运行在用户态）。有些汇编代码和寄存器只能在Ring 0被使用。内核永远加载在最高地址处，syscall并不改变内存的映射，只是最高地址的虚拟地址映射的具体部分需要Ring 0才能访问。</p>
+<p>调用<code>syscall</code>本质是一个跳转加切换权限的过程。（ring 3到ring 0）具体来讲是将当前的用户态地址存入rcx后，切换权限至ring 0然后跳转至<code>MSR_LSTAR</code>寄存器指向的系统调用处理代码。下面是syscall相关的伪代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">IF (CS.L ≠ <span class="number">1</span> ) or (IA32_EFER.LMA ≠ <span class="number">1</span>) or (IA32_EFER.SCE ≠ <span class="number">1</span>)</span><br><span class="line">(* Not in <span class="number">64</span>-Bit Mode or SYSCALL/SYSRET not enabled in IA32_EFER *)</span><br><span class="line">    THEN #UD;</span><br><span class="line">FI;</span><br><span class="line">RCX := RIP; (* Will contain address of next instruction *)</span><br><span class="line">RIP := IA32_LSTAR;</span><br><span class="line">R11 := RFLAGS;</span><br><span class="line">RFLAGS := RFLAGS AND NOT(IA32_FMASK);</span><br><span class="line">CS.Selector := IA32_STAR[<span class="number">47</span>:<span class="number">32</span>] AND FFFCH (* Operating system provides CS; RPL forced to <span class="number">0</span> *)</span><br><span class="line">(* Set rest of CS to a fixed value *)</span><br><span class="line">CS.Base := <span class="number">0</span>;</span><br><span class="line">                (* Flat segment *)</span><br><span class="line">CS.Limit := FFFFFH;</span><br><span class="line">                (* With <span class="number">4</span>-KByte granularity, implies a <span class="number">4</span>-GByte limit *)</span><br><span class="line">CS.Type := <span class="number">11</span>;</span><br><span class="line">                (* Execute/read code, accessed *)</span><br><span class="line">CS.S := <span class="number">1</span>;</span><br><span class="line">CS.DPL := <span class="number">0</span>;</span><br><span class="line">CS.P := <span class="number">1</span>;</span><br><span class="line">CS.L := <span class="number">1</span>;</span><br><span class="line">                (* Entry is to <span class="number">64</span>-bit mode *)</span><br><span class="line">CS.D := <span class="number">0</span>;</span><br><span class="line">                (* Required <span class="keyword">if</span> CS.L = <span class="number">1</span> *)</span><br><span class="line">CS.G := <span class="number">1</span>;</span><br><span class="line">                (* <span class="number">4</span>-KByte granularity *)</span><br><span class="line">IF <span class="title function_">ShadowStackEnabled</span><span class="params">(CPL)</span></span><br><span class="line">    <span class="title function_">THEN</span> <span class="params">(* adjust so bits <span class="number">63</span>:N get the value of bit N–<span class="number">1</span>, where N is the CPU’s maximum linear-address width *)</span></span><br><span class="line">        IA32_PL3_SSP := LA_adjust(SSP);</span><br><span class="line">            (* With shadow stacks enabled the system call is supported from Ring <span class="number">3</span> to Ring <span class="number">0</span> *)</span><br><span class="line">            (* OS supporting Ring <span class="number">0</span> to Ring <span class="number">0</span> system calls or Ring <span class="number">1</span>/<span class="number">2</span> to ring <span class="number">0</span> system call *)</span><br><span class="line">            (* Must preserve the contents of IA32_PL3_SSP to avoid losing ring <span class="number">3</span> state *)</span><br><span class="line">FI;</span><br><span class="line">CPL := <span class="number">0</span>; <span class="comment">//特权级别为Ring 0</span></span><br><span class="line">IF <span class="title function_">ShadowStackEnabled</span><span class="params">(CPL)</span></span><br><span class="line">    SSP := <span class="number">0</span>;</span><br><span class="line">FI;</span><br><span class="line">IF <span class="title function_">EndbranchEnabled</span><span class="params">(CPL)</span></span><br><span class="line">    IA32_S_CET.TRACKER = WAIT_FOR_ENDBRANCH</span><br><span class="line">    IA32_S_CET.SUPPRESS = <span class="number">0</span></span><br><span class="line">FI;</span><br><span class="line">SS.Selector := IA32_STAR[<span class="number">47</span>:<span class="number">32</span>] + <span class="number">8</span>;</span><br><span class="line">                (* SS just above CS *)</span><br><span class="line">(* Set rest of SS to a fixed value *)</span><br><span class="line">SS.Base := <span class="number">0</span>;</span><br><span class="line">                (* Flat segment *)</span><br><span class="line">SS.Limit := FFFFFH;</span><br><span class="line">                (* With <span class="number">4</span>-KByte granularity, implies a <span class="number">4</span>-GByte limit *)</span><br><span class="line">SS.Type := <span class="number">3</span>;</span><br><span class="line">                (* Read/write data, accessed *)</span><br><span class="line">SS.S := <span class="number">1</span>;</span><br><span class="line">SS.DPL := <span class="number">0</span>;</span><br><span class="line">SS.P := <span class="number">1</span>;</span><br><span class="line">SS.B := <span class="number">1</span>;</span><br><span class="line">                (* <span class="number">32</span>-bit <span class="built_in">stack</span> segment *)</span><br><span class="line">SS.G := <span class="number">1</span>;</span><br><span class="line">                (* <span class="number">4</span>-KByte granularity *)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>针对内核的攻击包括用户态的权限提升，rootkit，外部设备攻击（可编程u盘）等等。</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><p>参考pwncollege的脚本（github pwncollege&#x2F;pwnkernel）。自己下个内核然后修改一下它的sh脚本。<br>busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了。linux 6.8即以上的版本在内核中移除了一些东西导致busybox的源码network&#x2F;tc.c编译不了。参考 <a target="_blank" rel="noopener" href="https://github.com/gramineproject/gramine/issues/1909">https://github.com/gramineproject/gramine/issues/1909</a> 和 <a target="_blank" rel="noopener" href="https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=d8ad860a1ed9aa92adaa7dcf1c3fc78d0e2f80ce">https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=d8ad860a1ed9aa92adaa7dcf1c3fc78d0e2f80ce</a></p>
+<blockquote>
+<p>gentoo的开发者为他们自己的版本做了修复，然而这个bug在今年一月就对busybox提了但是一直没修。。。最新版本还是2023年5月的。然而看commit记录也就是加了ifndef能让编译通过，else分支就搞了个printf,也是神人。后面两条路，一个是我自己对着编译报错修busybox，另一个是不用busybox自己手动链接搞内核命令。牛大了。不行先去pwncollege上玩算了。</p>
+</blockquote>
+<p>没事了官网上有个patch,打上之后就好了然后我在github镜像仓库提了个issue. 补丁链接放在这：<a target="_blank" rel="noopener" href="https://bugs.busybox.net/attachment.cgi?id=9751">https://bugs.busybox.net/attachment.cgi?id=9751</a></p>
+<p>pwnkernel也提供了qemu启动参数，比较方便。   </p>
+<h1 id="内核模块"><a href="#内核模块" class="headerlink" title="内核模块"></a>内核模块</h1><p><code>.ko</code>文件。类似与<code>.so</code>一样，这是对于内核的库，可以挂载各种驱动网络功能等等。古早的内核模块可以在内核system call table上注册新的条目，现在已经不行了。内核模块还可以注册新的中断int等等。一般内核模块会注册一个设备文件比如&#x2F;dev&#x2F;tty, 设备文件分为字符型和块（block）型。</p>
+<p>对于一个内核驱动，pwncollege上给出的这些例子至少说明了这么几个函数：</p>
+<ul>
+<li><code>init_module</code>：使用insmod装载模块的时候调用，可以理解为一个建构函数</li>
+<li><code>clear_module</code>：使用rmmod的时候调用，析构函数</li>
+<li><code>device_read</code>:</li>
+</ul>
+<h2 id="交互方式"><a href="#交互方式" class="headerlink" title="交互方式"></a>交互方式</h2><p>一般来说一个内核模块大概是干这么些事：</p>
+<ul>
+<li><p>用户空间读<code>copy_from_user</code></p>
+</li>
+<li><p>do sth （打开文件，文件读写，硬件交互）</p>
+</li>
+<li><p>用户空间写<code>copy_to_user</code></p>
+</li>
+<li><p>返回用户态<br>其中调用的两个copy_to_user和copy_from_user内部的实现决定了他们是安全的（仅限内核和用户态通信的过程中），而内核内部的内存读写很可能存在漏洞。</p>
+</li>
+<li><p>文件 如下面这几个目录下挂载的节点：&#x2F;dev &#x2F;proc &#x2F;sys。直接open就可以进行读取内核模块注册的设备。读取返回的操作一般在内核模块编写代码的时候定义好了<code>device_read</code>操作。</p>
+</li>
+<li><p>ioctl接口。允许自定义交互，借助文件描述符和一个操作码：<code>ioctl(fd, COMMAND_CODE, pointer)</code>。</p>
+</li>
+</ul>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p>进程由内核中的task_struct管理，权限部分则是由cred结构体管理（记录了各种id）。利用内核中的函数，<br>执行<code>commit_creds(prepare_kerkel_creds(0))</code>。将会获得完全root权限，这些函数的地址如果有root权限可以在&#x2F;proc&#x2F;kallsyms查到。</p>
+<h2 id="从内核层面绕过seccomp"><a href="#从内核层面绕过seccomp" class="headerlink" title="从内核层面绕过seccomp"></a>从内核层面绕过seccomp</h2><p>一个进程的seccomp同样也被<code>tast_struct</code>管理，在其中有一个<code>thread_info</code>内联结构，里面有一个flag 域，其中就有<code>TIF_SECCOMP</code>位，控制着seccomp的开关。（即在seccomp内部真正实现函数的包装函数有关于这一位的判断）</p>
+<p>因此只要让</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current_task_struct-&gt;thread_info.flags &amp;= ~(<span class="number">1</span>&lt;&lt;TIF_SECCOMP)</span><br></pre></td></tr></table></figure>
+<p>即可。</p>
+<p>当前的task_struct地址被gs寄存器保存（类似于用户态的fs），同时内核提供了一个简单的访问方法：<code>current</code>。<br>因此只需要current-&gt;thread_info.flags被修改，当前进程就不再受seccomp保护（但子进程仍然会，它们的seccomp信息存储在别的地方）。</p>
+<h1 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h1><p>我们讨论的是现代操作系统的linux。由于内存的需求增长越来越恶搞，现代操作系统都支持4级的页表，然后用cr3寄存器（至少在amd64和x86）指向这个开头来进行映射，页表里面存放的都是每一级的物理地址。利用这种4级页映射技术我们可以把一个进程的48位（没错64位是假的，高12位本质上是最高位的符号扩展，全1的话代表内核，4级页表只支持48位寻址）地址换成我们的物理地址，当然这一切都是在MMU里进行的。现代（大部分）linux系统并没有在内核中实现关于地址的查找映射等等操作，它需要MMU模块来运行。所谓的cr3寄存器就是指向这么一套页表的最高级.<br>对于虚拟机的隔离，每一个虚拟机都认为自己有着全部的真实物理内存访问权限，实现方法无非也是再为他分配一套4级的页表。  </p>
+<p>内核视角下没有进程的隔离，并且内核映射着整个物理地址空间。在内核中有这么两个宏<code>virt_to_phys()</code>和<code>phys_to_virt()</code>来帮助进行转换。本质上也是一些偏移  </p>
+<h1 id="安全措施"><a href="#安全措施" class="headerlink" title="安全措施"></a>安全措施</h1><p>kALSR（启动时内核加载在随机地址）, NX（堆栈不可执行），kernel stack canary，和用户空间很像。<br>除此以外，内核还有一些独有的东西，比如intel的SMEP(Supervisor Mode Execution Prevention)和SMAP(Supervisor Mode Access Prevention)技术，内核希望我们只用安全的api来和用户空间进行交互，他们能防止内核跳转至用户空间执行代码或者获取数据。<br>SMEP能够在<strong>任何时候</strong>组织内核执行用户空间的代码，否则会触发一个页错误（当然也是除了sysret这种正常途径）。而SMAP能够在AC flag未设置的时候组织内核访问用户空间的内存（防止非预期的获取）。RFLAGS中的AC位可以用ring 0下的<code>stac</code>和<code>clac</code>指令进行设置。  </p>
+<p>当然，攻击端也有应对的办法。如果能拿到内核的code excution和一个参数控制，通过这个内核函数<code>run_cmd(char*)</code>，它能接受一个以空格分隔的字符串并以root身份在用户空间执行，可以一定程度上绕过SMEP。</p>
+<h1 id="shellcode"><a href="#shellcode" class="headerlink" title="shellcode"></a>shellcode</h1><p>首先，如果拥有内核空间代码执行的能力，syscall肯定是不能用的。syscall会假定这一指令的执行来自用户空间然后跳转到syscall_entry执行调用，但是如果在内核中的话，某些操作会导致当前线程的崩溃。反映出结果就是syscall引起了一个seg fault. 因此在有内核空间代码执行的情况下我们只要call对应函数就好了。</p>
+<p>但是call函数和用户空间不同，编译时根本没法为内核函数符号生成重定位，不能直接<code>call xxx</code>。因此我们要知道这些内核api的位置才能调用。</p>
+<p>获取内核函数位置如果没有kaslr,只要拿一份相同的镜像（理想状态下应该是相同的内核相同的硬件，包括内核版本config）读取<code>/proc/kallsyms</code>就行了。而如果有kaslr,就要泄漏。</p>
+<p>拿到内核api地址之后有两种选择，间接跳转和直接跳转。大部分情况下会选择后者。间接跳转就是计算shellcode和指定位置api之间的距离，如果在32位范围内的话可以用地址差间接跳转但是太过繁琐。一般都是用直接跳转到内核api，不过直接跳转需要用寄存器，执行类似这样的shellcode：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov rax, 0xffff414142424242</span><br><span class="line">call rax</span><br></pre></td></tr></table></figure>
+<p>kernel shellcode和userspace shellcode另一个不同是，需要有一个完整的退出或者结束。用户空间段错误就段错误无所谓拿了flag就行，但是对内核来说（比如进程提权），崩溃了之后还没等flag输出系统就挂了。因此务必保证跳转调用等流程的完整。比如如果通过劫持某个函数指针来实现跳转，那么后续shellcode就要让他像正常函数一样返回，栈也要清理干净能让内核继续运转就行。</p>
+<h2 id="for-seccomp"><a href="#for-seccomp" class="headerlink" title="for seccomp"></a>for seccomp</h2><p> 如果我们要修改当前的task_struct怎么办？kernel始终在gs寄存器中保存着这个变量，但是利用比较困难，另外kernel中还有一个神奇的哄current指向这里，可是我们如何在shellcode中获取current的值？</p>
+<p> 方法是，用C写一个内核模块，为你要攻击的内核构建他然后逆向得到汇编直接copy到你要攻击的shellcode里（是的就是这样）。虽然结果很简单，但是编译器帮你完成了翻内核源码找对应版本各种调用等等的bad for sanity的工作。</p>
+<blockquote>
+<p>pwncollege教学原话称通过读内核源码理解然后寻找current的位置“is bad for your sanity”。</p>
+</blockquote>
+<h1 id="条件竞争"><a href="#条件竞争" class="headerlink" title="条件竞争"></a>条件竞争</h1>
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/08/05/sandbox/" title="Sandbox  简单介绍">
+                    <div class="nextTitle">Sandbox  简单介绍</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/" title="How2Heap(8)(end)——Tcache">
+                    <div class="prevTitle">How2Heap(8)(end)——Tcache</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.</span> <span class="toc-text">环境配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97"><span class="toc-number">2.</span> <span class="toc-text">内核模块</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BA%92%E6%96%B9%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">交互方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E6%9D%83"><span class="toc-number">2.2.</span> <span class="toc-text">提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E5%86%85%E6%A0%B8%E5%B1%82%E9%9D%A2%E7%BB%95%E8%BF%87seccomp"><span class="toc-number">2.3.</span> <span class="toc-text">从内核层面绕过seccomp</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">内存管理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%8E%AA%E6%96%BD"><span class="toc-number">4.</span> <span class="toc-text">安全措施</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#shellcode"><span class="toc-number">5.</span> <span class="toc-text">shellcode</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#for-seccomp"><span class="toc-number">5.1.</span> <span class="toc-text">for seccomp</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E7%AB%9E%E4%BA%89"><span class="toc-number">6.</span> <span class="toc-text">条件竞争</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 30
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/">从0开始的Kernel Pwn</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/">How2Heap(8)(end)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
