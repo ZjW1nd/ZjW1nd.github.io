@@ -21,13 +21,13 @@
     <meta name="description" content="">
     <meta name="description" content="大坑：Libc，一定要换！！！不要怀疑题目附件libc的正确性，注意程序运行环境（本机）的libc版本，gdb调试的时候libc版本不一样会出大问题而且意识不到这点极难排查。具体流程如下：    确定版本：拿到libc附件，题目有描述的看描述确定版本，没有描述的拖进IDA在字符串窗口搜索“GNU”确定libc版本。 更换libc：如果与环境libc不一致（大概率不一致），去glibc-all-in">
 <meta property="og:type" content="article">
-<meta property="og:title" content="栈溢出ROP熟练度提升tips">
+<meta property="og:title" content="栈溢出ROP熟练度提升总结">
 <meta property="og:url" content="http://example.com/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="大坑：Libc，一定要换！！！不要怀疑题目附件libc的正确性，注意程序运行环境（本机）的libc版本，gdb调试的时候libc版本不一样会出大问题而且意识不到这点极难排查。具体流程如下：    确定版本：拿到libc附件，题目有描述的看描述确定版本，没有描述的拖进IDA在字符串窗口搜索“GNU”确定libc版本。 更换libc：如果与环境libc不一致（大概率不一致），去glibc-all-in">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-03-23T13:26:07.000Z">
-<meta property="article:modified_time" content="2024-04-16T11:31:22.161Z">
+<meta property="article:modified_time" content="2024-09-03T01:15:32.882Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="ROP">
@@ -36,7 +36,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>栈溢出ROP熟练度提升tips · Zj_W1nd&#39;s BLOG</title>
+    <title>栈溢出ROP熟练度提升总结 · Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -262,7 +262,7 @@
                 <a href="/">Zj_W1nd&#39;s BLOG</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">栈溢出ROP熟练度提升tips</a>
+                <a href="#" class="post-name">栈溢出ROP熟练度提升总结</a>
             </div>
         </div>
     
@@ -308,7 +308,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                栈溢出ROP熟练度提升tips
+                栈溢出ROP熟练度提升总结
             <!-- 404 -->
             
         </h1>
@@ -509,6 +509,14 @@
 <li>注意canary的检验方式，直接去看汇编，看检验的方式是什么样的</li>
 <li>aslr</li>
 </ul>
+<h1 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h1><p>确认本地libc环境和远程一样或者是静态编译的文件，动调是个非常非常非常有用的办法。甚至可以盲打，就不分析在输入的地方测一下溢出点然后看栈上的内容确定偏移就行。</p>
+<p>另外，对于go（或者什么别的），确定偏移了之后发现用不了的话，记得看看栈上是不是有别的东西被覆盖了导致在溢出点前调用的函数进去之后报错</p>
+<p>以ciscn2024初赛 gostack为例，测到溢出之后不用看什么静态的，直接动调打印栈：</p>
+<blockquote>
+<p>after send cyclic(0x100):</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">06</span>:<span class="number">0030</span>│<span class="number">-1</span>d0 <span class="number">0xc000074d90</span> ◂— <span class="number">0x1</span></span><br><span class="line"><span class="number">07</span>:<span class="number">0038</span>│<span class="number">-1</span>c8 <span class="number">0xc000074d98</span> ◂— <span class="number">0x6161616261616161</span> (<span class="string">&#x27;aaaabaaa&#x27;</span>)</span><br><span class="line"><span class="number">08</span>:<span class="number">0040</span>│<span class="number">-1</span>c0 <span class="number">0xc000074da0</span> ◂— <span class="number">0x6161616461616163</span> (<span class="string">&#x27;caaadaaa&#x27;</span>)</span><br><span class="line"><span class="number">09</span>:<span class="number">0048</span>│<span class="number">-1b</span>8 <span class="number">0xc000074da8</span> ◂— <span class="number">0x6161616661616165</span> (<span class="string">&#x27;eaaafaaa&#x27;</span>)</span><br><span class="line">......</span><br><span class="line"><span class="number">25</span>:<span class="number">0128</span>│<span class="number">-0</span>d8 <span class="number">0xc000074e88</span> ◂— <span class="string">&#x27;kaaclaacmaacnaac&#x27;</span></span><br><span class="line"><span class="number">26</span>:<span class="number">0130</span>│<span class="number">-0</span>d0 <span class="number">0xc000074e90</span> ◂— <span class="string">&#x27;maacnaac&#x27;</span></span><br><span class="line"><span class="number">27</span>:<span class="number">0138</span>│ rdx <span class="number">0xc000074e98</span> —▸ <span class="number">0xc00018c200</span> ◂— <span class="number">0x6161616261616161</span> (<span class="string">&#x27;aaaabaaa&#x27;</span>) <span class="comment">//point to stack</span></span><br><span class="line"><span class="number">28</span>:<span class="number">0140</span>│<span class="number">-0</span>c0 <span class="number">0xc000074ea0</span> ◂— <span class="number">0x100</span></span><br><span class="line"><span class="number">29</span>:<span class="number">0148</span>│<span class="number">-0b</span>8 <span class="number">0xc000074ea8</span> ◂— <span class="number">0x0</span></span><br><span class="line"><span class="number">2</span>a:<span class="number">0150</span>│<span class="number">-0b</span>0 <span class="number">0xc000074eb0</span> ◂— <span class="number">0x0</span></span><br><span class="line"><span class="number">2b</span>:<span class="number">0158</span>│<span class="number">-0</span>a8 <span class="number">0xc000074eb8</span> —▸ <span class="number">0x4aa800</span> ◂— <span class="number">0x10</span></span><br><span class="line"><span class="number">2</span>c:<span class="number">0160</span>│<span class="number">-0</span>a0 <span class="number">0xc000074ec0</span> —▸ <span class="number">0x4df040</span> —▸ <span class="number">0x4c15af</span> ◂— <span class="number">0x6f79207475706e49</span> (<span class="string">&#x27;Input yo&#x27;</span>) <span class="comment">//point to excutable addr</span></span><br><span class="line"><span class="number">2</span>d:<span class="number">0168</span>│<span class="number">-098</span> <span class="number">0xc000074ec8</span> —▸ <span class="number">0xc000074d98</span> ◂— <span class="number">0x6161616261616161</span> (<span class="string">&#x27;aaaabaaa&#x27;</span>) <span class="comment">//stack</span></span><br><span class="line"><span class="number">2</span>e:<span class="number">0170</span>│<span class="number">-090</span> <span class="number">0xc000074ed0</span> ◂— <span class="number">0x100</span></span><br><span class="line"><span class="number">2f</span>:<span class="number">0178</span>│<span class="number">-088</span> <span class="number">0xc000074ed8</span> ◂— <span class="number">0x100</span></span><br><span class="line"><span class="number">30</span>:<span class="number">0180</span>│<span class="number">-080</span> <span class="number">0xc000074ee0</span> —▸ <span class="number">0x4df4e8</span> —▸ <span class="number">0x4aeb40</span> ◂— <span class="number">0x10</span> &lt;-sus addr?</span><br><span class="line"><span class="number">31</span>:<span class="number">0188</span>│<span class="number">-078</span> <span class="number">0xc000074ee8</span> —▸ <span class="number">0xc0001ae000</span> —▸ <span class="number">0xc0001b0000</span> ◂— <span class="number">0x0</span></span><br><span class="line"><span class="number">32</span>:<span class="number">0190</span>│<span class="number">-070</span> <span class="number">0xc000074ef0</span> —▸ <span class="number">0x4c5dd0</span> —▸ <span class="number">0x49b080</span> ◂— <span class="number">0x13d860f10663b49</span> &lt;-excutable addr?</span><br><span class="line"><span class="number">33</span>:<span class="number">0198</span>│<span class="number">-068</span> <span class="number">0xc000074ef8</span> ◂— <span class="number">0x10000</span></span><br><span class="line"><span class="number">34</span>:<span class="number">01</span>a0│<span class="number">-060</span> <span class="number">0xc000074f00</span> —▸ <span class="number">0xc0001b8000</span> ◂— <span class="number">0x6161616261616161</span> (<span class="string">&#x27;aaaabaaa&#x27;</span>)</span><br><span class="line"><span class="number">35</span>:<span class="number">01</span>a8│<span class="number">-058</span> <span class="number">0xc000074f08</span> ◂— <span class="number">0x100</span></span><br><span class="line"><span class="number">36</span>:<span class="number">01b</span>0│<span class="number">-050</span> <span class="number">0xc000074f10</span> ◂— <span class="number">0x1000</span></span><br><span class="line"><span class="number">37</span>:<span class="number">01b</span>8│<span class="number">-048</span> <span class="number">0xc000074f18</span> —▸ <span class="number">0xc0001b8000</span> ◂— <span class="number">0x6161616261616161</span> (<span class="string">&#x27;aaaabaaa&#x27;</span>)</span><br><span class="line"><span class="number">38</span>:<span class="number">01</span>c0│<span class="number">-040</span> <span class="number">0xc000074f20</span> ◂— <span class="number">0x1000</span></span><br><span class="line"><span class="number">39</span>:<span class="number">01</span>c8│<span class="number">-038</span> <span class="number">0xc000074f28</span> ◂— <span class="number">0x1000</span></span><br><span class="line"><span class="number">3</span>a:<span class="number">01</span>d0│<span class="number">-030</span> <span class="number">0xc000074f30</span> ◂— <span class="number">0x101</span></span><br><span class="line"><span class="number">3b</span>:<span class="number">01</span>d8│<span class="number">-028</span> <span class="number">0xc000074f38</span> ◂— <span class="number">0x101</span></span><br><span class="line"><span class="number">3</span>c:<span class="number">01e0</span>│<span class="number">-020</span> <span class="number">0xc000074f40</span> ◂— <span class="number">0x0</span></span><br><span class="line">... ↓        <span class="number">2</span> skipped</span><br><span class="line"><span class="number">3f</span>:<span class="number">01f</span>8│<span class="number">-008</span> <span class="number">0xc000074f58</span> ◂— <span class="number">0x1</span></span><br><span class="line"><span class="number">40</span>:<span class="number">0200</span>│ rbp <span class="number">0xc000074f60</span> —▸ <span class="number">0xc000074f70</span> —▸ <span class="number">0xc000074fd0</span> ◂— <span class="number">0x0</span></span><br><span class="line"><span class="number">41</span>:<span class="number">0208</span>│+<span class="number">008</span> <span class="number">0xc000074f68</span> —▸ <span class="number">0x4a0af2</span> ◂— <span class="number">0x53058b481074c084</span> &lt;- ret addr</span><br><span class="line"><span class="number">42</span>:<span class="number">0210</span>│+<span class="number">010</span> <span class="number">0xc000074f70</span> —▸ <span class="number">0xc000074fd0</span> ◂— <span class="number">0x0</span></span><br></pre></td></tr></table></figure>
+<p>把写着地址的几个地方覆盖了（其实原因就是下一次fmt.Println的函数参数传0x616161肯定是不行），能ret2text的话其实直接原封不动地址抄到payload里都行</p>
 <p>他妈的windows，赤石去吧</p>
 <p>保护全开的程序也能打下来了，真爽吧。</p>
 
@@ -666,7 +674,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%A7%E5%9D%91%EF%BC%9ALibc%EF%BC%8C%E4%B8%80%E5%AE%9A%E8%A6%81%E6%8D%A2%EF%BC%81%EF%BC%81%EF%BC%81"><span class="toc-number">1.</span> <span class="toc-text">大坑：Libc，一定要换！！！</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E5%9D%91%EF%BC%9A%E6%8F%90%E6%9D%83%EF%BC%88%E6%84%9F%E8%B0%A2l3h%E6%8B%9B%E6%96%B0%E8%B5%9B%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">小坑：提权（感谢l3h招新赛）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%BB%95%E8%BF%87%EF%BC%9Acanary%E5%92%8Caslr"><span class="toc-number">3.</span> <span class="toc-text">保护绕过：canary和aslr</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%A7%E5%9D%91%EF%BC%9ALibc%EF%BC%8C%E4%B8%80%E5%AE%9A%E8%A6%81%E6%8D%A2%EF%BC%81%EF%BC%81%EF%BC%81"><span class="toc-number">1.</span> <span class="toc-text">大坑：Libc，一定要换！！！</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B0%8F%E5%9D%91%EF%BC%9A%E6%8F%90%E6%9D%83%EF%BC%88%E6%84%9F%E8%B0%A2l3h%E6%8B%9B%E6%96%B0%E8%B5%9B%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">小坑：提权（感谢l3h招新赛）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%BB%95%E8%BF%87%EF%BC%9Acanary%E5%92%8Caslr"><span class="toc-number">3.</span> <span class="toc-text">保护绕过：canary和aslr</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="toc-number">4.</span> <span class="toc-text">动态调试</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -830,7 +838,58 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1061,7 +1120,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 30
+        Total : 33
         </div>
         <!-- search  -->
         
@@ -1077,6 +1136,24 @@
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">08/05</span>
             <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
         </li>
@@ -1090,7 +1167,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/28</span>
-            <a class="archive-post-title" href="/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/">How2Heap(8)(end)——Tcache</a>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
         </li>
     
         
@@ -1108,7 +1185,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">07/18</span>
-            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024</a>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
         </li>
     
         
@@ -1156,7 +1233,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">03/23</span>
-            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升tips</a>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
         </li>
     
         
@@ -1343,6 +1420,11 @@
             <span class="sidebar-tag-name" data-tags="ROP">
                 <span class="iconfont-archer">&#xe606;</span>
                 ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
             </span>
         
     </div>
