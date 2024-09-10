@@ -19,14 +19,17 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
     
     <meta name="description" content="">
-    <meta property="og:type" content="article">
+    <meta name="description" content="GO最近复现2024国赛题，全是GO麻麻失了，heap都用go。这种全静态的高级语言逆向起来看的一坨分辨，在这里简单写点经验或者知识吧。 基本的知识GO基础语法也不难，因为除了没有分号也是类C的。我们逆向看的又不是源码是编译后的C。所以不再多说 首先是符号问题，GO程序的入口在main_main，目前的ida 8+已经能支持自动还原符号了，对于不支持的版本可以找ida的插件来进行符号还原。直接搜索">
+<meta property="og:type" content="article">
 <meta property="og:title" content="GO,rust等其他语言的逆向">
 <meta property="og:url" content="http://example.com/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="GO最近复现2024国赛题，全是GO麻麻失了，heap都用go。这种全静态的高级语言逆向起来看的一坨分辨，在这里简单写点经验或者知识吧。 基本的知识GO基础语法也不难，因为除了没有分号也是类C的。我们逆向看的又不是源码是编译后的C。所以不再多说 首先是符号问题，GO程序的入口在main_main，目前的ida 8+已经能支持自动还原符号了，对于不支持的版本可以找ida的插件来进行符号还原。直接搜索">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-03T01:42:59.000Z">
-<meta property="article:modified_time" content="2024-09-03T01:42:59.225Z">
+<meta property="article:modified_time" content="2024-09-06T03:47:41.458Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="逆向">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -324,6 +327,8 @@
                     <div class= post-intro-tags >
     
     
+        <a class="post-tag" href="javascript:void(0);" data-tags="逆向">逆向</a>
+    
 </div>
 
                 
@@ -487,7 +492,42 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        
+        <h1 id="GO"><a href="#GO" class="headerlink" title="GO"></a>GO</h1><p>最近复现2024国赛题，全是GO麻麻失了，heap都用go。这种全静态的高级语言逆向起来看的一坨分辨，在这里简单写点经验或者知识吧。</p>
+<h2 id="基本的知识"><a href="#基本的知识" class="headerlink" title="基本的知识"></a>基本的知识</h2><p>GO基础语法也不难，因为除了没有分号也是类C的。我们逆向看的又不是源码是编译后的C。所以不再多说</p>
+<p>首先是符号问题，GO程序的入口在<code>main_main</code>，目前的ida 8+已经能支持自动还原符号了，对于不支持的版本可以找ida的插件来进行符号还原。直接搜索<code>main_main</code>就能找到程序的入口。</p>
+<p>在打包进二进制文件的时候，go的全部数据类型都从一个叫做RTYPE的结构体扩展而来，</p>
+<h2 id="fmt-Println——GO的IO实现"><a href="#fmt-Println——GO的IO实现" class="headerlink" title="fmt.Println——GO的IO实现"></a>fmt.Println——GO的IO实现</h2><blockquote>
+<p>看这个函数在ida里看的都头大，单独拎出来学一下。<br>在ida里我们经常能看到这个函数带一大堆参数，类似这种：</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt_Fprintln((<span class="type">unsigned</span> <span class="type">int</span>)off_2BCBE8, qword_41A3E8, (<span class="type">unsigned</span> <span class="type">int</span>)v43, <span class="number">1</span>, <span class="number">1</span>, v12, v13, v9, v10, v30);</span><br></pre></td></tr></table></figure>
+<p>这个函数是<code>fmt.Println</code>内部真正实现输出的函数，看看go源码加上网上的文章学习一下解析方法。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Println</span><span class="params">(a ...any)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="keyword">return</span> Fprintln(os.Stdout, a...)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Go的源码分析"><a href="#Go的源码分析" class="headerlink" title="Go的源码分析"></a>Go的源码分析</h3><p>这里简单解析一下这个函数的实现，首先从go开始。他的原型是这样的：</p>
+<blockquote>
+<p>源码分析参考<a target="_blank" rel="noopener" href="https://www.cnblogs.com/detectiveHLH/p/11023149.html%E7%9A%84%E5%88%86%E6%9E%90">https://www.cnblogs.com/detectiveHLH/p/11023149.html的分析</a></p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Fprintln</span><span class="params">(w io.Writer, a ...any)</span></span> (n <span class="type">int</span>, err <span class="type">error</span>) &#123;</span><br><span class="line">	p := newPrinter()</span><br><span class="line">	p.doPrintln(a)</span><br><span class="line">	n, err = w.Write(p.buf)</span><br><span class="line">	p.free()</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它接受任意的参数，第一个是一个ioWriter接口。第二个参数<code>...</code>代表可变参数，any代表任意类型。这玩意go的实现是会将a作为一个参数组的切片传到函数里面。<br>newPrinter是一个分配器，里面封装了一个从临时对象池中取对象的操作，这里不再展开。p.free也是同理，将取得的对象放回池子。</p>
+<p>然后是doPrintln：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *pp)</span></span> doPrintln(a []any) &#123;</span><br><span class="line">	<span class="keyword">for</span> argNum, arg := <span class="keyword">range</span> a &#123;</span><br><span class="line">		<span class="keyword">if</span> argNum &gt; <span class="number">0</span> &#123;</span><br><span class="line">			p.buf.writeByte(<span class="string">&#x27; &#x27;</span>)</span><br><span class="line">		&#125;</span><br><span class="line">		p.printArg(arg, <span class="string">&#x27;v&#x27;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	p.buf.writeByte(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>遍历全部参数，printArg打印然后再buf中写入分割的空格和换行符。</p>
+<p>然后是printArg：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *pp)</span></span> printArg(arg any, verb <span class="type">rune</span>) &#123;</span><br><span class="line">	p.arg = arg</span><br><span class="line">	p.value = reflect.Value&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> arg == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">switch</span> verb &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">&#x27;T&#x27;</span>, <span class="string">&#x27;v&#x27;</span>:</span><br><span class="line">			p.fmt.padString(nilAngleString)</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			p.badVerb(verb)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Special processing considerations.</span></span><br><span class="line">	<span class="comment">// %T (the value&#x27;s type) and %p (its address) are special; we always do them first.</span></span><br><span class="line">	<span class="keyword">switch</span> verb &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;T&#x27;</span>:</span><br><span class="line">		p.fmt.fmtS(reflect.TypeOf(arg).String())</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;p&#x27;</span>:</span><br><span class="line">		p.fmtPointer(reflect.ValueOf(arg), <span class="string">&#x27;p&#x27;</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// Some types can be done without reflection.</span></span><br><span class="line">	<span class="keyword">switch</span> f := arg.(<span class="keyword">type</span>) &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="type">bool</span>:</span><br><span class="line">		p.fmtBool(f, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">float32</span>:</span><br><span class="line">		p.fmtFloat(<span class="type">float64</span>(f), <span class="number">32</span>, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">float64</span>:</span><br><span class="line">		p.fmtFloat(f, <span class="number">64</span>, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">complex64</span>:</span><br><span class="line">		p.fmtComplex(<span class="type">complex128</span>(f), <span class="number">64</span>, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">complex128</span>:</span><br><span class="line">		p.fmtComplex(f, <span class="number">128</span>, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">int</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), signed, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">int8</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), signed, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">int16</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), signed, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">int32</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), signed, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">int64</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), signed, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uint</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uint8</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uint16</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uint32</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uint64</span>:</span><br><span class="line">		p.fmtInteger(f, unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">uintptr</span>:</span><br><span class="line">		p.fmtInteger(<span class="type">uint64</span>(f), unsigned, verb)</span><br><span class="line">	<span class="keyword">case</span> <span class="type">string</span>:</span><br><span class="line">		p.fmtString(f, verb)</span><br><span class="line">	<span class="keyword">case</span> []<span class="type">byte</span>:</span><br><span class="line">		p.fmtBytes(f, verb, <span class="string">&quot;[]byte&quot;</span>)</span><br><span class="line">	<span class="keyword">case</span> reflect.Value:</span><br><span class="line">		<span class="comment">// Handle extractable values with special methods</span></span><br><span class="line">		<span class="comment">// since printValue does not handle them at depth 0.</span></span><br><span class="line">		<span class="keyword">if</span> f.IsValid() &amp;&amp; f.CanInterface() &#123;</span><br><span class="line">			p.arg = f.Interface()</span><br><span class="line">			<span class="keyword">if</span> p.handleMethods(verb) &#123;</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		p.printValue(f, verb, <span class="number">0</span>)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="comment">// If the type is not simple, it might have methods.</span></span><br><span class="line">		<span class="keyword">if</span> !p.handleMethods(verb) &#123;</span><br><span class="line">			<span class="comment">// Need to use reflection, since the type had no</span></span><br><span class="line">			<span class="comment">// interface methods that could be used for formatting.</span></span><br><span class="line">			p.printValue(reflect.ValueOf(f), verb, <span class="number">0</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里太长不看，本质上就是解析各种类型因为我们一个函数输出所有内容，要分支到合适的地方，这里直接看字符串的case<code>p.fmtSring</code>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *pp)</span></span> fmtString(v <span class="type">string</span>, verb <span class="type">rune</span>) &#123;</span><br><span class="line">	<span class="keyword">switch</span> verb &#123;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;v&#x27;</span>:</span><br><span class="line">		<span class="keyword">if</span> p.fmt.sharpV &#123;</span><br><span class="line">			p.fmt.fmtQ(v)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			p.fmt.fmtS(v)</span><br><span class="line">		&#125;</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;s&#x27;</span>:</span><br><span class="line">		p.fmt.fmtS(v)</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;x&#x27;</span>:</span><br><span class="line">		p.fmt.fmtSx(v, ldigits)</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;X&#x27;</span>:</span><br><span class="line">		p.fmt.fmtSx(v, udigits)</span><br><span class="line">	<span class="keyword">case</span> <span class="string">&#x27;q&#x27;</span>:</span><br><span class="line">		p.fmt.fmtQ(v)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		p.badVerb(verb)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也是个依据模式的处理，最后在fmtS中最后一次处理精度截断后，将字符串的内容写入buffer，最后调用io输出。</p>
+<h3 id="逆向对应"><a href="#逆向对应" class="headerlink" title="逆向对应"></a>逆向对应</h3><p>之前看到虽然ida识别出了10个参数但是只有前5个有具体值，而且fmt_FPrintln自己的代码内部也只有5个参数，我们就当他只有5个参数，来对一下功能。记为1-5.观察main_main的变量定义，其中123是指针，45是纯数（两个1）。</p>
+<p>第三个参数是一个&amp;RTYPE_String,应该是一个符合类型？？，第二个则是一个运行时分配的变量，但是3存了连续两个指针，第一个指向RTYPE_String, 第二个则指向我们的参数2.<br>参数1指向的位置，第一个是我们的RTYPE_io_Writer：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBE8 io_Writer_struct dq offset RTYPE_io_Writer</span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBF0                 dq offset RTYPE__ptr_os_File</span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBF8                 db  <span class="number">44</span>h ; D</span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBF9                 db <span class="number">0B</span>5h</span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFA                 db <span class="number">0F</span>3h</span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFB                 db  <span class="number">33</span>h ; <span class="number">3</span></span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFC                 db    <span class="number">0</span></span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFD                 db    <span class="number">0</span></span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFE                 db    <span class="number">0</span></span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CBFF                 db    <span class="number">0</span></span><br><span class="line">.data.rel.ro:<span class="number">00000000002B</span>CC00                 dq offset os__ptr_File_Write</span><br></pre></td></tr></table></figure>
+<p>参数2指向一个bss段的地址，推测也是io接口相关的指针：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.bss:<span class="number">000000000041</span>A3E0 ; _ptr_os_File qword_41A3E0</span><br><span class="line">.bss:<span class="number">000000000041</span>A3E0 qword_41A3E0    dq ?                    ; DATA XREF: os_init+<span class="number">1</span>EE↑w</span><br><span class="line">.bss:<span class="number">000000000041</span>A3E0                                         ; os_init:loc_123957↑o ...</span><br><span class="line">.bss:<span class="number">000000000041</span>A3E8 qword_41A3E8    dq ?                    ; DATA XREF: os_init+<span class="number">226</span>↑w &lt;--参数<span class="number">2</span></span><br><span class="line">.bss:<span class="number">000000000041</span>A3E8                                         ; os_init:loc_12398F↑o ...</span><br></pre></td></tr></table></figure>
+<p>参数3是String类型的参数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">v33[<span class="number">0</span>] = &amp;RTYPE_string;</span><br><span class="line">v33[<span class="number">1</span>] = &amp;off_2BBCB0;</span><br></pre></td></tr></table></figure>
+<p>参数4和5都是1。</p>
+<p>进入函数，其内部又调用了<code>fmt__ptr_pp_doPrintln</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fmt__ptr_pp_doPrintln((__int64 *)new_pp, string2, val_1, val_11, val_11, v6, v7, v8, v9);</span><br></pre></td></tr></table></figure>
+<p>6-9是空的，234都是1。进入函数后对应go源码直接看循环，大概猜测，初始传入的1有一个是参数个数</p>
+
     </article>
     <!-- license -->
     
@@ -642,7 +682,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#GO"><span class="toc-number">1.</span> <span class="toc-text">GO</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%9A%84%E7%9F%A5%E8%AF%86"><span class="toc-number">1.1.</span> <span class="toc-text">基本的知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fmt-Println%E2%80%94%E2%80%94GO%E7%9A%84IO%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">fmt.Println——GO的IO实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Go%E7%9A%84%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">1.2.1.</span> <span class="toc-text">Go的源码分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%86%E5%90%91%E5%AF%B9%E5%BA%94"><span class="toc-number">1.2.2.</span> <span class="toc-text">逆向对应</span></a></li></ol></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -826,7 +866,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1091,7 +1148,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 34
+        Total : 35
         </div>
         <!-- search  -->
         
@@ -1105,6 +1162,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/05</span>
@@ -1339,11 +1402,6 @@
                 pwn
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Develop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Develop
@@ -1354,9 +1412,9 @@
                 heap
             </span>
         
-            <span class="sidebar-tag-name" data-tags="wp">
+            <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
-                wp
+                逆向
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -1364,14 +1422,29 @@
                 protobuf
             </span>
         
-            <span class="sidebar-tag-name" data-tags="FSOP">
+            <span class="sidebar-tag-name" data-tags="wp">
                 <span class="iconfont-archer">&#xe606;</span>
-                FSOP
+                wp
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -1382,11 +1455,6 @@
             <span class="sidebar-tag-name" data-tags="Others">
                 <span class="iconfont-archer">&#xe606;</span>
                 Others
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="ROP">
@@ -1425,6 +1493,11 @@
             CSAPP
         </span>
     
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
@@ -1448,11 +1521,6 @@
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Reverse">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Reverse
         </span>
     
     </div>

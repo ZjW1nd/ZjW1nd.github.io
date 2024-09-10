@@ -445,6 +445,44 @@
             
         
         <article class="index-post">
+            <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
+                
+                <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; House of Lore</span>
+            </a>
+            <div class="abstract-content">
+                堆漏洞利用之unsorted bin attack & House of Lore。Unsorted bin attack可以将一个任意地址写成一个大数（unsorted bin链头的地址，main arena+88或main arena+96）。House of Lore则可以借助small bin实现任意地址的chunk分配。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/07/28">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/01/25</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
             <a class="abstract-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">
                 
                 <span class="abstract-title-text">青训营记录整合包</span>
@@ -570,9 +608,9 @@
     
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="Others">Others</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="linux">linux</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Others">Others</a>
     
 </div>
 
@@ -761,44 +799,6 @@
     
     
         <a class="post-tag" href="javascript:void(0);" data-tags="linux">linux</a>
-    
-</div>
-
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
-        
-        
-        
-        
-            
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">
-                
-                <span class="abstract-title-text">逆向杂谈（持续更新）</span>
-            </a>
-            <div class="abstract-content">
-                最近更新：KeyPatch插件小实践
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/07/04">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/11/25</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="逆向">逆向</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="IDA">IDA</a>
     
 </div>
 
@@ -1156,7 +1156,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1421,7 +1438,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 34
+        Total : 35
         </div>
         <!-- search  -->
         
@@ -1435,6 +1452,12 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/05</span>
@@ -1669,11 +1692,6 @@
                 pwn
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Develop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Develop
@@ -1684,9 +1702,9 @@
                 heap
             </span>
         
-            <span class="sidebar-tag-name" data-tags="wp">
+            <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
-                wp
+                逆向
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -1694,14 +1712,29 @@
                 protobuf
             </span>
         
-            <span class="sidebar-tag-name" data-tags="FSOP">
+            <span class="sidebar-tag-name" data-tags="wp">
                 <span class="iconfont-archer">&#xe606;</span>
-                FSOP
+                wp
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -1712,11 +1745,6 @@
             <span class="sidebar-tag-name" data-tags="Others">
                 <span class="iconfont-archer">&#xe606;</span>
                 Others
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="ROP">
@@ -1755,6 +1783,11 @@
             CSAPP
         </span>
     
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
@@ -1778,11 +1811,6 @@
         <span class="sidebar-category-name" data-categories="others">
             <span class="iconfont-archer">&#xe60a;</span>
             others
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Reverse">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Reverse
         </span>
     
     </div>
