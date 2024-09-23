@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="什么是STL?STL(Standard Template Library)是C++库为我们实现好的一系列数据结构和方法，是一些常用结构的标准实现。他们的数据结构都被定义好了，在编程的时候可以直接调用。 那么对于逆向来说，我们主要是要识别出对应的STL容器类以及对他们操作的函数功能（常见的类方法），识别相关容器的内存结构能起到很大作用。简单记录一下，其实这个没有Go这种逆向难。 本题中STL容器的内">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STL容器逆向——逆向工程实验STLWP">
+<meta property="og:url" content="http://example.com/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="什么是STL?STL(Standard Template Library)是C++库为我们实现好的一系列数据结构和方法，是一些常用结构的标准实现。他们的数据结构都被定义好了，在编程的时候可以直接调用。 那么对于逆向来说，我们主要是要识别出对应的STL容器类以及对他们操作的函数功能（常见的类方法），识别相关容器的内存结构能起到很大作用。简单记录一下，其实这个没有Go这种逆向难。 本题中STL容器的内">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-09-19T04:57:35.000Z">
+<meta property="article:modified_time" content="2024-09-23T01:18:05.661Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="逆向">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>STL容器逆向——逆向工程实验STLWP · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">STL容器逆向——逆向工程实验STLWP</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                STL容器逆向——逆向工程实验STLWP
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="逆向">逆向</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/09/19</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="什么是STL"><a href="#什么是STL" class="headerlink" title="什么是STL?"></a>什么是STL?</h1><p>STL(Standard Template Library)是C++库为我们实现好的一系列数据结构和方法，是一些常用结构的标准实现。他们的数据结构都被定义好了，在编程的时候可以直接调用。</p>
+<p>那么对于逆向来说，我们主要是要识别出对应的STL容器类以及对他们操作的函数功能（常见的类方法），识别相关容器的内存结构能起到很大作用。简单记录一下，其实这个没有Go这种逆向难。</p>
+<h1 id="本题中STL容器的内存结构和分析"><a href="#本题中STL容器的内存结构和分析" class="headerlink" title="本题中STL容器的内存结构和分析"></a>本题中STL容器的内存结构和分析</h1><blockquote>
+<p>参考<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1720719-1-1.html">https://www.52pojie.cn/thread-1720719-1-1.html</a><br>参考<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/604288453%EF%BC%8C%E8%BF%99%E7%AF%87%E6%96%87%E7%AB%A0%E5%86%99%E4%BA%86%E4%B8%80%E4%B8%AALLVM">https://zhuanlan.zhihu.com/p/604288453，这篇文章写了一个LLVM</a> PASS来分析底层结构<br>注意，以下的结构并不是“严格”遵循的，比如本题中红黑树就有细小的差别，应该与版本等有关，重要的是识别出在干嘛然后方便我们猜测程序的功能。</p>
+</blockquote>
+<h2 id="String"><a href="#String" class="headerlink" title="String"></a>String</h2><p>C++的String结构包含一个指向内容的指针，一个长度和一个联合体：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span>.std::__cxx11::basic_string &#123;</span><br><span class="line">    <span class="keyword">struct</span>.std::__cxx11::basic_string&lt;<span class="type">char</span>, std::char_traits&lt;<span class="type">char</span>&gt;, std::allocator&lt;<span class="type">char</span>&gt; &gt;::_Alloc_hider &#123;</span><br><span class="line">        <span class="type">uint8_t</span>* ptr;</span><br><span class="line">    &#125; dataplus;</span><br><span class="line">    <span class="type">uint64_t</span> string_length;</span><br><span class="line">    <span class="keyword">union</span>.anon &#123;</span><br><span class="line">        <span class="type">uint64_t</span> allocated_capacity;</span><br><span class="line">        <span class="type">uint8_t</span> local_buf[<span class="number">8</span>];</span><br><span class="line">    &#125;;</span><br><span class="line">&#125; field_0;</span><br></pre></td></tr></table></figure>
+<p>如果字符串长度较小（小于8），会直接将字符串的内容和String结构放在一起，第一个字段就指向localbuf，也就是说对于局部变量字符串就会放在栈上，我们能看到。如果字符串长，字符串内容就会分配在堆上，那么这个字段就会存储堆上分配的空间大小。</p>
+<p>对于String，结合本题来看，动调确定主流程中的输入模块之后分析参数可以看出是String，这时候可以先输入8个或以下字符跟进看一下，在栈上就大概率是了。</p>
+<h2 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h2><p>Vector容器看着功能多，实际上底层就三个指针，第一个存放数据开始，第二个存放数据结束，第三个存放当前vector容量的结束位置。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span>.std::vector&lt;string&gt; &#123;</span><br><span class="line">    <span class="keyword">struct</span>.std::_Vector_base &#123;</span><br><span class="line">        <span class="keyword">struct</span>.std::_Vector_base&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::allocator&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt; &gt;::_Vector_impl &#123;</span><br><span class="line">            <span class="keyword">struct</span>.std::_Vector_base&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::allocator&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt; &gt;::_Vector_impl_data &#123;</span><br><span class="line">                <span class="keyword">class</span>.std::__cxx11::basic_string* start;</span><br><span class="line">                <span class="keyword">class</span>.std::__cxx11::basic_string* finish;</span><br><span class="line">                <span class="keyword">class</span>.std::__cxx11::basic_string* end_of_storage;</span><br><span class="line">            &#125; field_0;</span><br><span class="line">        &#125; field_0;</span><br><span class="line">    &#125; field_0;</span><br><span class="line">&#125; field_0;</span><br></pre></td></tr></table></figure>
+<p>内存中的结构就是三个相连的指针。如果vector是一直随输入变化增长的没有事先申请额外的空间（一般可能都是这样），那么finish字段的内容和end_of_storage将会指向同一个地址。如果内存中有一个开始地址，连续两个结束地址而且跟进看发现是数据，那么大概率是vector了。</p>
+<h2 id="rb-tree"><a href="#rb-tree" class="headerlink" title="rb_tree"></a>rb_tree</h2><p>红黑树，我并不了解红黑树相关的算法思想，这里先简单介绍一下：</p>
+<blockquote>
+<p>红黑树就是一个自平衡的搜索二叉树，和一般二叉树不同的是，它为每个节点标注夜色（红&#x2F;黑），并遵循一定的规则。<br>根节点黑色开始，叶子结点（NIL）黑色结束。红色节点的子节点必须都是黑色，且任意节点到每个叶子结点的所有路径都包含相同数量的黑色节点。总之就是通过某些人为的染色规定，保证二叉树的相对平衡，令其在最坏情况下有O(logn)的复杂度。</p>
+</blockquote>
+<p>我们并不关心它的算法实现，STL为我们实现好了，我们关心的是他的内存视图。他的内存视图有两种，header和node。header是一个代表一整颗树的变量，node是真正的结点。</p>
+<h3 id="header"><a href="#header" class="headerlink" title="header"></a>header</h3><p>对于一个header，它应该包含以下信息（本题中一个header占6个机器字长）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span>.std::map&lt;string,string&gt; &#123;</span><br><span class="line">    <span class="keyword">class</span>.std::_Rb_tree<span class="number">.6</span> &#123;</span><br><span class="line">        <span class="keyword">struct</span>.std::_Rb_tree&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::pair&lt;<span class="type">const</span> std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt;, std::_Select1st&lt;std::pair&lt;<span class="type">const</span> std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt; &gt;, std::less&lt;std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt;, std::allocator&lt;std::pair&lt;<span class="type">const</span> std::__cxx11::basic_string&lt;<span class="type">char</span>&gt;, std::__cxx11::basic_string&lt;<span class="type">char</span>&gt; &gt; &gt; &gt;::_Rb_tree_impl &#123;</span><br><span class="line">            <span class="keyword">struct</span>.std::_Rb_tree_key_compare &#123;</span><br><span class="line">                <span class="keyword">struct</span>.std::less &#123;</span><br><span class="line">                    <span class="type">uint8_t</span> value;</span><br><span class="line">                &#125; key_compare;</span><br><span class="line">            &#125; compare;</span><br><span class="line">            <span class="keyword">struct</span>.std::_Rb_tree_header &#123;</span><br><span class="line">                <span class="keyword">struct</span>.std::_Rb_tree_node_base &#123;</span><br><span class="line">                    <span class="type">uint32_t</span> color; <span class="comment">// 不知道为什么做题的时候这里header是8个字节</span></span><br><span class="line">                    <span class="keyword">struct</span>.std::_Rb_tree_node_base* parent;</span><br><span class="line">                    <span class="keyword">struct</span>.std::_Rb_tree_node_base* left;</span><br><span class="line">                    <span class="keyword">struct</span>.std::_Rb_tree_node_base* right;</span><br><span class="line">                &#125; node;</span><br><span class="line">                <span class="type">uint64_t</span> node_count;</span><br><span class="line">            &#125; field_1;</span><br><span class="line">        &#125; field_0;</span><br><span class="line">    &#125; field_0;</span><br><span class="line">&#125; field_0;</span><br></pre></td></tr></table></figure>
+<p>简单说，第一个字段不重要（也没懂是干嘛的），后面包含color，parent,left,right的三个指针，以及一个节点总数。对于rbtree，color只取0和1，0黑1红。</p>
+<p>header的这三个指针，在树为空的时候parent为0，left和right指向自己，树初始化后，paretn指向根节点，left和right则指向这个树最左边和最右边的结点。同时header和真正的根节点root他们的parent互相是对方。</p>
+<h3 id="node"><a href="#node" class="headerlink" title="node"></a>node</h3><p>一个节点存储的信息就好说了，只有color（0和1，int32），parent，left，right三个指针，以及一个存储真正数据的element data域。</p>
+<p>总之，红黑树的关键就是那个color，识别到有这种0和1的color域就可能是红黑树。</p>
+<h2 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h2><p>STL容器还有很多，deque，基于红黑树的map等等，这里不再细说，了解这三种足够我们做这道题了。</p>
+<h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><p>拿到手IDA打开，主函数很清晰，输入正确会显示flag</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">v18 = sub_4E0940;</span><br><span class="line">v19 = &amp;off_5010FC;</span><br><span class="line">v20 = &amp;v45;</span><br><span class="line">v21 = &amp;loc_401ACF;</span><br><span class="line">v22 = v13;</span><br><span class="line"><span class="built_in">sub_40CB20</span>(&amp;v13[<span class="number">64</span>], &amp;loc_401ACF, envp);</span><br><span class="line"><span class="built_in">sub_40B470</span>();</span><br><span class="line"><span class="built_in">sub_4C17C0</span>(&amp;a1);</span><br><span class="line"><span class="built_in">sub_4BCE40</span>(&amp;vector1);</span><br><span class="line">v28[<span class="number">0</span>] = <span class="number">0xA7398D39</span>;</span><br><span class="line">v28[<span class="number">1</span>] = <span class="number">0x7EA7887E</span>;</span><br><span class="line">v28[<span class="number">2</span>] = <span class="number">0xF3DE7E39</span>;</span><br><span class="line">v28[<span class="number">3</span>] = <span class="number">0xB5F37E12</span>;</span><br><span class="line">v28[<span class="number">4</span>] = <span class="number">0x733AF388</span>;</span><br><span class="line">v28[<span class="number">5</span>] = <span class="number">0x7EDE73F3</span>;</span><br><span class="line">v28[<span class="number">6</span>] = <span class="number">0xA7DE8DAA</span>;</span><br><span class="line">v28[<span class="number">7</span>] = <span class="number">0xA7DEA739</span>;</span><br><span class="line">v28[<span class="number">8</span>] = <span class="number">0x8D7EB57E</span>;</span><br><span class="line">ssm0.m128i_i64[<span class="number">0</span>] = (__int64)v28; <span class="comment">// 128位16字节，第一个存数组指针第二个存数组长度</span></span><br><span class="line">ssm0.m128i_i64[<span class="number">1</span>] = <span class="number">9LL</span>;</span><br><span class="line"><span class="built_in">nop2</span>((__int64)&amp;v29);</span><br><span class="line">ssm00 = _mm_load_si128(&amp;ssm0);</span><br><span class="line">v17 = <span class="number">1</span>;</span><br><span class="line"><span class="built_in">init_vec</span>(&amp;vector2, ssm00.m128i_i64, (__int64)&amp;v29);</span><br><span class="line"><span class="built_in">nop</span>((__int64)&amp;v29);</span><br><span class="line"><span class="built_in">memcpy</span>(ascii_db0, ascii_db, <span class="built_in">sizeof</span>(ascii_db0));</span><br><span class="line">ssm1.m128i_i64[<span class="number">0</span>] = (__int64)ascii_db0;</span><br><span class="line">ssm1.m128i_i64[<span class="number">1</span>] = <span class="number">256LL</span>;</span><br><span class="line"><span class="built_in">nop3</span>((__int64)&amp;v32);</span><br><span class="line">ssm00 = _mm_load_si128(&amp;ssm1);</span><br><span class="line">v17 = <span class="number">2</span>;</span><br><span class="line"><span class="built_in">tree_create</span>(&amp;rb_tree, ssm00.m128i_i64, (__int64)&amp;v31, (__int64)&amp;v32);</span><br><span class="line"><span class="built_in">nop4</span>((__int64)&amp;v32);</span><br><span class="line">v17 = <span class="number">3</span>;</span><br><span class="line"><span class="built_in">String_append</span>(qword_4E4740, &amp;a1, v3);</span><br><span class="line"><span class="keyword">if</span> ( <span class="built_in">get_lenth</span>(&amp;a1) != <span class="number">36</span> )</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">for</span> ( i = <span class="number">0</span>; ; i += <span class="number">4</span> )</span><br><span class="line">&#123;</span><br><span class="line">  ssm1.m128i_i64[<span class="number">0</span>] = i;</span><br><span class="line">  lenth = <span class="built_in">get_lenth</span>(&amp;a1);</span><br><span class="line">  <span class="keyword">if</span> ( ssm1.m128i_i64[<span class="number">0</span>] &gt;= lenth )</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  v17 = <span class="number">3</span>;</span><br><span class="line">  chr = (<span class="type">unsigned</span> __int8 *)<span class="built_in">String_get_idx</span>(&amp;a1, i);</span><br><span class="line">  enc0 = <span class="built_in">enc</span>(*chr);</span><br><span class="line">  v43 = *(_BYTE *)<span class="built_in">sub_4B7D90</span>((__int64)&amp;rb_tree, &amp;enc0);</span><br><span class="line">  idx = (<span class="type">unsigned</span> __int8 *)<span class="built_in">String_get_idx</span>(&amp;a1, i + <span class="number">1</span>);</span><br><span class="line">  v34 = <span class="built_in">enc</span>(*idx);</span><br><span class="line">  v42 = *(_BYTE *)<span class="built_in">sub_4B7D90</span>((__int64)&amp;rb_tree, &amp;v34);</span><br><span class="line">  v7 = (<span class="type">unsigned</span> __int8 *)<span class="built_in">String_get_idx</span>(&amp;a1, i + <span class="number">2</span>);</span><br><span class="line">  v35 = <span class="built_in">enc</span>(*v7);</span><br><span class="line">  v41 = *(_BYTE *)<span class="built_in">sub_4B7D90</span>((__int64)&amp;rb_tree, &amp;v35);</span><br><span class="line">  v8 = (<span class="type">unsigned</span> __int8 *)<span class="built_in">String_get_idx</span>(&amp;a1, i + <span class="number">3</span>);</span><br><span class="line">  v36 = <span class="built_in">enc</span>(*v8);</span><br><span class="line">  v40 = *(_BYTE *)<span class="built_in">sub_4B7D90</span>((__int64)&amp;rb_tree, &amp;v36);</span><br><span class="line">  v37 = (v41 &lt;&lt; <span class="number">8</span>) | (v42 &lt;&lt; <span class="number">16</span>) | (v43 &lt;&lt; <span class="number">24</span>) | v40;</span><br><span class="line">  <span class="built_in">vector_pushback</span>((__int64)&amp;vector1, &amp;v37);</span><br><span class="line">&#125;</span><br><span class="line">ssm0.m128i_i64[<span class="number">0</span>] = <span class="built_in">chr_memcpy2stack</span>(&amp;vector2);</span><br><span class="line">ssm1.m128i_i64[<span class="number">0</span>] = <span class="built_in">sub_4BCC10</span>((__int64)&amp;vector1);</span><br><span class="line">v9 = <span class="built_in">chr_memcpy2stack</span>(&amp;vector1);</span><br><span class="line">v17 = <span class="number">3</span>;</span><br><span class="line"><span class="keyword">if</span> ( (<span class="type">unsigned</span> __int8)<span class="built_in">sub_4D8000</span>(v9, ssm1.m128i_i64[<span class="number">0</span>], ssm0.m128i_i64[<span class="number">0</span>]) )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">sub_4DB950</span>(v39, <span class="string">&quot;you find it, flag is vmc&#123;&quot;</span>, &amp;a1);</span><br><span class="line">  v17 = <span class="number">4</span>;</span><br><span class="line">  <span class="built_in">sub_4DB900</span>(v38, v39, <span class="string">&quot;&#125;&quot;</span>);</span><br><span class="line">  v17 = <span class="number">5</span>;</span><br><span class="line">  v10 = <span class="built_in">sub_4DB310</span>(&amp;unk_4E4AA0, v38);</span><br><span class="line">  ((<span class="built_in">void</span> (__fastcall *)(__int64))sub_4D7EE0)(v10);</span><br><span class="line">  <span class="built_in">sub_4C1B00</span>(v38);</span><br><span class="line">  <span class="built_in">sub_4C1B00</span>(v39);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">  v17 = <span class="number">3</span>;</span><br><span class="line">  v11 = <span class="built_in">sub_4DB0D0</span>(&amp;unk_4E4AA0, <span class="string">&quot;try again&quot;</span>);</span><br><span class="line">  ((<span class="built_in">void</span> (__fastcall *)(__int64))sub_4D7EE0)(v11);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">sub_4B7D70</span>(&amp;rb_tree);</span><br><span class="line"><span class="built_in">sub_4BCEA0</span>(&amp;vector2);</span><br><span class="line"><span class="built_in">sub_4BCEA0</span>(&amp;vector1);</span><br><span class="line"><span class="built_in">sub_4C1B00</span>(&amp;a1);</span><br><span class="line">ssm1.m128i_i32[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">sub_40CB80</span>(&amp;v16);</span><br><span class="line"><span class="keyword">return</span> ssm1.m128i_i32[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+<p>这里用了STL容器但是把符号全扣了，我们先来找一下输入函数，动调单步，输入函数看不懂太复杂，确定输入是这个a1，而且输入8个字符放在栈上，结构也符合，a1应该是一个String类来接受我们的输入。确定是String类后根据String的结构还原一下结构体，也就找到了getlenth的函数，可以看到我们要输入36个字符。</p>
+<p>中间的ssm和m128i这种代表用了simd指令集，用到了那个128位的xmm寄存器，操作这个寄存器可以按64,32位去放数据。允许两个机器字长。</p>
+<p>加密逻辑就是主函数的循环，一次跑4个字节，跑9轮到长度就退出。还原结构体后可以看到中间是按i去从String内容里按下标取出字符，然后调用一个位运算操作：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">char</span> *__fastcall <span class="title">String_get_idx</span><span class="params">(String_class *a1, __int64 a2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &amp;a1-&gt;ptr[a2];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">__int64 __fastcall <span class="title">enc</span><span class="params">(<span class="type">unsigned</span> __int8 a1)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ~((<span class="number">16</span> * a1) | (<span class="type">unsigned</span> <span class="type">int</span>)((<span class="type">int</span>)a1 &gt;&gt; <span class="number">4</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最关键的，就是这个左移右移处理过后的字符传入的这个函数4b7d90，我们可以看到最后是将4个字节拼凑成一个然后做了一些操作，那么这个4b7d90的加密就很重要。</p>
+<h1 id="关键函数分析"><a href="#关键函数分析" class="headerlink" title="关键函数分析"></a>关键函数分析</h1><p>开始入手的时候试图分析这个函数，但是跟进发现一拖史，调用套调用最后看不懂，而且相当多功能简单（直接返回，返回arg+8）的函数没有复用都是新的符号：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__int64 __fastcall <span class="title">sub_4B7D90</span><span class="params">(<span class="keyword">struct</span> my_rbtree_header *rb_tree, <span class="type">char</span> *enc_byte)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  _BYTE *off32; <span class="comment">// rax</span></span><br><span class="line">  __int64 enc_byte2; <span class="comment">// rax</span></span><br><span class="line">  __int64 v5; <span class="comment">// r8</span></span><br><span class="line">  __int64 v7; <span class="comment">// [rsp+38h] [rbp-48h] BYREF</span></span><br><span class="line">  __int64 off8_ptr; <span class="comment">// [rsp+40h] [rbp-40h] BYREF</span></span><br><span class="line">  <span class="type">char</span> v9; <span class="comment">// [rsp+4Eh] [rbp-32h] BYREF</span></span><br><span class="line">  <span class="type">char</span> v10; <span class="comment">// [rsp+4Fh] [rbp-31h] BYREF</span></span><br><span class="line">  _BYTE v11[<span class="number">8</span>]; <span class="comment">// [rsp+50h] [rbp-30h] BYREF</span></span><br><span class="line">  _QWORD v12[<span class="number">3</span>]; <span class="comment">// [rsp+58h] [rbp-28h] BYREF</span></span><br><span class="line"></span><br><span class="line">  v7 = <span class="built_in">sub_4B7B00</span>((__int64)rb_tree, (__int64)enc_byte);<span class="comment">// 0x10返回</span></span><br><span class="line">  off8_ptr = <span class="built_in">get_off8_ptr_</span>((__int64)rb_tree);</span><br><span class="line">  <span class="keyword">if</span> ( <span class="built_in">isderefArg1_eq_derefArg2</span>(&amp;v7, &amp;off8_ptr)</span><br><span class="line">    || (<span class="built_in">sub_429160</span>(rb_tree), off32 = (_BYTE *)<span class="built_in">get_off32</span>(&amp;v7), <span class="built_in">isArg2_below_arg3</span>((__int64)&amp;v9, enc_byte, off32)) )</span><br><span class="line">  &#123;</span><br><span class="line">    enc_byte2 = <span class="built_in">just_ret3</span>((__int64)enc_byte);</span><br><span class="line">    <span class="built_in">sub_4D5BA0</span>((__int64)v11, enc_byte2, v5);</span><br><span class="line">    <span class="built_in">sub_4B79E0</span>(v12, &amp;v7);</span><br><span class="line">    v7 = <span class="built_in">sub_4CD350</span>((_DWORD)rb_tree, v12[<span class="number">0</span>], (<span class="type">unsigned</span> <span class="type">int</span>)&amp;unk_4E6000, (<span class="type">unsigned</span> <span class="type">int</span>)v11, (__int64)&amp;v10);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">get_off32</span>(&amp;v7) + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看不懂在干嘛，看STL相关结构的同时决定动调。</p>
+<p>我们能看到这个函数接收了两个参数，这第一个参数就很重要。回到主函数的开头，这个变量参与了这样一个函数（当然名字是做出来之后才有的）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tree_create</span>(&amp;rb_tree, ssm00.m128i_i64, (__int64)&amp;v31, (__int64)&amp;v32);</span><br></pre></td></tr></table></figure>
+<p>这个函数的内容我们也看不懂，但是不重要，它接受的第二个参数很有意思，在前面的初始化过程中，它存储的是一段神秘数据的指针。检查的时候这段数据是从0-FF依次对应另一个字节，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">  <span class="built_in">memcpy</span>(ascii_db0, ascii_db, <span class="keyword">sizeof</span>(ascii_db0));</span><br><span class="line">  ssm1.m128i_i64[<span class="number">0</span>] = (__int64)ascii_db0;</span><br><span class="line">  ssm1.m128i_i64[<span class="number">1</span>] = <span class="number">256LL</span>;</span><br><span class="line">  nop3((__int64)&amp;v32);</span><br><span class="line">  ssm00 = _mm_load_si128(&amp;ssm1);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 类似于这样：</span></span><br><span class="line">.data:<span class="number">00000000004E2020</span> ascii_db        my_bytes &lt;   <span class="number">0</span>,  <span class="number">2</span>Eh&gt;   ; <span class="number">0</span></span><br><span class="line">.data:<span class="number">00000000004E2020</span>                                         ; DATA XREF: main+<span class="number">186</span>↑o</span><br><span class="line">.data:<span class="number">00000000004E2022</span>                 my_bytes &lt;   <span class="number">1</span>,  <span class="number">7</span>Dh&gt;   ; <span class="number">1</span></span><br><span class="line">.data:<span class="number">00000000004E2024</span>                 my_bytes &lt;   <span class="number">2</span>, <span class="number">0</span>C5h&gt;   ; <span class="number">2</span></span><br><span class="line">.data:<span class="number">00000000004E2026</span>                 my_bytes &lt;   <span class="number">3</span>,  <span class="number">1</span>Dh&gt;   ; <span class="number">3</span></span><br><span class="line">.data:<span class="number">00000000004E2028</span>                 my_bytes &lt;   <span class="number">4</span>,  <span class="number">96</span>h&gt;   ; <span class="number">4</span></span><br><span class="line">.data:<span class="number">00000000004E202</span>A                 my_bytes &lt;   <span class="number">5</span>, <span class="number">0B</span>Ah&gt;   ; <span class="number">5</span></span><br><span class="line">.data:<span class="number">00000000004E202</span>C                 my_bytes &lt;   <span class="number">6</span>,  <span class="number">4</span>Ah&gt;   ; <span class="number">6</span></span><br><span class="line">... <span class="comment">//连续存储</span></span><br></pre></td></tr></table></figure>
+<p>这个东西程序一拿到手就修了，但是不知道在哪用的。但是很重要的是，我们的输入函数还在靠后的位置，前面初始化的这些东西都和输入无关，代表他们都是死的，动调到输入之前看看初始化的都是什么，如果是一些加密用的东西直接dump出来就不用分析函数了。抱着这个心态，发现了红黑树：</p>
+<p>动调之后函数一过：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A20                 dq offset unk_A31E80</span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A28                 dq <span class="number">0</span></span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A30                 dq offset unk_B54690</span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A38                 dq offset unk_A31EF0</span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A40                 dq offset unk_B58E90</span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A48                 dq <span class="number">100</span>h</span><br></pre></td></tr></table></figure>
+<p>6个指针，跟进去看结构，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">debug030:<span class="number">0000000000B</span>54690 dword_B54690    dd <span class="number">1</span>                    ; DATA XREF: Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A30↑o</span><br><span class="line">debug030:<span class="number">0000000000B</span>54694                 dd <span class="number">0B</span>AADF00Dh</span><br><span class="line">debug030:<span class="number">0000000000B</span>54698                 dq offset qword_71FA28</span><br><span class="line">debug030:<span class="number">0000000000B</span>546A0                 dq offset unk_A32A90</span><br><span class="line">debug030:<span class="number">0000000000B</span>546A8                 dq offset unk_B55E90</span><br><span class="line">debug030:<span class="number">0000000000B</span>546B0                 db  <span class="number">3F</span>h ; ?</span><br></pre></td></tr></table></figure>
+<p>parent指向header，左右指针，红黑树是八九不离十了。这时候我们就可以猜测这个函数是建立了一棵树，结合我们前面看到的那个下标-字符数组，我们就可以大胆猜测是按照那个数组建立的，加密函数是按照某种逻辑（对应下标）从这个树上搜一个值出来。</p>
+<p>黑盒测试，前面经过动调已经知道输入特定字符加密过后是不变的了，这时候我们去看那个数组的0x61看是不是a加密后的3a，发现不是。动调之后再猜测，这棵树是一个S盒，我们是把加密后的那个字符输入然后返回一个代换字符，确定不了，把这个数组dump出来转成S盒还原一下加密逻辑，结果和动调获得的一致，加密逻辑就分析出来了：<strong>按照索引建立一个红黑树，本质上是一个S盒代换</strong></p>
+<p>最后就是将4个字节拼起来放在一个vector里（动调看内存确定的）。前面栈上那9个初始化的32位变量就是被放进了vector，最后的比较也是传两个vector，那么最后肯定是我们的输入加密后和那个初始化的比较了</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vector</span></span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A50                 dq offset unk_A31E90 <span class="comment">//start</span></span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A58                 dq offset unk_A31EB4 <span class="comment">//end</span></span><br><span class="line">Stack[<span class="number">00006B</span>A8]:<span class="number">000000000071F</span>A60                 dq offset unk_A31EB4 <span class="comment">//capacity_end</span></span><br></pre></td></tr></table></figure>
+<h1 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h1><p>逆向s盒不会写，按字节也就256个，按字节爆破和结果比对出flag就行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># a(0x61)-0x3a b-0x4e c-0xa7 d-0x88 连在一起</span></span><br><span class="line"><span class="comment"># </span></span><br><span class="line"><span class="comment"># 首先将输入的ascii进行enc后取后两位索引红黑树查找，db事先写好在程序</span></span><br><span class="line"><span class="comment"># 一轮4个，拿到4个字节按顺序拼在一起装入vector</span></span><br><span class="line"><span class="comment"># 猜测最后要和栈上的比较</span></span><br><span class="line"><span class="comment"># 尝试</span></span><br><span class="line">ascii_db =[</span><br><span class="line">    <span class="number">0</span>,  <span class="number">46</span>,   <span class="number">1</span>, <span class="number">125</span>,   <span class="number">2</span>, <span class="number">197</span>,   <span class="number">3</span>,  <span class="number">29</span>,   <span class="number">4</span>, <span class="number">150</span>, </span><br><span class="line">    <span class="number">5</span>, <span class="number">186</span>,   <span class="number">6</span>,  <span class="number">74</span>,   <span class="number">7</span>, <span class="number">174</span>,   <span class="number">8</span>,  <span class="number">17</span>,   <span class="number">9</span>, <span class="number">179</span>, </span><br><span class="line">   <span class="number">10</span>,  <span class="number">33</span>,  <span class="number">11</span>, <span class="number">230</span>,  <span class="number">12</span>, <span class="number">110</span>,  <span class="number">13</span>, <span class="number">187</span>,  <span class="number">14</span>,  <span class="number">27</span>, </span><br><span class="line">   <span class="number">15</span>, <span class="number">205</span>,  <span class="number">16</span>, <span class="number">203</span>,  <span class="number">17</span>,  <span class="number">52</span>,  <span class="number">18</span>, <span class="number">221</span>,  <span class="number">19</span>, <span class="number">102</span>, </span><br><span class="line">   <span class="number">20</span>, <span class="number">183</span>,  <span class="number">21</span>,  <span class="number">91</span>,  <span class="number">22</span>, <span class="number">148</span>,  <span class="number">23</span>,  <span class="number">65</span>,  <span class="number">24</span>,  <span class="number">90</span>, </span><br><span class="line">   <span class="number">25</span>,  <span class="number">54</span>,  <span class="number">26</span>, <span class="number">137</span>,  <span class="number">27</span>, <span class="number">122</span>,  <span class="number">28</span>, <span class="number">233</span>,  <span class="number">29</span>,  <span class="number">96</span>, </span><br><span class="line">   <span class="number">30</span>,  <span class="number">70</span>,  <span class="number">31</span>, <span class="number">251</span>,  <span class="number">32</span>,  <span class="number">19</span>,  <span class="number">33</span>,  <span class="number">16</span>,  <span class="number">34</span>, <span class="number">134</span>, </span><br><span class="line">   <span class="number">35</span>, <span class="number">220</span>,  <span class="number">36</span>, <span class="number">191</span>,  <span class="number">37</span>, <span class="number">114</span>,  <span class="number">38</span>,  <span class="number">95</span>,  <span class="number">39</span>,  <span class="number">24</span>, </span><br><span class="line">   <span class="number">40</span>,   <span class="number">7</span>,  <span class="number">41</span>, <span class="number">237</span>,  <span class="number">42</span>, <span class="number">216</span>,  <span class="number">43</span>, <span class="number">162</span>,  <span class="number">44</span>, <span class="number">164</span>, </span><br><span class="line">   <span class="number">45</span>, <span class="number">243</span>,  <span class="number">46</span>,  <span class="number">25</span>,  <span class="number">47</span>,  <span class="number">32</span>,  <span class="number">48</span>, <span class="number">242</span>,  <span class="number">49</span>, <span class="number">169</span>, </span><br><span class="line">   <span class="number">50</span>,  <span class="number">38</span>,  <span class="number">51</span>,  <span class="number">72</span>,  <span class="number">52</span>,  <span class="number">97</span>,  <span class="number">53</span>, <span class="number">107</span>,  <span class="number">54</span>, <span class="number">101</span>, </span><br><span class="line">   <span class="number">55</span>,  <span class="number">84</span>,  <span class="number">56</span>, <span class="number">234</span>,  <span class="number">57</span>, <span class="number">212</span>,  <span class="number">58</span>, <span class="number">225</span>,  <span class="number">59</span>,   <span class="number">5</span>, </span><br><span class="line">   <span class="number">60</span>,  <span class="number">12</span>,  <span class="number">61</span>,  <span class="number">43</span>,  <span class="number">62</span>,  <span class="number">14</span>,  <span class="number">63</span>, <span class="number">176</span>,  <span class="number">64</span>,  <span class="number">47</span>, </span><br><span class="line">   <span class="number">65</span>,  <span class="number">99</span>,  <span class="number">66</span>,  <span class="number">48</span>,  <span class="number">67</span>, <span class="number">199</span>,  <span class="number">68</span>,  <span class="number">85</span>,  <span class="number">69</span>, <span class="number">210</span>, </span><br><span class="line">   <span class="number">70</span>, <span class="number">133</span>,  <span class="number">71</span>,  <span class="number">82</span>,  <span class="number">72</span>, <span class="number">214</span>,  <span class="number">73</span>, <span class="number">228</span>,  <span class="number">74</span>, <span class="number">156</span>, </span><br><span class="line">   <span class="number">75</span>, <span class="number">139</span>,  <span class="number">76</span>,   <span class="number">0</span>,  <span class="number">77</span>,  <span class="number">23</span>,  <span class="number">78</span>, <span class="number">145</span>,  <span class="number">79</span>,  <span class="number">40</span>, </span><br><span class="line">   <span class="number">80</span>, <span class="number">198</span>,  <span class="number">81</span>, <span class="number">178</span>,  <span class="number">82</span>,  <span class="number">50</span>,  <span class="number">83</span>,  <span class="number">79</span>,  <span class="number">84</span>, <span class="number">103</span>, </span><br><span class="line">   <span class="number">85</span>, <span class="number">106</span>,  <span class="number">86</span>,  <span class="number">51</span>,  <span class="number">87</span>,   <span class="number">2</span>,  <span class="number">88</span>,  <span class="number">45</span>,  <span class="number">89</span>,  <span class="number">75</span>, </span><br><span class="line">   <span class="number">90</span>, <span class="number">215</span>,  <span class="number">91</span>, <span class="number">238</span>,  <span class="number">92</span>, <span class="number">154</span>,  <span class="number">93</span>, <span class="number">184</span>,  <span class="number">94</span>, <span class="number">226</span>, </span><br><span class="line">   <span class="number">95</span>, <span class="number">173</span>,  <span class="number">96</span>, <span class="number">208</span>,  <span class="number">97</span>, <span class="number">211</span>,  <span class="number">98</span>,  <span class="number">73</span>,  <span class="number">99</span>, <span class="number">135</span>, </span><br><span class="line">  <span class="number">100</span>,   <span class="number">6</span>, <span class="number">101</span>,  <span class="number">36</span>, <span class="number">102</span>, <span class="number">192</span>, <span class="number">103</span>, <span class="number">161</span>, <span class="number">104</span>,  <span class="number">15</span>, </span><br><span class="line">  <span class="number">105</span>, <span class="number">194</span>, <span class="number">106</span>,  <span class="number">92</span>, <span class="number">107</span>,  <span class="number">10</span>, <span class="number">108</span>, <span class="number">170</span>, <span class="number">109</span>, <span class="number">111</span>, </span><br><span class="line">  <span class="number">110</span>,  <span class="number">56</span>, <span class="number">111</span>, <span class="number">249</span>, <span class="number">112</span>, <span class="number">223</span>, <span class="number">113</span>, <span class="number">138</span>, <span class="number">114</span>,   <span class="number">9</span>, </span><br><span class="line">  <span class="number">115</span>, <span class="number">132</span>, <span class="number">116</span>, <span class="number">146</span>, <span class="number">117</span>,  <span class="number">63</span>, <span class="number">118</span>,  <span class="number">94</span>, <span class="number">119</span>,  <span class="number">67</span>, </span><br><span class="line">  <span class="number">120</span>, <span class="number">155</span>, <span class="number">121</span>,  <span class="number">68</span>, <span class="number">122</span>,  <span class="number">62</span>, <span class="number">123</span>,   <span class="number">3</span>, <span class="number">124</span>, <span class="number">181</span>, </span><br><span class="line">  <span class="number">125</span>,  <span class="number">41</span>, <span class="number">126</span>, <span class="number">190</span>, <span class="number">127</span>,  <span class="number">26</span>, <span class="number">128</span>, <span class="number">151</span>, <span class="number">129</span>,  <span class="number">13</span>, </span><br><span class="line">  <span class="number">130</span>, <span class="number">118</span>, <span class="number">131</span>, <span class="number">188</span>, <span class="number">132</span>, <span class="number">207</span>, <span class="number">133</span>, <span class="number">105</span>, <span class="number">134</span>, <span class="number">189</span>, </span><br><span class="line">  <span class="number">135</span>,  <span class="number">60</span>, <span class="number">136</span>,  <span class="number">80</span>, <span class="number">137</span>, <span class="number">163</span>, <span class="number">138</span>,  <span class="number">88</span>, <span class="number">139</span>,   <span class="number">4</span>, </span><br><span class="line">  <span class="number">140</span>,  <span class="number">18</span>, <span class="number">141</span>, <span class="number">209</span>, <span class="number">142</span>, <span class="number">244</span>, <span class="number">143</span>,  <span class="number">34</span>, <span class="number">144</span>, <span class="number">253</span>, </span><br><span class="line">  <span class="number">145</span>,  <span class="number">49</span>, <span class="number">146</span>, <span class="number">147</span>, <span class="number">147</span>, <span class="number">182</span>, <span class="number">148</span>, <span class="number">123</span>, <span class="number">149</span>,  <span class="number">61</span>, </span><br><span class="line">  <span class="number">150</span>,  <span class="number">20</span>, <span class="number">151</span>,  <span class="number">22</span>, <span class="number">152</span>, <span class="number">157</span>, <span class="number">153</span>, <span class="number">141</span>, <span class="number">154</span>, <span class="number">204</span>, </span><br><span class="line">  <span class="number">155</span>,  <span class="number">64</span>, <span class="number">156</span>, <span class="number">159</span>, <span class="number">157</span>,  <span class="number">28</span>, <span class="number">158</span>, <span class="number">152</span>, <span class="number">159</span>, <span class="number">158</span>, </span><br><span class="line">  <span class="number">160</span>,  <span class="number">98</span>, <span class="number">161</span>,  <span class="number">89</span>, <span class="number">162</span>, <span class="number">124</span>, <span class="number">163</span>, <span class="number">239</span>, <span class="number">164</span>, <span class="number">168</span>, </span><br><span class="line">  <span class="number">165</span>, <span class="number">231</span>, <span class="number">166</span>, <span class="number">255</span>, <span class="number">167</span>, <span class="number">131</span>, <span class="number">168</span>, <span class="number">227</span>, <span class="number">169</span>,  <span class="number">57</span>, </span><br><span class="line">  <span class="number">170</span>,  <span class="number">86</span>, <span class="number">171</span>, <span class="number">247</span>, <span class="number">172</span>, <span class="number">100</span>, <span class="number">173</span>, <span class="number">248</span>, <span class="number">174</span>, <span class="number">109</span>, </span><br><span class="line">  <span class="number">175</span>, <span class="number">172</span>, <span class="number">176</span>, <span class="number">165</span>, <span class="number">177</span>, <span class="number">246</span>, <span class="number">178</span>, <span class="number">241</span>, <span class="number">179</span>, <span class="number">121</span>, </span><br><span class="line">  <span class="number">180</span>,  <span class="number">83</span>, <span class="number">181</span>, <span class="number">218</span>, <span class="number">182</span>, <span class="number">177</span>, <span class="number">183</span>,  <span class="number">93</span>, <span class="number">184</span>, <span class="number">112</span>, </span><br><span class="line">  <span class="number">185</span>, <span class="number">136</span>, <span class="number">186</span>, <span class="number">144</span>, <span class="number">187</span>, <span class="number">236</span>, <span class="number">188</span>, <span class="number">126</span>, <span class="number">189</span>, <span class="number">180</span>, </span><br><span class="line">  <span class="number">190</span>, <span class="number">142</span>, <span class="number">191</span>,  <span class="number">37</span>, <span class="number">192</span>, <span class="number">195</span>, <span class="number">193</span>, <span class="number">224</span>, <span class="number">194</span>, <span class="number">160</span>, </span><br><span class="line">  <span class="number">195</span>,  <span class="number">59</span>, <span class="number">196</span>, <span class="number">143</span>, <span class="number">197</span>, <span class="number">185</span>, <span class="number">198</span>, <span class="number">196</span>, <span class="number">199</span>, <span class="number">113</span>, </span><br><span class="line">  <span class="number">200</span>, <span class="number">120</span>, <span class="number">201</span>, <span class="number">167</span>, <span class="number">202</span>,  <span class="number">35</span>, <span class="number">203</span>, <span class="number">235</span>, <span class="number">204</span>, <span class="number">115</span>, </span><br><span class="line">  <span class="number">205</span>,  <span class="number">66</span>, <span class="number">206</span>, <span class="number">108</span>, <span class="number">207</span>, <span class="number">229</span>, <span class="number">208</span>, <span class="number">245</span>, <span class="number">209</span>,   <span class="number">1</span>, </span><br><span class="line">  <span class="number">210</span>,  <span class="number">53</span>, <span class="number">211</span>, <span class="number">117</span>, <span class="number">212</span>, <span class="number">171</span>, <span class="number">213</span>, <span class="number">166</span>, <span class="number">214</span>,  <span class="number">39</span>, </span><br><span class="line">  <span class="number">215</span>, <span class="number">250</span>, <span class="number">216</span>,  <span class="number">81</span>, <span class="number">217</span>,  <span class="number">78</span>, <span class="number">218</span>, <span class="number">140</span>, <span class="number">219</span>, <span class="number">130</span>, </span><br><span class="line">  <span class="number">220</span>, <span class="number">104</span>, <span class="number">221</span>,  <span class="number">31</span>, <span class="number">222</span>,  <span class="number">69</span>, <span class="number">223</span>, <span class="number">217</span>, <span class="number">224</span>, <span class="number">175</span>, </span><br><span class="line">  <span class="number">225</span>, <span class="number">193</span>, <span class="number">226</span>,  <span class="number">11</span>, <span class="number">227</span>, <span class="number">128</span>, <span class="number">228</span>,  <span class="number">77</span>, <span class="number">229</span>, <span class="number">153</span>, </span><br><span class="line">  <span class="number">230</span>, <span class="number">254</span>, <span class="number">231</span>,  <span class="number">42</span>, <span class="number">232</span>, <span class="number">149</span>, <span class="number">233</span>,  <span class="number">58</span>, <span class="number">234</span>,  <span class="number">55</span>, </span><br><span class="line">  <span class="number">235</span>, <span class="number">119</span>, <span class="number">236</span>, <span class="number">116</span>, <span class="number">237</span>, <span class="number">200</span>, <span class="number">238</span>, <span class="number">129</span>, <span class="number">239</span>, <span class="number">240</span>, </span><br><span class="line">  <span class="number">240</span>,  <span class="number">76</span>, <span class="number">241</span>, <span class="number">219</span>, <span class="number">242</span>, <span class="number">201</span>, <span class="number">243</span>,   <span class="number">8</span>, <span class="number">244</span>, <span class="number">202</span>, </span><br><span class="line">  <span class="number">245</span>,  <span class="number">21</span>, <span class="number">246</span>, <span class="number">206</span>, <span class="number">247</span>,  <span class="number">87</span>, <span class="number">248</span>,  <span class="number">30</span>, <span class="number">249</span>, <span class="number">127</span>, </span><br><span class="line">  <span class="number">250</span>, <span class="number">213</span>, <span class="number">251</span>,  <span class="number">44</span>, <span class="number">252</span>, <span class="number">222</span>, <span class="number">253</span>, <span class="number">232</span>, <span class="number">254</span>, <span class="number">252</span>, </span><br><span class="line">  <span class="number">255</span>,  <span class="number">71</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">Sbox = [<span class="number">0</span>]*<span class="number">256</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将原本代码中的红黑树搜索转化成Sbox代换</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(ascii_db), <span class="number">2</span>):</span><br><span class="line">    index = ascii_db[i]</span><br><span class="line">    value = ascii_db[i + <span class="number">1</span>]</span><br><span class="line">    Sbox[index] = value</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">enc_chr</span> (c):</span><br><span class="line">    <span class="keyword">return</span> ~((c&lt;&lt;<span class="number">4</span>)|(c&gt;&gt;<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">result = [</span><br><span class="line">    <span class="number">0xA7</span>,<span class="number">0x39</span>,<span class="number">0x8D</span>,<span class="number">0x39</span>,</span><br><span class="line">    <span class="number">0x7E</span>,<span class="number">0xA7</span>,<span class="number">0x88</span>,<span class="number">0x7E</span>,</span><br><span class="line">    <span class="number">0xF3</span>,<span class="number">0xDE</span>,<span class="number">0x7E</span>,<span class="number">0x39</span>,</span><br><span class="line">    <span class="number">0xB5</span>,<span class="number">0xF3</span>,<span class="number">0x7E</span>,<span class="number">0x12</span>,</span><br><span class="line">    <span class="number">0x73</span>,<span class="number">0x3A</span>,<span class="number">0xF3</span>,<span class="number">0x88</span>,</span><br><span class="line">    <span class="number">0x7E</span>,<span class="number">0xDE</span>,<span class="number">0x73</span>,<span class="number">0xF3</span>,</span><br><span class="line">    <span class="number">0xA7</span>,<span class="number">0xDE</span>,<span class="number">0x8D</span>,<span class="number">0xAA</span>,</span><br><span class="line">    <span class="number">0xA7</span>,<span class="number">0xDE</span>,<span class="number">0xA7</span>,<span class="number">0x39</span>,</span><br><span class="line">    <span class="number">0x8D</span>,<span class="number">0x7E</span>,<span class="number">0xB5</span>,<span class="number">0x7E</span></span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">enc</span>(<span class="params"><span class="built_in">chr</span></span>):</span><br><span class="line">    <span class="built_in">chr</span> = <span class="built_in">int</span>(<span class="built_in">chr</span>)</span><br><span class="line">    idx = enc_chr(<span class="built_in">chr</span>) &amp; <span class="number">0xFF</span></span><br><span class="line">    crypt = Sbox[idx]</span><br><span class="line">    <span class="keyword">return</span> crypt</span><br><span class="line">flag=<span class="string">b&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> r <span class="keyword">in</span> result:</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">256</span>):</span><br><span class="line">        <span class="keyword">if</span> enc(c) == r:</span><br><span class="line">            flag += <span class="built_in">bytes</span>([c])</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment"># result = enc_chr(int(0x64)) &amp; 0xFF</span></span><br><span class="line"><span class="comment"># print(hex(inv_Sbox[Sbox[int(result)]]))</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PS D:\学校相关文件\逆向工程\stl&gt; .\stl.exe</span><br><span class="line">cefe4cd4-04e8-473a-d403-c0f9c0cef484</span><br><span class="line">you find it, flag is vmc&#123;cefe4cd4-04e8-473a-d403-c0f9c0cef484&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>函数还是太简单了，只要分析一个STL的数据结构就行，没有控制流的难度很多功能太好猜，扣符号真的恶心。感觉可以改改之后放l3h招新（纯粹数据结构还原）。</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/" title="Windows函数隐藏——逆向工程实验2022WP">
+                    <div class="nextTitle">Windows函数隐藏——逆向工程实验2022WP</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/" title="WMCTF2023evm非预期">
+                    <div class="prevTitle">WMCTF2023evm非预期</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFSTL"><span class="toc-number">1.</span> <span class="toc-text">什么是STL?</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%AC%E9%A2%98%E4%B8%ADSTL%E5%AE%B9%E5%99%A8%E7%9A%84%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84%E5%92%8C%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">本题中STL容器的内存结构和分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#String"><span class="toc-number">2.1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Vector"><span class="toc-number">2.2.</span> <span class="toc-text">Vector</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rb-tree"><span class="toc-number">2.3.</span> <span class="toc-text">rb_tree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#header"><span class="toc-number">2.3.1.</span> <span class="toc-text">header</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#node"><span class="toc-number">2.3.2.</span> <span class="toc-text">node</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Others"><span class="toc-number">2.4.</span> <span class="toc-text">Others</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">关键函数分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#exp"><span class="toc-number">5.</span> <span class="toc-text">exp</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 40
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span>
+            <a class="archive-post-title" href="/2024/09/23/Algorithm%EF%BC%880%EF%BC%89/">Algorithm（0）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/">WMCTF2023evm非预期</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span>
+            <a class="archive-post-title" href="/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">Windows下的简单逆向分析入门——从PE开始</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84Kernel-Pwn/">从0开始的Kernel Pwn</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="算法">
+                <span class="iconfont-archer">&#xe606;</span>
+                算法
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm，wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm，wp
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
