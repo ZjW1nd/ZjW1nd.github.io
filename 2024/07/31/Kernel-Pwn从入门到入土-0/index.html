@@ -27,7 +27,7 @@
 <meta property="og:description" content="首先是pwncollege的学习笔记： 介绍内核分为三种，linux内核属于宏内核，即内核本质是一个大的二进制文件加载在内存中来处理各种的系统调用。没有内核代码运行在用户态（windows就是一个混合内核，既有一个大的ring 0文件，也有部分代码运行在用户态）。有些汇编代码和寄存器只能在Ring 0被使用。内核永远加载在最高地址处，syscall并不改变内存的映射，只是最高地址的虚拟地址映射的具">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-07-31T09:18:00.000Z">
-<meta property="article:modified_time" content="2024-09-27T02:22:07.109Z">
+<meta property="article:modified_time" content="2024-10-09T13:33:13.205Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="kernel">
@@ -531,7 +531,7 @@
 </li>
 </ul>
 <h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p>进程由内核中的task_struct管理，权限部分则是由cred结构体管理（记录了各种id）。利用内核中的函数，<br>执行<code>commit_creds(prepare_kerkel_creds(0))</code>。将会获得完全root权限，这些函数的地址如果有root权限可以在&#x2F;proc&#x2F;kallsyms查到。</p>
-<h2 id="从内核层面绕过seccomp"><a href="#从内核层面绕过seccomp" class="headerlink" title="从内核层面绕过seccomp"></a>从内核层面绕过seccomp</h2><p>一个进程的seccomp同样也被<code>tast_struct</code>管理，在其中有一个<code>thread_info</code>内联结构，里面有一个flag 域，其中就有<code>TIF_SECCOMP</code>位，控制着seccomp的开关。（即在seccomp内部真正实现函数的包装函数有关于这一位的判断）</p>
+<h2 id="从内核层面绕过seccomp"><a href="#从内核层面绕过seccomp" class="headerlink" title="从内核层面绕过seccomp"></a>从内核层面绕过seccomp</h2><p>一个进程的seccomp同样也被<code>task_struct</code>管理，在其中有一个<code>thread_info</code>内联结构，里面有一个flag 域，其中就有<code>TIF_SECCOMP</code>位，控制着seccomp的开关。（即在seccomp内部真正实现函数的包装函数有关于这一位的判断）</p>
 <p>因此只要让</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current_task_struct-&gt;thread_info.flags &amp;= ~(<span class="number">1</span>&lt;&lt;TIF_SECCOMP)</span><br></pre></td></tr></table></figure>
 <p>即可。</p>
@@ -547,7 +547,7 @@
 <p>拿到内核api地址之后有两种选择，间接跳转和直接跳转。大部分情况下会选择后者。间接跳转就是计算shellcode和指定位置api之间的距离，如果在32位范围内的话可以用地址差间接跳转但是太过繁琐。一般都是用直接跳转到内核api，不过直接跳转需要用寄存器，执行类似这样的shellcode：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov rax, 0xffff414142424242</span><br><span class="line">call rax</span><br></pre></td></tr></table></figure>
 <p>kernel shellcode和userspace shellcode另一个不同是，需要有一个完整的退出或者结束。用户空间段错误就段错误无所谓拿了flag就行，但是对内核来说（比如进程提权），崩溃了之后还没等flag输出系统就挂了。因此务必保证跳转调用等流程的完整。比如如果通过劫持某个函数指针来实现跳转，那么后续shellcode就要让他像正常函数一样返回，栈也要清理干净能让内核继续运转就行。</p>
-<h2 id="for-seccomp"><a href="#for-seccomp" class="headerlink" title="for seccomp"></a>for seccomp</h2><p> 如果我们要修改当前的task_struct怎么办？kernel始终在gs寄存器中保存着这个变量，但是利用比较困难，另外kernel中还有一个神奇的哄current指向这里，可是我们如何在shellcode中获取current的值？</p>
+<h2 id="for-seccomp"><a href="#for-seccomp" class="headerlink" title="for seccomp"></a>for seccomp</h2><p> 如果我们要修改当前的task_struct怎么办？kernel始终在gs寄存器中保存着这个变量，但是利用比较困难，另外kernel中还有一个神奇的宏current指向这里，可是我们如何在shellcode中获取current的值？</p>
 <p> 方法是，用C写一个内核模块，为你要攻击的内核构建他然后逆向得到汇编直接copy到你要攻击的shellcode里（是的就是这样）。虽然结果很简单，但是编译器帮你完成了翻内核源码找对应版本各种调用等等的bad for sanity的工作。</p>
 <blockquote>
 <p>pwncollege教学原话称通过读内核源码理解然后寻找current的位置“is bad for your sanity”。</p>
@@ -1339,6 +1339,8 @@
         
         
         
+        
+        
     
     
     
@@ -1649,24 +1651,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="CSAPP">
-                <span class="iconfont-archer">&#xe606;</span>
-                CSAPP
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Lab">
-                <span class="iconfont-archer">&#xe606;</span>
-                Lab
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1679,6 +1666,26 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -1687,11 +1694,6 @@
             <span class="sidebar-tag-name" data-tags="CVE">
                 <span class="iconfont-archer">&#xe606;</span>
                 CVE
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -1709,14 +1711,14 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Rust">
-                <span class="iconfont-archer">&#xe606;</span>
-                Rust
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -1739,11 +1741,6 @@
                 Others
             </span>
         
-            <span class="sidebar-tag-name" data-tags="ROP">
-                <span class="iconfont-archer">&#xe606;</span>
-                ROP
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="IDA">
                 <span class="iconfont-archer">&#xe606;</span>
                 IDA
@@ -1752,6 +1749,11 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm，wp">
@@ -1770,14 +1772,14 @@
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="CSAPP">
-            <span class="iconfont-archer">&#xe60a;</span>
-            CSAPP
-        </span>
-    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
         </span>
     
         <span class="sidebar-category-name" data-categories="Reverse">
