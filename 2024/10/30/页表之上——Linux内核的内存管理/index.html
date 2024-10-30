@@ -31,7 +31,7 @@
 <meta property="og:image" content="http://example.com/images/linux_mem/object.png">
 <meta property="og:image" content="http://example.com/images/linux_mem/construct.png">
 <meta property="article:published_time" content="2024-10-30T11:08:20.000Z">
-<meta property="article:modified_time" content="2024-10-30T12:47:42.287Z">
+<meta property="article:modified_time" content="2024-10-30T12:50:53.380Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="kernel">
@@ -570,7 +570,7 @@
 <blockquote>
 <p>参考：<br>（强烈推荐）：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000043626203#item-4">https://segmentfault.com/a/1190000043626203#item-4</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_54218833/article/details/127218102">https://blog.csdn.net/qq_54218833/article/details/127218102</a></p>
 </blockquote>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>首先，我们来看slab的一个简单的概述。slab从buddy申请来连续的内存页后，按照对象的大小将其池化成很多小的&#x2F;内存对齐的对象，</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>首先，我们来看slab的一个简单的概述。slab从buddy申请来连续的内存页后，按照对象的大小将其池化成很多小的&#x2F;内存对齐的对象。它们用kmem_cache管理，链接在链表上，然后充分利用cpu缓存和程序局部性来进行高速的分配和释放</p>
 <blockquote>
 <p>上面这段其实是写完之后回头再写的</p>
 </blockquote>
@@ -1468,8 +1468,6 @@
         
         
         
-        
-        
     
     
     
@@ -1864,14 +1862,14 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
-                <span class="iconfont-archer">&#xe606;</span>
-                llvm
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -1894,6 +1892,11 @@
                 Others
             </span>
         
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="IDA">
                 <span class="iconfont-archer">&#xe606;</span>
                 IDA
@@ -1902,11 +1905,6 @@
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="ROP">
-                <span class="iconfont-archer">&#xe606;</span>
-                ROP
             </span>
         
             <span class="sidebar-tag-name" data-tags="web">
