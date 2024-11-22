@@ -27,7 +27,7 @@
 <meta property="og:description" content="写在前面（关于做题的经验）  判断是不是用简单的算法思想就能解决（不需要更多数据结构），分治？贪心？ 如果是贪心，核心是确定好cmp函数 如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3 剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间 反向思考，a要能  高精度计算 本质上是字符串处理。参考oi wiki的高精乘和加模板 1mov a, b  �">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-24T04:35:46.000Z">
-<meta property="article:modified_time" content="2024-11-22T03:40:23.041Z">
+<meta property="article:modified_time" content="2024-11-22T03:58:08.879Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="算法">
 <meta name="twitter:card" content="summary">
@@ -506,6 +506,12 @@
 <div class="warning">
 <p>👨 🐱</p>
 </div>
+<ul class="lvl-0">
+<li class="lvl-2"><input type="checkbox" id="checkbox0"><label for="checkbox0">？</label></li>
+<li class="lvl-2"><input type="checkbox" id="checkbox1" checked="true"><label for="checkbox1">√</label><br>
+<mark>check</mark><br>
+下标[^1]</li>
+</ul>
 <details open>
 <summary><span class="pre-summary">&nbsp;</span>折叠</summary><p>wow</p>
 </details>
@@ -1420,6 +1426,14 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
     
     
     
@@ -1521,13 +1535,13 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/19</span>
-            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/19</span>
-            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
         </li>
     
         
@@ -1778,6 +1792,16 @@
                 算法
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
@@ -1791,16 +1815,6 @@
             <span class="sidebar-tag-name" data-tags="heap">
                 <span class="iconfont-archer">&#xe606;</span>
                 heap
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
             </span>
         
             <span class="sidebar-tag-name" data-tags="chop">
@@ -1818,11 +1832,6 @@
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -1831,6 +1840,11 @@
             <span class="sidebar-tag-name" data-tags="CVE">
                 <span class="iconfont-archer">&#xe606;</span>
                 CVE
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -1848,24 +1862,24 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Rust">
-                <span class="iconfont-archer">&#xe606;</span>
-                Rust
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
             </span>
         
-            <span class="sidebar-tag-name" data-tags="vm">
+            <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
-                vm
+                Rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="linux">
                 <span class="iconfont-archer">&#xe606;</span>
                 linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
