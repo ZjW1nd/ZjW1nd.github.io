@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="路由设备攻防网络设备基础知识核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机企业级路由器：没有wan和lan之分？每个口 计算机网络复习…中继器-&gt;集线器-&gt;网桥？路由器 交换机 vlan隔离 路由器（三层交换机）网络边缘防火墙，安全等级控制，内外网隔离 路由器分类接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？性能从接入到核心逐渐提高 按功">
+    <meta name="description" content="路由设备攻防 网络设备基础知识 核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机企业级路由器：没有wan和lan之分？每个口 计算机网络复习… 中继器-&gt;集线器-&gt;网桥？路由器 交换机 vlan隔离 路由器（三层交换机）网络边缘防火墙，安全等级控制，内外网隔离 路由器分类 接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？性能从接入到核心逐渐提">
 <meta property="og:type" content="article">
 <meta property="og:title" content="青训营记录整合包">
 <meta property="og:url" content="http://example.com/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="路由设备攻防网络设备基础知识核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机企业级路由器：没有wan和lan之分？每个口 计算机网络复习…中继器-&gt;集线器-&gt;网桥？路由器 交换机 vlan隔离 路由器（三层交换机）网络边缘防火墙，安全等级控制，内外网隔离 路由器分类接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？性能从接入到核心逐渐提高 按功">
+<meta property="og:description" content="路由设备攻防 网络设备基础知识 核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机企业级路由器：没有wan和lan之分？每个口 计算机网络复习… 中继器-&gt;集线器-&gt;网桥？路由器 交换机 vlan隔离 路由器（三层交换机）网络边缘防火墙，安全等级控制，内外网隔离 路由器分类 接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？性能从接入到核心逐渐提">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-01-23T00:31:04.000Z">
 <meta property="article:modified_time" content="2024-02-03T03:07:29.766Z">
@@ -489,32 +489,83 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="路由设备攻防"><a href="#路由设备攻防" class="headerlink" title="路由设备攻防"></a>路由设备攻防</h1><h2 id="网络设备基础知识"><a href="#网络设备基础知识" class="headerlink" title="网络设备基础知识"></a>网络设备基础知识</h2><p>核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机<br>企业级路由器：没有wan和lan之分？每个口</p>
-<h3 id="计算机网络复习…"><a href="#计算机网络复习…" class="headerlink" title="计算机网络复习…"></a>计算机网络复习…</h3><p>中继器-&gt;集线器-&gt;网桥？<br>路由器 交换机 vlan隔离 路由器（三层交换机）<br>网络边缘防火墙，安全等级控制，内外网隔离</p>
-<h3 id="路由器分类"><a href="#路由器分类" class="headerlink" title="路由器分类"></a>路由器分类</h3><p>接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？<br>性能从接入到核心逐渐提高</p>
-<p>按功能，接入路由器、集成多业务路由器（isr），汇聚多业务路由器（asr）<br>集成多业务：vpn，企业需求<br>汇聚多业务：不同广域网<br>园区，运营商。。。没啥用不听了<br>数据中心（机房）</p>
-<h3 id="网络协议"><a href="#网络协议" class="headerlink" title="网络协议"></a>网络协议</h3><p>管理协议：telnet，ssh，http，snmp<br>动态路由协议<br>gre，pptp，ipsec等通道协议<br>hsrp，cdp私有协议</p>
-<h3 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h3><p>0-15权限级别，1权限和15比较常见。show privilege查看权限。1权限是用户执行，15是最高<br>密码加密type0,7，MD5，blowfish<br>acl访问控制，aaa控制？密码权限和记录</p>
-<h3 id="IOS系统"><a href="#IOS系统" class="headerlink" title="IOS系统"></a>IOS系统</h3><p>一个抽象的二进制程序，类似于集成了内核。可以理解成一个高级的”hello world”但只用于cisco<br>内核，进程（分协议）管理，buffer管理等，比较简单，内存也是。所有进程共享同一片内存。分region管理。如main region放操作系统等，分区？<br>由于网络设备的要求（后台持续运行），进程管理什么的也都不一样。管理协议有结束状态，别的多没有结束状态。CPU优先级不是抢占式？</p>
-<h2 id="路由设备攻防历史与现"><a href="#路由设备攻防历史与现" class="headerlink" title="路由设备攻防历史与现"></a>路由设备攻防历史与现</h2><p>成本高固件难，更新aslr。许多论文<br>一般来说gdb调不了路由器，现在用的是11年的一个大佬论文做出的版本。棱镜门。<br>量子攻击：控制中间结点路由器直接重定向。http攻击。https狗<br>SYN attack，Vault 7等等路由器后门攻击<br>cisco 支持tcl脚本。<br>固件修改，tcl脚本（eem？思科的功能库），shellcode，</p>
-<h3 id="取证："><a href="#取证：" class="headerlink" title="取证："></a>取证：</h3><p>show命令，固件白名单（官网固件hash），内存转储，外部日志，配置比对</p>
-<h3 id="防护"><a href="#防护" class="headerlink" title="防护"></a>防护</h3><p>acl 定时备份，aaa，syslog，snmp等<br>ios系统有数据缓存和指令缓存两种缓存。指令数据分离防shellcode（攻击：缓存刷新）。aslr等也有<br>新的机制？<br>固件加密，boot层分析？？最底层的一集。<br>可信系统——镜像签名，2048bit的rsa算法对固件哈希签名。<br>安全启动：安全芯片（信任锚），bootloader启动前加载不可修改。总使用可信的固件或是uefi类似的，启动前加载<br>运行时防御：x空间（dep增强，就是nx）。内置空间大小检查：使用修改过的C库（Safe c），检查传入大小，有长度溢出拒绝执行。还有aslr<br>白名单：程序哈希，内核设置。<br>底层网络隔离（cisco）：即内核底层ping不到外网，出网只有开发者知道。（安全不是本意，由他系统决定，毕竟本质是个elf，底层网络很多收到的数据要交给主进程）<br>固件加密，可信系统（信任根缺陷，签名私钥），程序白名单（内核攻击，需要内存漏洞。。。），底层网络隔离</p>
-<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p>r3第一个参数，有个ls寄存器传递返回值和intel堆栈不同<br>参数太多会有列表指针？？</p>
-<h1 id="自动化漏洞挖掘"><a href="#自动化漏洞挖掘" class="headerlink" title="自动化漏洞挖掘"></a>自动化漏洞挖掘</h1><h2 id="漏洞挖掘：afl"><a href="#漏洞挖掘：afl" class="headerlink" title="漏洞挖掘：afl"></a>漏洞挖掘：afl</h2><p>“杀伤链”模型——洛克希德·马丁</p>
+        <h1>路由设备攻防</h1>
+<h2 id="网络设备基础知识">网络设备基础知识</h2>
+<p>核心路由器：相对概念。根据实际应用场景进行的分类。三层交换机企业级路由器：没有wan和lan之分？每个口</p>
+<h3 id="计算机网络复习…">计算机网络复习…</h3>
+<p>中继器-&gt;集线器-&gt;网桥？路由器 交换机 vlan隔离 路由器（三层交换机）网络边缘防火墙，安全等级控制，内外网隔离</p>
+<h3 id="路由器分类">路由器分类</h3>
+<p>接入层，汇聚层，核心层三层网路拓扑结构。接入层直接连接终端，汇聚层网络访问控制？性能从接入到核心逐渐提高</p>
+<p>按功能，接入路由器、集成多业务路由器（isr），汇聚多业务路由器（asr）集成多业务：vpn，企业需求汇聚多业务：不同广域网园区，运营商。。。没啥用不听了数据中心（机房）</p>
+<h3 id="网络协议">网络协议</h3>
+<p>管理协议：telnet，ssh，http，snmp<br>
+动态路由协议<br>
+gre，pptp，ipsec等通道协议<br>
+hsrp，cdp私有协议</p>
+<h3 id="路由器配置">路由器配置</h3>
+<p>0-15权限级别，1权限和15比较常见。show privilege查看权限。1权限是用户执行，15是最高密码加密type0,7，MD5，blowfish<br>
+acl访问控制，aaa控制？密码权限和记录</p>
+<h3 id="IOS系统">IOS系统</h3>
+<p>一个抽象的二进制程序，类似于集成了内核。可以理解成一个高级的&quot;hello world&quot;但只用于cisco<br>
+内核，进程（分协议）管理，buffer管理等，比较简单，内存也是。所有进程共享同一片内存。分region管理。如main region放操作系统等，分区？由于网络设备的要求（后台持续运行），进程管理什么的也都不一样。管理协议有结束状态，别的多没有结束状态。CPU优先级不是抢占式？</p>
+<h2 id="路由设备攻防历史与现">路由设备攻防历史与现</h2>
+<p>成本高固件难，更新aslr。许多论文一般来说gdb调不了路由器，现在用的是11年的一个大佬论文做出的版本。棱镜门。量子攻击：控制中间结点路由器直接重定向。http攻击。https狗<br>
+SYN attack，Vault 7等等路由器后门攻击<br>
+cisco 支持tcl脚本。固件修改，tcl脚本（eem？思科的功能库），shellcode，</p>
+<h3 id="取证：">取证：</h3>
+<p>show命令，固件白名单（官网固件hash），内存转储，外部日志，配置比对</p>
+<h3 id="防护">防护</h3>
+<p>acl 定时备份，aaa，syslog，snmp等<br>
+ios系统有数据缓存和指令缓存两种缓存。指令数据分离防shellcode（攻击：缓存刷新）。aslr等也有新的机制？<br>
+固件加密，boot层分析？？最底层的一集。可信系统——镜像签名，2048bit的rsa算法对固件哈希签名。<br>
+安全启动：安全芯片（信任锚），bootloader启动前加载不可修改。总使用可信的固件或是uefi类似的，启动前加载<br>
+运行时防御：x空间（dep增强，就是nx）。内置空间大小检查：使用修改过的C库（Safe c），检查传入大小，有长度溢出拒绝执行。还有aslr<br>
+白名单：程序哈希，内核设置。<br>
+底层网络隔离（cisco）：即内核底层ping不到外网，出网只有开发者知道。（安全不是本意，由他系统决定，毕竟本质是个elf，底层网络很多收到的数据要交给主进程）<br>
+固件加密，可信系统（信任根缺陷，签名私钥），程序白名单（内核攻击，需要内存漏洞。。。），底层网络隔离</p>
+<h2 id="实验">实验</h2>
+<p>r3第一个参数，有个ls寄存器传递返回值和intel堆栈不同参数太多会有列表指针？？</p>
+<h1>自动化漏洞挖掘</h1>
+<h2 id="漏洞挖掘：afl">漏洞挖掘：afl</h2>
+<p>“杀伤链”模型——洛克希德·马丁</p>
 <blockquote>
 <p>目标侦查（漏洞挖掘）-&gt; 武器定制（漏洞利用）-&gt;武器投放（主动被动）-&gt;武器生效（漏洞触发与劫持）-&gt;持久驻留（恶意代码）-&gt;远程控制（僵尸网络）-&gt;最终行动（窃密，破坏，跳板）</p>
 </blockquote>
-<p>自动化漏洞攻防，fuzzing是什么。人工和静态分析本质上是模式匹配，而fuzzing类似于攻击者角度，想办法生成payload输入触发这个漏洞。误报低但漏报高。静态分析相反。<br>基于规则扫描（静态分析），先对漏洞建模然后扫描代码，类似于人的模式。但误报高，无法输出poc，不可判定（非频繁属性）  </p>
-<p>动态测试：输入空间无穷但触发漏洞输入不多，核心就在于怎么找特定输入。格式的确定。beSTORM，peach。代码识别状态机。基因突变式。遗传算法，优胜劣汰。以代码覆盖率（行覆盖率，边覆盖率，基本代码块覆盖率，路径覆盖率…）为指标。<br>代码块标随机数hash，动态插桩（不懂，llvm，gcc, qemu…）<br>fuzzer fork一个进程然后子进程execve，子进程和父进程通信共享trace_bits，建管道输入（fork-&gt;execve-&gt;text-&gt;waitpid）<br>为了加速，我们尽量使用fork不用execve，调用是这样的：fuzzer fork被测程序后第一次执行execve，替换后的程序成为forkserver，后面直接让第一次被替换的程序（forkserver，不退出）fork迭代。<br>历史累积 !&#x3D; 最后一次操作触发，崩溃难以分析<br>并行提速？漏洞敏感？<br>困了，后面大量在讲数据分析之类的，污点分析什么的。</p>
-<h2 id="逆向辅助"><a href="#逆向辅助" class="headerlink" title="逆向辅助"></a>逆向辅助</h2><p>llm大预言模型直接分析程序，非常接近源代码带有命名的反汇编输出（C++有），函数快速分类，命名等。牛逼。供应链函数分析······挖洞一般。机器语言大模型MLM试试</p>
-<h1 id="IOT分析"><a href="#IOT分析" class="headerlink" title="IOT分析"></a>IOT分析</h1><p>带内带外攻击</p>
-<h2 id="物理攻击"><a href="#物理攻击" class="headerlink" title="物理攻击"></a>物理攻击</h2><p>跨域攻击，CCS2017海豚音<br>语音蹲攻击，激光攻击麦克风，语音攻击硬盘，自动驾驶攻击（超声波传感器）<br>欺骗（提前回应），dos（噪声大量输入），静默（检测不到）<br>电磁攻击传感器，无人机，攻击NFC晶振电路<br>信息到物理：控制信息矛盾、缺失、叠加等</p>
-<h2 id="工业设备控制"><a href="#工业设备控制" class="headerlink" title="工业设备控制"></a>工业设备控制</h2><p>PLC,二进制代码+工控协议（自动化的内容），输入<br>网络层攻击：侦查攻击<br>主动侦查：协议报文流量分析，发探测包，看功能码等等报文结构。（Modbus协议）蠕虫攻击等<br>逻辑层攻击：恶意程序，中间人攻击（交互逻辑&#x2F;上位机欺骗）<br>固件层攻击：引脚攻击（什么究极攻击，引脚复用问题，隐蔽性极高）<br>rootkit攻击：截取上位机控制篡改，还能返回正确的传感器数值。<br>如何防护？外部加设备，特斯拉这种用OTA升级，简单的密码防护等<br>过时设备加一些边界防护</p>
-<h2 id="他们是来招人的？"><a href="#他们是来招人的？" class="headerlink" title="他们是来招人的？"></a>他们是来招人的？</h2><p>研究背景等等介绍..?又是fuzzing，感觉要是读研必须接触这玩意。</p>
-<h2 id="（下午）IOT漏洞挖掘"><a href="#（下午）IOT漏洞挖掘" class="headerlink" title="（下午）IOT漏洞挖掘"></a>（下午）IOT漏洞挖掘</h2><p>猛讲电子电焊，听不懂了玩手机了<br>uboot固件提取，逻辑分析仪监听，网页web漏洞，串口shell dump内存······<br>tar打包固件nc提取？tar处理proc这类特殊文件？<br>hackrf无线监听+重放<br>firmwalker<br>vulfi插件<br>密码破解 john the ripper, hydra, ···<br>车联网。。。 app抓包重放。。。<br>又是fuzz<br>云上个人敏感信息等<br>frida</p>
-<h1 id="APT攻击与防御"><a href="#APT攻击与防御" class="headerlink" title="APT攻击与防御"></a>APT攻击与防御</h1><h2 id="恶意代码"><a href="#恶意代码" class="headerlink" title="恶意代码"></a>恶意代码</h2><p>特征提取，关键字符串（静态特征），hash值、指令片段、特殊字符、metadata（时间戳，特殊section名等），文件名长度<br>动态特征 内存 恶意行为 启动项 特殊位置和文件名等等</p>
+<p>自动化漏洞攻防，fuzzing是什么。人工和静态分析本质上是模式匹配，而fuzzing类似于攻击者角度，想办法生成payload输入触发这个漏洞。误报低但漏报高。静态分析相反。基于规则扫描（静态分析），先对漏洞建模然后扫描代码，类似于人的模式。但误报高，无法输出poc，不可判定（非频繁属性）</p>
+<p>动态测试：输入空间无穷但触发漏洞输入不多，核心就在于怎么找特定输入。格式的确定。beSTORM，peach。代码识别状态机。基因突变式。遗传算法，优胜劣汰。以代码覆盖率（行覆盖率，边覆盖率，基本代码块覆盖率，路径覆盖率…）为指标。<br>
+代码块标随机数hash，动态插桩（不懂，llvm，gcc, qemu…）<br>
+fuzzer fork一个进程然后子进程execve，子进程和父进程通信共享trace_bits，建管道输入（fork-&gt;execve-&gt;text-&gt;waitpid）<br>
+为了加速，我们尽量使用fork不用execve，调用是这样的：fuzzer fork被测程序后第一次执行execve，替换后的程序成为forkserver，后面直接让第一次被替换的程序（forkserver，不退出）fork迭代。<br>
+历史累积 != 最后一次操作触发，崩溃难以分析<br>
+并行提速？漏洞敏感？困了，后面大量在讲数据分析之类的，污点分析什么的。</p>
+<h2 id="逆向辅助">逆向辅助</h2>
+<p>llm大预言模型直接分析程序，非常接近源代码带有命名的反汇编输出（C++有），函数快速分类，命名等。牛逼。供应链函数分析······挖洞一般。机器语言大模型MLM试试</p>
+<h1>IOT分析</h1>
+<p>带内带外攻击</p>
+<h2 id="物理攻击">物理攻击</h2>
+<p>跨域攻击，CCS2017海豚音语音蹲攻击，激光攻击麦克风，语音攻击硬盘，自动驾驶攻击（超声波传感器）欺骗（提前回应），dos（噪声大量输入），静默（检测不到）电磁攻击传感器，无人机，攻击NFC晶振电路信息到物理：控制信息矛盾、缺失、叠加等</p>
+<h2 id="工业设备控制">工业设备控制</h2>
+<p>PLC,二进制代码+工控协议（自动化的内容），输入网络层攻击：侦查攻击<br>
+主动侦查：协议报文流量分析，发探测包，看功能码等等报文结构。（Modbus协议）蠕虫攻击等逻辑层攻击：恶意程序，中间人攻击（交互逻辑/上位机欺骗）固件层攻击：引脚攻击（什么究极攻击，引脚复用问题，隐蔽性极高）<br>
+rootkit攻击：截取上位机控制篡改，还能返回正确的传感器数值。如何防护？外部加设备，特斯拉这种用OTA升级，简单的密码防护等过时设备加一些边界防护</p>
+<h2 id="他们是来招人的？">他们是来招人的？</h2>
+<p>研究背景等等介绍…?又是fuzzing，感觉要是读研必须接触这玩意。</p>
+<h2 id="（下午）IOT漏洞挖掘">（下午）IOT漏洞挖掘</h2>
+<p>猛讲电子电焊，听不懂了玩手机了<br>
+uboot固件提取，逻辑分析仪监听，网页web漏洞，串口shell dump内存······<br>
+tar打包固件nc提取？tar处理proc这类特殊文件？<br>
+hackrf无线监听+重放<br>
+firmwalker<br>
+vulfi插件密码破解 john the ripper, hydra, ···<br>
+车联网。。。 app抓包重放。。。又是fuzz<br>
+云上个人敏感信息等<br>
+frida</p>
+<h1>APT攻击与防御</h1>
+<h2 id="恶意代码">恶意代码</h2>
+<p>特征提取，关键字符串（静态特征），hash值、指令片段、特殊字符、metadata（时间戳，特殊section名等），文件名长度动态特征 内存 恶意行为 启动项 特殊位置和文件名等等</p>
 <p>各种组织的全套攻击流程讲解。。。听不进去</p>
-<h1 id="下午：各种安全大模型"><a href="#下午：各种安全大模型" class="headerlink" title="下午：各种安全大模型"></a>下午：各种安全大模型</h1>
+<h1>下午：各种安全大模型</h1>
+
     </article>
     <!-- license -->
     
@@ -669,7 +720,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%AE%BE%E5%A4%87%E6%94%BB%E9%98%B2"><span class="toc-number">1.</span> <span class="toc-text">路由设备攻防</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">1.1.</span> <span class="toc-text">网络设备基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0%E2%80%A6"><span class="toc-number">1.1.1.</span> <span class="toc-text">计算机网络复习…</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.2.</span> <span class="toc-text">路由器分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.1.3.</span> <span class="toc-text">网络协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.4.</span> <span class="toc-text">路由器配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOS%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.5.</span> <span class="toc-text">IOS系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%AE%BE%E5%A4%87%E6%94%BB%E9%98%B2%E5%8E%86%E5%8F%B2%E4%B8%8E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">路由设备攻防历史与现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%96%E8%AF%81%EF%BC%9A"><span class="toc-number">1.2.1.</span> <span class="toc-text">取证：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E6%8A%A4"><span class="toc-number">1.2.2.</span> <span class="toc-text">防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">1.3.</span> <span class="toc-text">实验</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98"><span class="toc-number">2.</span> <span class="toc-text">自动化漏洞挖掘</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%EF%BC%9Aafl"><span class="toc-number">2.1.</span> <span class="toc-text">漏洞挖掘：afl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%86%E5%90%91%E8%BE%85%E5%8A%A9"><span class="toc-number">2.2.</span> <span class="toc-text">逆向辅助</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#IOT%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">IOT分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E6%94%BB%E5%87%BB"><span class="toc-number">3.1.</span> <span class="toc-text">物理攻击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%B8%9A%E8%AE%BE%E5%A4%87%E6%8E%A7%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">工业设备控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%96%E4%BB%AC%E6%98%AF%E6%9D%A5%E6%8B%9B%E4%BA%BA%E7%9A%84%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">他们是来招人的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%8B%E5%8D%88%EF%BC%89IOT%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98"><span class="toc-number">3.4.</span> <span class="toc-text">（下午）IOT漏洞挖掘</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#APT%E6%94%BB%E5%87%BB%E4%B8%8E%E9%98%B2%E5%BE%A1"><span class="toc-number">4.</span> <span class="toc-text">APT攻击与防御</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="toc-number">4.1.</span> <span class="toc-text">恶意代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%8B%E5%8D%88%EF%BC%9A%E5%90%84%E7%A7%8D%E5%AE%89%E5%85%A8%E5%A4%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">下午：各种安全大模型</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">路由设备攻防</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-number">1.1.</span> <span class="toc-text">网络设备基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E5%A4%8D%E4%B9%A0%E2%80%A6"><span class="toc-number">1.1.1.</span> <span class="toc-text">计算机网络复习…</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E5%88%86%E7%B1%BB"><span class="toc-number">1.1.2.</span> <span class="toc-text">路由器分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.1.3.</span> <span class="toc-text">网络协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.4.</span> <span class="toc-text">路由器配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOS%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.1.5.</span> <span class="toc-text">IOS系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E8%AE%BE%E5%A4%87%E6%94%BB%E9%98%B2%E5%8E%86%E5%8F%B2%E4%B8%8E%E7%8E%B0"><span class="toc-number">1.2.</span> <span class="toc-text">路由设备攻防历史与现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%96%E8%AF%81%EF%BC%9A"><span class="toc-number">1.2.1.</span> <span class="toc-text">取证：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E6%8A%A4"><span class="toc-number">1.2.2.</span> <span class="toc-text">防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">1.3.</span> <span class="toc-text">实验</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">自动化漏洞挖掘</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%EF%BC%9Aafl"><span class="toc-number">2.1.</span> <span class="toc-text">漏洞挖掘：afl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%86%E5%90%91%E8%BE%85%E5%8A%A9"><span class="toc-number">2.2.</span> <span class="toc-text">逆向辅助</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">IOT分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E6%94%BB%E5%87%BB"><span class="toc-number">3.1.</span> <span class="toc-text">物理攻击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%B8%9A%E8%AE%BE%E5%A4%87%E6%8E%A7%E5%88%B6"><span class="toc-number">3.2.</span> <span class="toc-text">工业设备控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%96%E4%BB%AC%E6%98%AF%E6%9D%A5%E6%8B%9B%E4%BA%BA%E7%9A%84%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">他们是来招人的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%EF%BC%88%E4%B8%8B%E5%8D%88%EF%BC%89IOT%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98"><span class="toc-number">3.4.</span> <span class="toc-text">（下午）IOT漏洞挖掘</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">APT攻击与防御</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%81%B6%E6%84%8F%E4%BB%A3%E7%A0%81"><span class="toc-number">4.1.</span> <span class="toc-text">恶意代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">下午：各种安全大模型</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -949,6 +1000,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1771,24 +1828,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1801,6 +1843,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1809,6 +1866,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1821,19 +1883,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1841,14 +1893,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

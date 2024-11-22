@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="介绍： https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;data-lab通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。  这个实验的核心目标是在限定的运算符和运算符数目内完成许多函数（称为“谜题”）。官方提供了用于检测函数是否合规和打分的程序，满分相当于完成目标。并且提供了几个小工具。程序会用数万条测试数据对函数进行测试（">
+    <meta name="description" content="介绍：  https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;data-lab 通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。  这个实验的核心目标是在限定的运算符和运算符数目内完成许多函数（称为“谜题”）。官方提供了用于检测函数是否合规和打分的程序，满分相当于完成目标。并且提供了几个小工具。程序会用数万条测试数据对函数进行测">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CSAPP Labs——Data Lab">
 <meta property="og:url" content="http://example.com/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="介绍： https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;data-lab通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。  这个实验的核心目标是在限定的运算符和运算符数目内完成许多函数（称为“谜题”）。官方提供了用于检测函数是否合规和打分的程序，满分相当于完成目标。并且提供了几个小工具。程序会用数万条测试数据对函数进行测试（">
+<meta property="og:description" content="介绍：  https:&#x2F;&#x2F;hansimov.gitbook.io&#x2F;csapp&#x2F;labs&#x2F;data-lab 通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。  这个实验的核心目标是在限定的运算符和运算符数目内完成许多函数（称为“谜题”）。官方提供了用于检测函数是否合规和打分的程序，满分相当于完成目标。并且提供了几个小工具。程序会用数万条测试数据对函数进行测">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://pic2.zhimg.com/5602b5d758fa3c790f0194dc903a8847_r.jpg?source=1940ef5c">
 <meta property="og:image" content="http://example.com/images/data_lab_success.png">
@@ -498,110 +498,207 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="介绍："><a href="#介绍：" class="headerlink" title="介绍："></a>介绍：</h1><blockquote>
-<p><a target="_blank" rel="noopener" href="https://hansimov.gitbook.io/csapp/labs/data-lab">https://hansimov.gitbook.io/csapp/labs/data-lab</a><br>通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。</p>
+        <h1>介绍：</h1>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://hansimov.gitbook.io/csapp/labs/data-lab">https://hansimov.gitbook.io/csapp/labs/data-lab</a><br>
+通过这个实验我们将真正理解计算机中数据的存储方式——包括那些令人头疼的浮点数（真的能理解）。</p>
 </blockquote>
 <p>这个实验的核心目标是在限定的运算符和运算符数目内完成许多函数（称为“谜题”）。官方提供了用于检测函数是否合规和打分的程序，满分相当于完成目标。并且提供了几个小工具。程序会用数万条测试数据对函数进行测试（包括大量的边界条件），因此必须保证函数是绝对有效的。</p>
-<p>最关键的要求如下：<br><strong>整数问题:</strong></p>
+<p>最关键的要求如下：<br>
+<strong>整数问题:</strong></p>
 <ol>
-<li>程序只能是顺序逻辑，不允许任何的条件分支、循环、跳转等。调用函数当然也不行。</li>
-<li>不允许定义任何其他的宏、函数。</li>
-<li>不允许使用任何规定外的运算符（如逻辑与&amp;&amp;等）和除int以外的数据类型</li>
-<li>不允许使用任何大于0xFF的常量</li>
+<li class="lvl-3">
+<p>程序只能是顺序逻辑，不允许任何的条件分支、循环、跳转等。调用函数当然也不行。</p>
+</li>
+<li class="lvl-3">
+<p>不允许定义任何其他的宏、函数。</p>
+</li>
+<li class="lvl-3">
+<p>不允许使用任何规定外的运算符（如逻辑与&amp;&amp;等）和除int以外的数据类型</p>
+</li>
+<li class="lvl-3">
+<p>不允许使用任何大于0xFF的常量</p>
+</li>
 </ol>
 <p>对于浮点数问题，我们额外允许使用unsigned数据类型和分支结构（条件判断、循环等），同时也允许任何unsigned和int类型的常量使用，对于运算符也不再有限制，但仍然仅限整型的运算（不允许任何浮点运算）。</p>
 <p>知道了规则，我们可以看看问题了。</p>
-<h1 id="内容："><a href="#内容：" class="headerlink" title="内容："></a>内容：</h1><h2 id="整数部分："><a href="#整数部分：" class="headerlink" title="整数部分："></a>整数部分：</h2><h3 id="bitXor：按位异或"><a href="#bitXor：按位异或" class="headerlink" title="bitXor：按位异或"></a>bitXor：按位异或</h3><blockquote>
-<p>bitXor - x^y using only ~ and &amp;<br>Example: bitXor(4, 5) &#x3D; 1<br>Legal ops: ~ &amp;<br>Max ops: 14<br>使用逻辑运算将异或化为最简与非式即可。</p>
+<h1>内容：</h1>
+<h2 id="整数部分：">整数部分：</h2>
+<h3 id="bitXor：按位异或">bitXor：按位异或</h3>
+<blockquote>
+<p>bitXor - x^y using only ~ and &amp;<br>
+Example: bitXor(4, 5) = 1<br>
+Legal ops: ~ &amp;<br>
+Max ops: 14<br>
+使用逻辑运算将异或化为最简与非式即可。</p>
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">bitXor</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> ~(~(x&amp;~y)&amp;~(~x&amp;y));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="tmin-给出最小的二进制补码整数"><a href="#tmin-给出最小的二进制补码整数" class="headerlink" title="tmin: 给出最小的二进制补码整数"></a>tmin: 给出最小的二进制补码整数</h3><blockquote>
-<p> tmin - return minimum two’s complement integer<br> Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br> Max ops: 4<br> Rating: 1  </p>
+<h3 id="tmin-给出最小的二进制补码整数">tmin: 给出最小的二进制补码整数</h3>
+<blockquote>
+<p>tmin - return minimum two’s complement integer<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 4<br>
+Rating: 1</p>
 </blockquote>
 <p>返回是32位有符号数，绝对值取最大然后取补结果是0x80000000。由于不允许使用长度超过0xFF的常量，使用移位运算实现：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">tmin</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>&lt;&lt;<span class="number">31</span>;<span class="comment">//0x80000000</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="isTmax：是最大整数吗？"><a href="#isTmax：是最大整数吗？" class="headerlink" title="isTmax：是最大整数吗？"></a>isTmax：是最大整数吗？</h3><blockquote>
-<p>isTmax - returns 1 if x is the maximum, two’s complement number,<br>    and 0 otherwise<br>  Legal ops: ! ~ &amp; ^ | +<br>  Max ops: 10<br>  Rating: 1  </p>
+<h3 id="isTmax：是最大整数吗？">isTmax：是最大整数吗？</h3>
+<blockquote>
+<p>isTmax - returns 1 if x is the maximum, two’s complement number,<br>
+and 0 otherwise<br>
+Legal ops: ! ~ &amp; ^ | +<br>
+Max ops: 10<br>
+Rating: 1</p>
 </blockquote>
-<p>最大的整数显然是0111 1111 … 1111，我们要将输入和这个数匹配。但没有移位运算也没有三目运算符。注意到它允许加法运算，是不是我们可以利用溢出？  </p>
-<p>这里出了很多问题。中间一个想法是<code>!(~x+x+1)</code>，即这个数加自己的相反数（取补）不是0.但是这会有一个问题，就是它的相反数0x80000000也符合这个条件。  </p>
-<p>而使用“+1是自己取反”这个性质的话，还会匹配-1（0xffffffff).因此想办法排除掉特殊情况-1，使用<code>!!(~x)</code>这一项可以在x是-1的时候取0，在x不是-1的时候取1，解决。  </p>
+<p>最大的整数显然是0111 1111 … 1111，我们要将输入和这个数匹配。但没有移位运算也没有三目运算符。注意到它允许加法运算，是不是我们可以利用溢出？</p>
+<p>这里出了很多问题。中间一个想法是<code>!(~x+x+1)</code>，即这个数加自己的相反数（取补）不是0.但是这会有一个问题，就是它的相反数0x80000000也符合这个条件。</p>
+<p>而使用“+1是自己取反”这个性质的话，还会匹配-1（0xffffffff).因此想办法排除掉特殊情况-1，使用<code>!!(~x)</code>这一项可以在x是-1的时候取0，在x不是-1的时候取1，解决。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">isTmax</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> !((x+<span class="number">1</span>)^(~x))&amp;(!!(~x));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="allOddBits-0-31，奇数位全1？"><a href="#allOddBits-0-31，奇数位全1？" class="headerlink" title="allOddBits: 0-31，奇数位全1？"></a>allOddBits: 0-31，奇数位全1？</h3><blockquote>
-<p> allOddBits - return 1 if all odd-numbered bits in word set to 1<br>   where bits are numbered from 0 (least significant) to 31 (most significant)<br>   Examples allOddBits(0xFFFFFFFD) &#x3D; 0, allOddBits(0xAAAAAAAA) &#x3D; 1<br>  Max ops: 12<br>  Rating: 2  </p>
+<h3 id="allOddBits-0-31，奇数位全1？">allOddBits: 0-31，奇数位全1？</h3>
+<blockquote>
+<p>allOddBits - return 1 if all odd-numbered bits in word set to 1<br>
+where bits are numbered from 0 (least significant) to 31 (most significant)<br>
+Examples allOddBits(0xFFFFFFFD) = 0, allOddBits(0xAAAAAAAA) = 1<br>
+Max ops: 12<br>
+Rating: 2</p>
 </blockquote>
 <p>这里结合AI的答案有一个偷鸡（也不算，因为规则已经很严了）：允许+和移位运算，那么我们可以用小于0xFF的常量拼凑成一个mask。这里就用0xAA(1010 1010)拼32位，结果直接和mask与然后判断即可。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">allOddBits</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">  <span class="type">int</span> mask = <span class="number">0xAA</span> + (<span class="number">0xAA</span> &lt;&lt; <span class="number">8</span>) + (<span class="number">0xAA</span> &lt;&lt; <span class="number">16</span>) + (<span class="number">0xAA</span> &lt;&lt; <span class="number">24</span>); <span class="comment">// Create a mask with all odd-numbered bits set to 1</span></span><br><span class="line">  <span class="keyword">return</span> !((x &amp; mask) ^ mask); <span class="comment">// Check if all odd-numbered bits in x are set to 1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="negate：相反数"><a href="#negate：相反数" class="headerlink" title="negate：相反数"></a>negate：相反数</h3><blockquote>
-<p>negate - return -x<br>  Example: negate(1) &#x3D; -1.<br>  Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>  Max ops: 5<br>  Rating: 2  </p>
+<h3 id="negate：相反数">negate：相反数</h3>
+<blockquote>
+<p>negate - return -x<br>
+Example: negate(1) = -1.<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 5<br>
+Rating: 2</p>
 </blockquote>
 <p>补码的运算方式，取反加一即可。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">negate</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> ~x + <span class="number">1</span>;<span class="comment">//取反+1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="isAsciiDigit-是ascii字符0-9吗？"><a href="#isAsciiDigit-是ascii字符0-9吗？" class="headerlink" title="isAsciiDigit: 是ascii字符0-9吗？"></a>isAsciiDigit: 是ascii字符0-9吗？</h3><blockquote>
-<p>isAsciiDigit - return 1 if 0x30 &lt;&#x3D; x &lt;&#x3D; 0x39 (ASCII codes for characters ‘0’ to ‘9’)<br>  Example: isAsciiDigit(0x35) &#x3D; 1.<br>           isAsciiDigit(0x3a) &#x3D; 0.<br>           isAsciiDigit(0x05) &#x3D; 0.<br>  Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>  Max ops: 15<br>  Rating: 3  </p>
+<h3 id="isAsciiDigit-是ascii字符0-9吗？">isAsciiDigit: 是ascii字符0-9吗？</h3>
+<blockquote>
+<p>isAsciiDigit - return 1 if 0x30 &lt;= x &lt;= 0x39 (ASCII codes for characters ‘0’ to ‘9’)<br>
+Example: isAsciiDigit(0x35) = 1.<br>
+isAsciiDigit(0x3a) = 0.<br>
+isAsciiDigit(0x05) = 0.<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 15<br>
+Rating: 3</p>
 </blockquote>
 <p>判断是否是0x30-0x39。这里我们不能直接比较，不过可以作差看符号位。那么由于要包含相等情况，需要上界增加1下界减少1——0x3a和0x2f</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">isAsciiDigit</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line"><span class="comment">// x-0x30</span></span><br><span class="line">  <span class="type">int</span> lower_than_0x39 = (x + (~<span class="number">0x3a</span> + <span class="number">1</span>)) &gt;&gt; <span class="number">31</span>;<span class="comment">//x-0x39&lt;0主笔了写成0x29和0x40了</span></span><br><span class="line">  <span class="type">int</span> greater_than_0x30 = (<span class="number">0x2f</span> + (~x + <span class="number">1</span>)) &gt;&gt; <span class="number">31</span>;<span class="comment">//0x29-x&lt;0</span></span><br><span class="line">  <span class="keyword">return</span> (lower_than_0x39 &amp; <span class="number">0x1</span>) &amp; (greater_than_0x30 &amp; <span class="number">0x1</span>);<span class="comment">//x-0x39&lt;=0 &amp;&amp; 0x30-x&lt;=0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="conditional：三目运算符"><a href="#conditional：三目运算符" class="headerlink" title="conditional：三目运算符"></a>conditional：三目运算符</h3><blockquote>
-<p>conditional - same as x ? y : z<br>  Example: conditional(2,4,5) &#x3D; 4<br>  Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>  Max ops: 16<br>  Rating: 3  </p>
+<h3 id="conditional：三目运算符">conditional：三目运算符</h3>
+<blockquote>
+<p>conditional - same as x ? y : z<br>
+Example: conditional(2,4,5) = 4<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 16<br>
+Rating: 3</p>
 </blockquote>
 <p>从源头出发。给出的运算符能实现数值-&gt;逻辑值转化的（非数值运算式转化）只有一个符号<code>!</code>，因此我们要在这个符号上下功夫。x是0输出z非0输出y，程序还不允许判断，那么我们考虑一个会随着x变化的mask。那这个把“非0”一大类映射到一个数的操作就是由<code>!</code>完成。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 利用逻辑！符号对X输入进行转化（相当于就是一次判断）</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">conditional</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y, <span class="type">int</span> z)</span> &#123;</span><br><span class="line">  <span class="type">int</span> mask_genius = ~(!x)+<span class="number">1</span>;<span class="comment">//x=0时0xffffffff,x!=0时0x00000000，编译会报警告，不管</span></span><br><span class="line">  <span class="keyword">return</span> (~mask_genius &amp; y) | (mask_genius &amp; z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="isLessOrEqual-x小于等于y？"><a href="#isLessOrEqual-x小于等于y？" class="headerlink" title="isLessOrEqual: x小于等于y？"></a>isLessOrEqual: x小于等于y？</h3><blockquote>
-<p> isLessOrEqual - if x &lt;&#x3D; y  then return 1, else return 0<br>  Example: isLessOrEqual(4,5) &#x3D; 1.<br>  Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>  Max ops: 24<br>  Rating: 3  </p>
+<h3 id="isLessOrEqual-x小于等于y？">isLessOrEqual: x小于等于y？</h3>
+<blockquote>
+<p>isLessOrEqual - if x &lt;= y  then return 1, else return 0<br>
+Example: isLessOrEqual(4,5) = 1.<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 24<br>
+Rating: 3</p>
 </blockquote>
-<p>这里会测一大堆边界条件和溢出的东西…<br>我们的思想还是作差，但是作差这个运算会在很多地方溢出导致结果不对，因此考虑检测溢出——先判断符号是否相同。总之就是作差，符号相同作差小于（符号位）+ 相等判断 + 符号不同看x是不是负数。</p>
+<p>这里会测一大堆边界条件和溢出的东西…<br>
+我们的思想还是作差，但是作差这个运算会在很多地方溢出导致结果不对，因此考虑检测溢出——先判断符号是否相同。总之就是作差，符号相同作差小于（符号位）+ 相等判断 + 符号不同看x是不是负数。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">isLessOrEqual</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;<span class="comment">//天天测b溢出，要判断符号</span></span><br><span class="line">  <span class="type">int</span> x_sign = x &gt;&gt; <span class="number">31</span>;<span class="comment">//x符号位</span></span><br><span class="line">  <span class="type">int</span> check_same_sign = (x_sign) ^ (y&gt;&gt;<span class="number">31</span>);<span class="comment">//符号位相同为0不同为-1（0xffffffff）</span></span><br><span class="line">  <span class="type">int</span> x_minus_y = x + ~y + <span class="number">1</span>;<span class="comment">//x-y</span></span><br><span class="line">  <span class="type">int</span> sign= x_minus_y &gt;&gt; <span class="number">31</span>;<span class="comment">//x-y&lt;=0</span></span><br><span class="line">  <span class="type">int</span> tmp= !(x^y);<span class="comment">//x和y一样为1不一样为0</span></span><br><span class="line">  <span class="keyword">return</span> (sign &amp; !check_same_sign) | tmp | (x_sign &amp; check_same_sign &amp; <span class="number">0x1</span>);<span class="comment">//一样，符号位相同作差x&lt;y，符号位不同x&lt;0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="logicalNeg-实现逻辑非‘-’"><a href="#logicalNeg-实现逻辑非‘-’" class="headerlink" title="logicalNeg: 实现逻辑非‘!’"></a>logicalNeg: 实现逻辑非‘!’</h3><blockquote>
-<p> logicalNeg - implement the ! operator, using all of<br>             the legal operators except !<br>  Examples: logicalNeg(3) &#x3D; 0, logicalNeg(0) &#x3D; 1<br>  Legal ops: ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>  Max ops: 12<br>  Rating: 4  </p>
+<h3 id="logicalNeg-实现逻辑非‘-’">logicalNeg: 实现逻辑非‘!’</h3>
+<blockquote>
+<p>logicalNeg - implement the ! operator, using all of<br>
+the legal operators except !<br>
+Examples: logicalNeg(3) = 0, logicalNeg(0) = 1<br>
+Legal ops: ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 12<br>
+Rating: 4</p>
 </blockquote>
 <p>核心：看是不是0.那么要考虑0(0x00000000)的特性。首先考虑到是相反数的符号位和自己相同，但很不幸测试挂了——0x80000000也满足这个条件（取反加一是自己）。那这里不改变思路的情况下就要想办法排除掉0x80000000，，它和0的区别就是符号位是1.那在符号位做文章的话，就只返回自己和相反数符号位都是0的情况：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">logicalNeg</span><span class="params">(<span class="type">int</span> x)</span> &#123; <span class="comment">//判断是否自己的相反数和自己符号位相同</span></span><br><span class="line"><span class="comment">// 但是0x80000000的相反数是0x80000000不行</span></span><br><span class="line">  <span class="type">int</span> x_neg = ~x + <span class="number">1</span>;<span class="comment">//取反加1 </span></span><br><span class="line">  <span class="type">int</span> tmp=(x&gt;&gt;<span class="number">31</span>)^((x_neg)&gt;&gt;<span class="number">31</span>)&amp;<span class="number">0x1</span>;</span><br><span class="line">  <span class="type">int</span> tmp2=(x&gt;&gt;<span class="number">31</span>)|((x_neg)&gt;&gt;<span class="number">31</span>)&amp;<span class="number">0x1</span>;<span class="comment">//不能用异或，要保证两个符号位为0排除0x80000000</span></span><br><span class="line">  <span class="comment">//tmp=0且tmp2=0就返回1,否则返回0(大部分数tmp是1tmp2也是1，0是双0，0x80000000tmp是0而tmp2是1)</span></span><br><span class="line">  <span class="keyword">return</span>  ~tmp &amp; ~tmp2 &amp; <span class="number">0x1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="howManyBits：一个数最少要几位二进制补码表示"><a href="#howManyBits：一个数最少要几位二进制补码表示" class="headerlink" title="*howManyBits：一个数最少要几位二进制补码表示"></a>*howManyBits：一个数最少要几位二进制补码表示</h3><blockquote>
-<p>howManyBits - return the minimum number of bits required to represent x in<br>            two’s complement<br> Examples: howManyBits(12) &#x3D; 5<br>           howManyBits(298) &#x3D; 10<br>           howManyBits(-5) &#x3D; 4<br>           howManyBits(0)  &#x3D; 1<br>           howManyBits(-1) &#x3D; 1<br>           howManyBits(0x80000000) &#x3D; 32<br> Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br> Max ops: 90 我草90个操作数<br> Rating: 4  </p>
+<h3 id="howManyBits：一个数最少要几位二进制补码表示">*howManyBits：一个数最少要几位二进制补码表示</h3>
+<blockquote>
+<p>howManyBits - return the minimum number of bits required to represent x in<br>
+two’s complement<br>
+Examples: howManyBits(12) = 5<br>
+howManyBits(298) = 10<br>
+howManyBits(-5) = 4<br>
+howManyBits(0)  = 1<br>
+howManyBits(-1) = 1<br>
+howManyBits(0x80000000) = 32<br>
+Legal ops: ! ~ &amp; ^ | + &lt;&lt; &gt;&gt;<br>
+Max ops: 90 我草90个操作数<br>
+Rating: 4</p>
 </blockquote>
 <p>很遗憾，这个问题自己没做出来，是copy的互联网的方案。开始没懂是什么意思，分析例子，直观来说，正数就是它们最高位1的位置加一位符号位，负数转成正数考虑。但是很难懂的是-1和1同样都是用一位1来表示。先贴代码：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 天才</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">howManyBits</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">	<span class="type">int</span> temp = x ^ (x &lt;&lt; <span class="number">1</span>);</span><br><span class="line">	<span class="type">int</span> bit_16,bit_8,bit_4,bit_2,bit_1;</span><br><span class="line">	bit_16 = !!(temp &gt;&gt; <span class="number">16</span>) &lt;&lt; <span class="number">4</span>;</span><br><span class="line">	temp = temp &gt;&gt; bit_16;</span><br><span class="line">	bit_8 = !!(temp &gt;&gt; <span class="number">8</span>) &lt;&lt; <span class="number">3</span>;</span><br><span class="line">	temp = temp &gt;&gt; bit_8;</span><br><span class="line">	bit_4 = !!(temp &gt;&gt; <span class="number">4</span>) &lt;&lt; <span class="number">2</span>;</span><br><span class="line">	temp = temp &gt;&gt; bit_4;</span><br><span class="line">	bit_2 = !!(temp &gt;&gt; <span class="number">2</span>) &lt;&lt; <span class="number">1</span>;</span><br><span class="line">	temp = temp &gt;&gt; bit_2;</span><br><span class="line">	bit_1 = !!(temp &gt;&gt; <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span> + bit_1 + bit_2 + bit_4 + bit_8 + bit_16;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>特别鸣谢Github Copilot<br>首先第一行：</p>
+<p>特别鸣谢Github Copilot<br>
+首先第一行：</p>
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> temp = x ^ (x &lt;&lt; <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
 <p>这段代码应当用这个视角看待：x的每一位和它右边的位异或，当且仅当这一位和它右边的位不同才为1（即一位为1一位为0）。有这样一个直观认知：对于一个绝对值小的正数其高位应该都是0.对于一个绝对值小的负数其高位应该都是1。</p>
 <p>第一行代码属于是这个算法的神之手：相邻位两两异或，迅速就能保存最高有效位——我们并不关心低位那些数据位什么样。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bit_16 = !!(temp &gt;&gt; <span class="number">16</span>) &lt;&lt; <span class="number">4</span>;</span><br><span class="line">temp = temp &gt;&gt; bit_16;</span><br></pre></td></tr></table></figure>
-<p>这里是看tmp的高16位有没有1，有1的话bit_16置位为10000并将tmp右移16位,否则为0。这里是将结果拆分成2进制的幂的形式，结果最大为32(100000),最高有效位的位置最大是(11111)，因此我们按权重拆分成五项，依次检查确定x的最高有效位的位置如何用2的幂表示，最高有效位越高，16-8-4-2-1的判定就越向前推进。  </p>
+<p>这里是看tmp的高16位有没有1，有1的话bit_16置位为10000并将tmp右移16位,否则为0。这里是将结果拆分成2进制的幂的形式，结果最大为32(100000),最高有效位的位置最大是(11111)，因此我们按权重拆分成五项，依次检查确定x的最高有效位的位置如何用2的幂表示，最高有效位越高，16-8-4-2-1的判定就越向前推进。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="number">1</span> + bit_1 + bit_2 + bit_4 + bit_8 + bit_16;</span><br></pre></td></tr></table></figure>
-<p>最后加1，位下标变位数。<br><strong>这个算法就是天才中的天才。劲</strong></p>
-<h2 id="浮点数部分"><a href="#浮点数部分" class="headerlink" title="浮点数部分"></a>浮点数部分</h2><h3 id="IEEE-754单精度浮点数介绍"><a href="#IEEE-754单精度浮点数介绍" class="headerlink" title="IEEE 754单精度浮点数介绍"></a>IEEE 754单精度浮点数介绍</h3><p>先讲下浮点数怎么存储的。对于IEEE 754标准下的单精度浮点数，其一共占32位，分符号、阶码、尾数（1-8-23）三部分，是以符号位-尾数乘2的阶码次幂得到。阶码是以真实值加127存储的（为了丢弃符号位存储负数）。同时为了省空间，尾数会省去最高位的1。如图所示（来自网络）：<br><img src="https://pic2.zhimg.com/5602b5d758fa3c790f0194dc903a8847_r.jpg?source=1940ef5c" alt="ieee_754_float.jpg"><br>存储前会对小数进行规格化，也就是科学计数法。会将尾数设置为1.xxxx的形式然后省去最高位1.知道了这些就可以进行操作了</p>
-<h3 id="floatScale2-实现给定浮点数-2"><a href="#floatScale2-实现给定浮点数-2" class="headerlink" title="floatScale2: 实现给定浮点数*2"></a>floatScale2: 实现给定浮点数*2</h3><blockquote>
-<p> floatFloat2Int - Return bit-level equivalent of expression (int) f<br>  for floating point argument f.<br>  Argument is passed as unsigned int, but<br>  it is to be interpreted as the bit-level representation of a<br>  single-precision floating point value.<br>  Anything out of range (including NaN and infinity) should return<br>  0x80000000u.<br>  Legal ops: Any integer&#x2F;unsigned operations incl. ||, &amp;&amp;. also if, while<br>  Max ops: 30<br>  Rating: 4  </p>
+<p>最后加1，位下标变位数。<br>
+<strong>这个算法就是天才中的天才。劲</strong></p>
+<h2 id="浮点数部分">浮点数部分</h2>
+<h3 id="IEEE-754单精度浮点数介绍">IEEE 754单精度浮点数介绍</h3>
+<p>先讲下浮点数怎么存储的。对于IEEE 754标准下的单精度浮点数，其一共占32位，分符号、阶码、尾数（1-8-23）三部分，是以符号位-尾数乘2的阶码次幂得到。阶码是以真实值加127存储的（为了丢弃符号位存储负数）。同时为了省空间，尾数会省去最高位的1。如图所示（来自网络）：<img src="https://pic2.zhimg.com/5602b5d758fa3c790f0194dc903a8847_r.jpg?source=1940ef5c" alt="ieee_754_float.jpg"><br>
+存储前会对小数进行规格化，也就是科学计数法。会将尾数设置为1.xxxx的形式然后省去最高位1.知道了这些就可以进行操作了</p>
+<h3 id="floatScale2-实现给定浮点数-2">floatScale2: 实现给定浮点数*2</h3>
+<blockquote>
+<p>floatFloat2Int - Return bit-level equivalent of expression (int) f<br>
+for floating point argument f.<br>
+Argument is passed as unsigned int, but<br>
+it is to be interpreted as the bit-level representation of a<br>
+single-precision floating point value.<br>
+Anything out of range (including NaN and infinity) should return<br>
+0x80000000u.<br>
+Legal ops: Any integer/unsigned operations incl. ||, &amp;&amp;. also if, while<br>
+Max ops: 30<br>
+Rating: 4</p>
 </blockquote>
-<p>乘以2，显然由于浮点数的表示方法，我们只操作阶码就行，一般来说阶码加1即可。这里参考网络上的代码时，给出了一个如果非规格化浮点数（阶码全0）的分支情况，要将尾数左移一位（不确定是否真的有用但加上了），由于IEEE省略最高位1的策略，尾数最高位无论是0是1都不影响结果。<br>根据要求，对于无穷大（在标准下表示阶码全1），返回原值即可。</p>
+<p>乘以2，显然由于浮点数的表示方法，我们只操作阶码就行，一般来说阶码加1即可。这里参考网络上的代码时，给出了一个如果非规格化浮点数（阶码全0）的分支情况，要将尾数左移一位（不确定是否真的有用但加上了），由于IEEE省略最高位1的策略，尾数最高位无论是0是1都不影响结果。<br>
+根据要求，对于无穷大（在标准下表示阶码全1），返回原值即可。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="title function_">floatScale2</span><span class="params">(<span class="type">unsigned</span> uf)</span> &#123;</span><br><span class="line">  <span class="type">int</span> sign = uf &amp; (<span class="number">1</span>&lt;&lt;<span class="number">31</span>);<span class="comment">//符号位取出来不动</span></span><br><span class="line">  <span class="type">int</span> <span class="built_in">exp</span> = (uf &amp; <span class="number">0x7f800000</span>) &gt;&gt; <span class="number">23</span>;<span class="comment">//阶码</span></span><br><span class="line">  <span class="type">int</span> frac=uf&amp;<span class="number">0x007fffff</span>;<span class="comment">//尾数</span></span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">exp</span>==<span class="number">0</span>)<span class="comment">//如果阶码是0</span></span><br><span class="line">  &#123;</span><br><span class="line">    frac=frac&lt;&lt;<span class="number">1</span>;<span class="comment">//尾数左移一位</span></span><br><span class="line">    <span class="comment">// 此时尾数的最高位必定是1否则会被规格化</span></span><br><span class="line">    <span class="comment">// 不影响，考虑0.5左移一位，这时候尾数全是0但根据标准其实是1</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">exp</span>==<span class="number">0xff</span>)<span class="comment">//如果阶码是全1</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">return</span> uf;<span class="comment">//返回原数</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="comment">//一般情况</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">exp</span>=<span class="built_in">exp</span>+<span class="number">1</span>;<span class="comment">//阶码+1</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> sign|<span class="built_in">exp</span>&lt;&lt;<span class="number">23</span>|frac;<span class="comment">//返回结果</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>后面我们都用类似的分块思想操作浮点数。</p>
-<h3 id="float2Int：小数取整-int-f"><a href="#float2Int：小数取整-int-f" class="headerlink" title="float2Int：小数取整 (int)f"></a>float2Int：小数取整 (int)f</h3><blockquote>
-<p>floatFloat2Int - Return bit-level equivalent of expression (int) f<br>  for floating point argument f.<br>  Argument is passed as unsigned int, but<br>  it is to be interpreted as the bit-level representation of a<br>  single-precision floating point value.<br>  Anything out of range (including NaN and infinity) should return<br>  0x80000000u.<br>  Legal ops: Any integer&#x2F;unsigned operations incl. ||, &amp;&amp;. also if, while<br>  Max ops: 30<br>  Rating: 4  </p>
+<h3 id="float2Int：小数取整-int-f">float2Int：小数取整 (int)f</h3>
+<blockquote>
+<p>floatFloat2Int - Return bit-level equivalent of expression (int) f<br>
+for floating point argument f.<br>
+Argument is passed as unsigned int, but<br>
+it is to be interpreted as the bit-level representation of a<br>
+single-precision floating point value.<br>
+Anything out of range (including NaN and infinity) should return<br>
+0x80000000u.<br>
+Legal ops: Any integer/unsigned operations incl. ||, &amp;&amp;. also if, while<br>
+Max ops: 30<br>
+Rating: 4</p>
 </blockquote>
 <p>思路是取出阶码然后按阶码移位尾数进行还原。如果是小数或0直接返回0，根据要求溢出返回0x80000000。要把尾数移位到对应位的话要对阶码做判断，看比23大还是比23小。最后还原符号。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">floatFloat2Int</span><span class="params">(<span class="type">unsigned</span> uf)</span> &#123;</span><br><span class="line">  <span class="type">int</span> sign = uf &amp; (<span class="number">1</span>&lt;&lt;<span class="number">31</span>);<span class="comment">//符号位</span></span><br><span class="line">  <span class="type">int</span> <span class="built_in">exp</span> = (uf &amp; <span class="number">0x7f800000</span>) &gt;&gt; <span class="number">23</span>;<span class="comment">//阶码(+127),运算顺序问题</span></span><br><span class="line">  <span class="type">int</span> frac=uf&amp;<span class="number">0x007fffff</span>;<span class="comment">//尾数</span></span><br><span class="line">  <span class="built_in">exp</span> = <span class="built_in">exp</span><span class="number">-127</span>;<span class="comment">//阶码真值</span></span><br><span class="line">  <span class="comment">// if 解禁</span></span><br><span class="line">  <span class="comment">//printf(&quot;%x\n&quot;,exp);</span></span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">exp</span>&lt;<span class="number">0</span>) </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;<span class="comment">//小数或0直接返回0就行</span></span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">exp</span>&gt;<span class="number">31</span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0x80000000</span>u;<span class="comment">//溢出返回0x80000000u</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span>&#123;</span><br><span class="line">    frac=frac|<span class="number">0x00800000</span>;<span class="comment">//尾数把1补上</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">exp</span>&gt;<span class="number">23</span>)</span><br><span class="line">      frac=frac&lt;&lt;(<span class="built_in">exp</span><span class="number">-23</span>);<span class="comment">//阶码大于23，尾数左移至对应位</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      frac=frac&gt;&gt;(<span class="number">23</span>-<span class="built_in">exp</span>);<span class="comment">//阶码小于23，尾数右移至对应位</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//这时候frac应该能表示整数部分的绝对值了，最后确定符号</span></span><br><span class="line">  <span class="keyword">if</span>(sign&gt;&gt;<span class="number">31</span>)</span><br><span class="line">    <span class="keyword">return</span> ~frac+<span class="number">1</span>;<span class="comment">//负数</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="keyword">return</span> frac;<span class="comment">//正数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="floatPower2：2的x次方，以浮点输出。"><a href="#floatPower2：2的x次方，以浮点输出。" class="headerlink" title="floatPower2：2的x次方，以浮点输出。"></a>floatPower2：2的x次方，以浮点输出。</h3><blockquote>
-<p> floatPower2 - Return bit-level equivalent of the expression 2.0^x<br>  (2.0 raised to the power x) for any 32-bit integer x.  </p>
-<p>  The unsigned value that is returned should have the identical bit<br>  representation as the single-precision floating-point number 2.0^x.<br>  If the result is too small to be represented as a denorm, return<br>  0. If too large, return +INF.</p>
-<p>  Legal ops: Any integer&#x2F;unsigned operations incl. ||, &amp;&amp;. Also if, while<br>  Max ops: 30<br>  Rating: 4  </p>
+<h3 id="floatPower2：2的x次方，以浮点输出。">floatPower2：2的x次方，以浮点输出。</h3>
+<blockquote>
+<p>floatPower2 - Return bit-level equivalent of the expression 2.0^x<br>
+(2.0 raised to the power x) for any 32-bit integer x.</p>
+<p>The unsigned value that is returned should have the identical bit<br>
+representation as the single-precision floating-point number 2.0^x.<br>
+If the result is too small to be represented as a denorm, return<br>
+0. If too large, return +INF.</p>
+<p>Legal ops: Any integer/unsigned operations incl. ||, &amp;&amp;. Also if, while<br>
+Max ops: 30<br>
+Rating: 4</p>
 </blockquote>
 <p>二的整数次幂无论如何乘，规格化后位数永远是0，直接操作阶码就行了。根据要求加两个溢出分支检测，直接返回即可：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="title function_">floatPower2</span><span class="params">(<span class="type">int</span> x)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span>(x+<span class="number">127</span>&lt;<span class="number">0</span>)<span class="comment">//下界超过了阶码能表示的范围</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;<span class="comment">//返回0</span></span><br><span class="line">  <span class="keyword">if</span>(x+<span class="number">127</span>&gt;<span class="number">255</span>)<span class="comment">//阶码大于255, 0xff</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0x7f800000</span>;<span class="comment">//返回+INF</span></span><br><span class="line">  <span class="keyword">return</span> (x+<span class="number">127</span>)&lt;&lt;<span class="number">23</span>;<span class="comment">//浮点数的2^x，尾数为0（隐藏1），阶码x+127</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这个Lab有些脑筋急转弯的感觉，有的算法——尤其是那个判断最小位数的——简洁而高效。想起我刚上大一时接触的无tmp交换（a&#x3D;a^b b&#x3D;b^a a&#x3D;a^b)位运算确实是门艺术。<br><img src="/images/data_lab_success.png" alt="data_lab_success.png"></p>
+<h1>总结</h1>
+<p>这个Lab有些脑筋急转弯的感觉，有的算法——尤其是那个判断最小位数的——简洁而高效。想起我刚上大一时接触的无tmp交换（a=a^b b=b^a a=a^b)位运算确实是门艺术。<br>
+<img src="/images/data_lab_success.png" alt="data_lab_success.png"></p>
 
     </article>
     <!-- license -->
@@ -757,7 +854,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">介绍：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AE%B9%EF%BC%9A"><span class="toc-number">2.</span> <span class="toc-text">内容：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E9%83%A8%E5%88%86%EF%BC%9A"><span class="toc-number">2.1.</span> <span class="toc-text">整数部分：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#bitXor%EF%BC%9A%E6%8C%89%E4%BD%8D%E5%BC%82%E6%88%96"><span class="toc-number">2.1.1.</span> <span class="toc-text">bitXor：按位异或</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tmin-%E7%BB%99%E5%87%BA%E6%9C%80%E5%B0%8F%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A5%E7%A0%81%E6%95%B4%E6%95%B0"><span class="toc-number">2.1.2.</span> <span class="toc-text">tmin: 给出最小的二进制补码整数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isTmax%EF%BC%9A%E6%98%AF%E6%9C%80%E5%A4%A7%E6%95%B4%E6%95%B0%E5%90%97%EF%BC%9F"><span class="toc-number">2.1.3.</span> <span class="toc-text">isTmax：是最大整数吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allOddBits-0-31%EF%BC%8C%E5%A5%87%E6%95%B0%E4%BD%8D%E5%85%A81%EF%BC%9F"><span class="toc-number">2.1.4.</span> <span class="toc-text">allOddBits: 0-31，奇数位全1？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#negate%EF%BC%9A%E7%9B%B8%E5%8F%8D%E6%95%B0"><span class="toc-number">2.1.5.</span> <span class="toc-text">negate：相反数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isAsciiDigit-%E6%98%AFascii%E5%AD%97%E7%AC%A60-9%E5%90%97%EF%BC%9F"><span class="toc-number">2.1.6.</span> <span class="toc-text">isAsciiDigit: 是ascii字符0-9吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#conditional%EF%BC%9A%E4%B8%89%E7%9B%AE%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.1.7.</span> <span class="toc-text">conditional：三目运算符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isLessOrEqual-x%E5%B0%8F%E4%BA%8E%E7%AD%89%E4%BA%8Ey%EF%BC%9F"><span class="toc-number">2.1.8.</span> <span class="toc-text">isLessOrEqual: x小于等于y？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#logicalNeg-%E5%AE%9E%E7%8E%B0%E9%80%BB%E8%BE%91%E9%9D%9E%E2%80%98-%E2%80%99"><span class="toc-number">2.1.9.</span> <span class="toc-text">logicalNeg: 实现逻辑非‘!’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#howManyBits%EF%BC%9A%E4%B8%80%E4%B8%AA%E6%95%B0%E6%9C%80%E5%B0%91%E8%A6%81%E5%87%A0%E4%BD%8D%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A5%E7%A0%81%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.1.10.</span> <span class="toc-text">*howManyBits：一个数最少要几位二进制补码表示</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E9%83%A8%E5%88%86"><span class="toc-number">2.2.</span> <span class="toc-text">浮点数部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IEEE-754%E5%8D%95%E7%B2%BE%E5%BA%A6%E6%B5%AE%E7%82%B9%E6%95%B0%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.2.1.</span> <span class="toc-text">IEEE 754单精度浮点数介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#floatScale2-%E5%AE%9E%E7%8E%B0%E7%BB%99%E5%AE%9A%E6%B5%AE%E7%82%B9%E6%95%B0-2"><span class="toc-number">2.2.2.</span> <span class="toc-text">floatScale2: 实现给定浮点数*2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#float2Int%EF%BC%9A%E5%B0%8F%E6%95%B0%E5%8F%96%E6%95%B4-int-f"><span class="toc-number">2.2.3.</span> <span class="toc-text">float2Int：小数取整 (int)f</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#floatPower2%EF%BC%9A2%E7%9A%84x%E6%AC%A1%E6%96%B9%EF%BC%8C%E4%BB%A5%E6%B5%AE%E7%82%B9%E8%BE%93%E5%87%BA%E3%80%82"><span class="toc-number">2.2.4.</span> <span class="toc-text">floatPower2：2的x次方，以浮点输出。</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">介绍：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">内容：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E9%83%A8%E5%88%86%EF%BC%9A"><span class="toc-number">2.1.</span> <span class="toc-text">整数部分：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#bitXor%EF%BC%9A%E6%8C%89%E4%BD%8D%E5%BC%82%E6%88%96"><span class="toc-number">2.1.1.</span> <span class="toc-text">bitXor：按位异或</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tmin-%E7%BB%99%E5%87%BA%E6%9C%80%E5%B0%8F%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A5%E7%A0%81%E6%95%B4%E6%95%B0"><span class="toc-number">2.1.2.</span> <span class="toc-text">tmin: 给出最小的二进制补码整数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isTmax%EF%BC%9A%E6%98%AF%E6%9C%80%E5%A4%A7%E6%95%B4%E6%95%B0%E5%90%97%EF%BC%9F"><span class="toc-number">2.1.3.</span> <span class="toc-text">isTmax：是最大整数吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allOddBits-0-31%EF%BC%8C%E5%A5%87%E6%95%B0%E4%BD%8D%E5%85%A81%EF%BC%9F"><span class="toc-number">2.1.4.</span> <span class="toc-text">allOddBits: 0-31，奇数位全1？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#negate%EF%BC%9A%E7%9B%B8%E5%8F%8D%E6%95%B0"><span class="toc-number">2.1.5.</span> <span class="toc-text">negate：相反数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isAsciiDigit-%E6%98%AFascii%E5%AD%97%E7%AC%A60-9%E5%90%97%EF%BC%9F"><span class="toc-number">2.1.6.</span> <span class="toc-text">isAsciiDigit: 是ascii字符0-9吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#conditional%EF%BC%9A%E4%B8%89%E7%9B%AE%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-number">2.1.7.</span> <span class="toc-text">conditional：三目运算符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#isLessOrEqual-x%E5%B0%8F%E4%BA%8E%E7%AD%89%E4%BA%8Ey%EF%BC%9F"><span class="toc-number">2.1.8.</span> <span class="toc-text">isLessOrEqual: x小于等于y？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#logicalNeg-%E5%AE%9E%E7%8E%B0%E9%80%BB%E8%BE%91%E9%9D%9E%E2%80%98-%E2%80%99"><span class="toc-number">2.1.9.</span> <span class="toc-text">logicalNeg: 实现逻辑非‘!’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#howManyBits%EF%BC%9A%E4%B8%80%E4%B8%AA%E6%95%B0%E6%9C%80%E5%B0%91%E8%A6%81%E5%87%A0%E4%BD%8D%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%A1%A5%E7%A0%81%E8%A1%A8%E7%A4%BA"><span class="toc-number">2.1.10.</span> <span class="toc-text">*howManyBits：一个数最少要几位二进制补码表示</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E6%95%B0%E9%83%A8%E5%88%86"><span class="toc-number">2.2.</span> <span class="toc-text">浮点数部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IEEE-754%E5%8D%95%E7%B2%BE%E5%BA%A6%E6%B5%AE%E7%82%B9%E6%95%B0%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.2.1.</span> <span class="toc-text">IEEE 754单精度浮点数介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#floatScale2-%E5%AE%9E%E7%8E%B0%E7%BB%99%E5%AE%9A%E6%B5%AE%E7%82%B9%E6%95%B0-2"><span class="toc-number">2.2.2.</span> <span class="toc-text">floatScale2: 实现给定浮点数*2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#float2Int%EF%BC%9A%E5%B0%8F%E6%95%B0%E5%8F%96%E6%95%B4-int-f"><span class="toc-number">2.2.3.</span> <span class="toc-text">float2Int：小数取整 (int)f</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#floatPower2%EF%BC%9A2%E7%9A%84x%E6%AC%A1%E6%96%B9%EF%BC%8C%E4%BB%A5%E6%B5%AE%E7%82%B9%E8%BE%93%E5%87%BA%E3%80%82"><span class="toc-number">2.2.4.</span> <span class="toc-text">floatPower2：2的x次方，以浮点输出。</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1037,6 +1134,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1859,24 +1962,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1889,6 +1977,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1897,6 +2000,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1909,19 +2017,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1929,14 +2027,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

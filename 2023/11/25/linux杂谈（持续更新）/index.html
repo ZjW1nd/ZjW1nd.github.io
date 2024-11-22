@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？参考菜鸟教程的内容。简单谈点理解。“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文">
+    <meta name="description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？ 参考菜鸟教程的内容。简单谈点理解。 “文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux杂谈（持续更新）">
 <meta property="og:url" content="http://example.com/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？参考菜鸟教程的内容。简单谈点理解。“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文">
+<meta property="og:description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？ 参考菜鸟教程的内容。简单谈点理解。 “文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-11-25T15:38:16.000Z">
 <meta property="article:modified_time" content="2024-08-13T12:42:01.658Z">
@@ -493,21 +493,28 @@
                 <main class="main post-page">
     <article class="article-entry">
         <p>这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。</p>
-<h2 id="2023-11-26-linux文件系统根目录下那些都是干什么的？"><a href="#2023-11-26-linux文件系统根目录下那些都是干什么的？" class="headerlink" title="2023.11.26 linux文件系统根目录下那些都是干什么的？"></a>2023.11.26 linux文件系统根目录下那些都是干什么的？</h2><p>参考<a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-system-contents.html">菜鸟教程</a>的内容。简单谈点理解。<br>“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文件系统以及它根目录下那些文件夹名字的含义。类似Program Files这种吧。  </p>
+<h2 id="2023-11-26-linux文件系统根目录下那些都是干什么的？">2023.11.26 linux文件系统根目录下那些都是干什么的？</h2>
+<p>参考<a target="_blank" rel="noopener" href="https://www.runoob.com/linux/linux-system-contents.html">菜鸟教程</a>的内容。简单谈点理解。<br>
+“文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这个文件系统以及它根目录下那些文件夹名字的含义。类似Program Files这种吧。</p>
 <p>草文件系统好复杂，不当了不当linux高手了.jpg</p>
-<h2 id="2024-3-关于linux安装、内核升级、显卡驱动、内核签名等小总结"><a href="#2024-3-关于linux安装、内核升级、显卡驱动、内核签名等小总结" class="headerlink" title="2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结"></a>2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</h2><p>自己花200买了个固态u盘，装一手linux，打算搞成一个平常用的环境。同时windows下装了kali的wsl版本，顺带升级了win11专业版。</p>
-<p>看中省事的集成图形化界面+中文社区装了deepin，这个过程很简单，按照官方教程（有集成好的应用程序），一件配置安装就好了。<br>踩坑主要是显示方面的问题，个人笔记本一直开启的独显直连，最早的显卡驱动无法调节亮度，deepin源apt安装的话报错和内核的驱动版本版本不符，而且仍然无法调节亮度。各种踩坑就跳过，总之解决过程是去英伟达官网下载对应型号的生产环境闭源驱动后安装（退出图形化界面然后直接找到文件执行），参考<a target="_blank" rel="noopener" href="https://bbs.deepin.org/zh/post/232923?offset=0&postId=1317417">这篇文章</a>。安装好之后开启显卡的亮度调节，跳过不能用的方法，参考的<a target="_blank" rel="noopener" href="https://bbs.deepin.org.cn/zh/post/257837">这篇</a>，conf文件中开启<code>EnableBrightnessControl=1</code>，也是挺幽默的。</p>
-<p>然后自己编译升级了一下内核（能解决笔记本合盖待机无法唤醒的问题），新就是好（错乱）。内核编译参考<a target="_blank" rel="noopener" href="https://linux.cn/article-16252-1.html">这篇文章</a>，说的非常详细了。但是拯救者无法识别自带音响和麦克风的问题似乎被忘记了…看到内核6.3版本的时候有大佬说这个问题和主板有关系，提交内核patch被拒绝了说这个问题已经在解决，可惜目前还没有，参考<a target="_blank" rel="noopener" href="https://bbs.deepin.org/post/249003">这篇</a>（没什么用）和<a target="_blank" rel="noopener" href="https://github.com/xuwd1/lenovo-legion-slim7i-gen7-knowledges/wiki/%E8%A7%A3%E5%86%B3%E6%97%A0%E5%A4%96%E6%94%BE%E5%A3%B0%E9%9F%B3%E7%9A%84%E9%97%AE%E9%A2%98">这篇</a>文章。  </p>
+<h2 id="2024-3-关于linux安装、内核升级、显卡驱动、内核签名等小总结">2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</h2>
+<p>自己花200买了个固态u盘，装一手linux，打算搞成一个平常用的环境。同时windows下装了kali的wsl版本，顺带升级了win11专业版。</p>
+<p>看中省事的集成图形化界面+中文社区装了deepin，这个过程很简单，按照官方教程（有集成好的应用程序），一件配置安装就好了。<br>
+踩坑主要是显示方面的问题，个人笔记本一直开启的独显直连，最早的显卡驱动无法调节亮度，deepin源apt安装的话报错和内核的驱动版本版本不符，而且仍然无法调节亮度。各种踩坑就跳过，总之解决过程是去英伟达官网下载对应型号的生产环境闭源驱动后安装（退出图形化界面然后直接找到文件执行），参考<a target="_blank" rel="noopener" href="https://bbs.deepin.org/zh/post/232923?offset=0&amp;postId=1317417">这篇文章</a>。安装好之后开启显卡的亮度调节，跳过不能用的方法，参考的<a target="_blank" rel="noopener" href="https://bbs.deepin.org.cn/zh/post/257837">这篇</a>，conf文件中开启<code>EnableBrightnessControl=1</code>，也是挺幽默的。</p>
+<p>然后自己编译升级了一下内核（能解决笔记本合盖待机无法唤醒的问题），新就是好（错乱）。内核编译参考<a target="_blank" rel="noopener" href="https://linux.cn/article-16252-1.html">这篇文章</a>，说的非常详细了。但是拯救者无法识别自带音响和麦克风的问题似乎被忘记了…看到内核6.3版本的时候有大佬说这个问题和主板有关系，提交内核patch被拒绝了说这个问题已经在解决，可惜目前还没有，参考<a target="_blank" rel="noopener" href="https://bbs.deepin.org/post/249003">这篇</a>（没什么用）和<a target="_blank" rel="noopener" href="https://github.com/xuwd1/lenovo-legion-slim7i-gen7-knowledges/wiki/%E8%A7%A3%E5%86%B3%E6%97%A0%E5%A4%96%E6%94%BE%E5%A3%B0%E9%9F%B3%E7%9A%84%E9%97%AE%E9%A2%98">这篇</a>文章。</p>
 <blockquote>
-<p>另外还能将自己的id加在内核后面，好玩。  </p>
+<p>另外还能将自己的id加在内核后面，好玩。</p>
 </blockquote>
 <p>然后选择的最新的6.8.1内核。虽然是官方发布的内核但是没有发行版的签名，secure boot过不了，windows玩瓦那个b反作弊又要求开secure boot很烦，所以又要自己去签名内核。直接问了copilot加上自己搜索，执行以下几条命令：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj &quot;/CN=ZJ Secure Boot Signing Key/&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">可能会要求输入密码，等下uefi启动会用</span></span><br><span class="line">sudo mokutil --import MOK.der</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">这里要先安装sbsign，apt就行 sudo apt install sbsigntool</span></span><br><span class="line">sudo sbsign --key MOK.priv --cert MOK.der --output /boot/vmlinuz-$(uname -r) /boot/vmlinuz-$(uname -r)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">报错了，问了copilot然后将证书改成.pem格式：</span></span><br><span class="line">openssl x509 -in MOK.der -inform DER -out MOK.pem -outform PEM</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">重新执行</span></span><br><span class="line">sudo sbsign --key MOK.priv --cert MOK.pem --output /boot/vmlinuz-$(uname -r) /boot/vmlinuz-$(uname -r)</span><br></pre></td></tr></table></figure>
 <p>重启即可，这时候就可以打开secure boot了。从linux重启的时候会进入一个引导界面，选择enroll key然后输入密码即可。但是第一次启动gui界面直接花屏了，吓得我以为显卡驱动模块也要单独签名，结果再重启一次一切就正常了。这是一个没有任何关于密码学、证书、签名、非对称加密经验的人手动签名内核的经历。</p>
-<h2 id="2024-6-2-Arch启动"><a href="#2024-6-2-Arch启动" class="headerlink" title="2024.6.2 Arch启动"></a>2024.6.2 Arch启动</h2><p>deepinV20的glibc版本太低了很难受，先是重装了一个V23，但是效果不是很理想，不太喜欢V23的UI风格，而且流畅度还有缺陷。犹豫了一下加入Arch神教，好在现在已经有archinstall的脚本可以快速配置。不得不说KDE plasma就是漂亮——但是涉及显示问题就很多了。<br>外接屏幕不好用，显卡切换的问题，英伟达对wayland不支持…太史了。还是决定以后用这个系统就integrated模式算了，流畅度什么的也很高用着很舒服。还需要把安装的软件优化一下精简一下体积。毕竟都用arch了多少还是得洁癖一下。</p>
+<h2 id="2024-6-2-Arch启动">2024.6.2 Arch启动</h2>
+<p>deepinV20的glibc版本太低了很难受，先是重装了一个V23，但是效果不是很理想，不太喜欢V23的UI风格，而且流畅度还有缺陷。犹豫了一下加入Arch神教，好在现在已经有archinstall的脚本可以快速配置。不得不说KDE plasma就是漂亮——但是涉及显示问题就很多了。<br>
+外接屏幕不好用，显卡切换的问题，英伟达对wayland不支持…太史了。还是决定以后用这个系统就integrated模式算了，流畅度什么的也很高用着很舒服。还需要把安装的软件优化一下精简一下体积。毕竟都用arch了多少还是得洁癖一下。</p>
 <p>彻底放弃英伟达，nouveau模块命名黑名单了没装，按照各种办法包括不从图形界面启动也调了但是没用，英伟达驱动开不了，应该是pacman的那个版本可能没法自动装载驱动，导致n卡默认驱动一直是nouveau但是我又禁用了它就一直没法输出。懒得搞了</p>
 <p>2024.8不死心又搞了一次，mkinitcpio做内核镜像直接将nvidia挂载上，驱动是装上了显卡也能用（在xorg下）但是外接屏幕还是没用，运行一下nvidia-xconfig直接将图形化干没了，试了网上的解决方法都不行，最后直接删了xorg.conf然后配置sddm wayland启动 滚吧</p>
-<h2 id="shell脚本学习"><a href="#shell脚本学习" class="headerlink" title="shell脚本学习"></a>shell脚本学习</h2><p>shell声明 <code>#! /bin/bash</code></p>
+<h2 id="shell脚本学习">shell脚本学习</h2>
+<p>shell声明 <code>#! /bin/bash</code></p>
 
     </article>
     <!-- license -->
@@ -1407,6 +1414,12 @@
         
         
         
+        
+        
+        
+        
+        
+        
     
     
     
@@ -1765,24 +1778,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1795,6 +1793,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1803,6 +1816,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1815,19 +1833,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1835,14 +1843,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

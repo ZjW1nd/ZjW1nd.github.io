@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="chrootchange root操作，既可以指一个系统调用，也可以指&#x2F;usr&#x2F;bin&#x2F;chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox. 但是chroot只是提供最简单的隔离，它只是单纯的更换了进程结构体的记录的根目录和限制cd操作，并不会更改当前工作目录，也不会释放任何指定根目录外的资源（包括文件描述符，进程通信等等全都不禁">
+    <meta name="description" content="chroot change root操作，既可以指一个系统调用，也可以指&#x2F;usr&#x2F;bin&#x2F;chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox. 但是chroot只是提供最简单的隔离，它只是单纯的更换了进程结构体的记录的根目录和限制cd操作，并不会更改当前工作目录，也不会释放任何指定根目录外的资源（包括文件描述符，进程通信等等全都不禁止）。最简单的，如果我们调用">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Sandbox  简单介绍">
 <meta property="og:url" content="http://example.com/2024/08/05/sandbox/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="chrootchange root操作，既可以指一个系统调用，也可以指&#x2F;usr&#x2F;bin&#x2F;chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox. 但是chroot只是提供最简单的隔离，它只是单纯的更换了进程结构体的记录的根目录和限制cd操作，并不会更改当前工作目录，也不会释放任何指定根目录外的资源（包括文件描述符，进程通信等等全都不禁">
+<meta property="og:description" content="chroot change root操作，既可以指一个系统调用，也可以指&#x2F;usr&#x2F;bin&#x2F;chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox. 但是chroot只是提供最简单的隔离，它只是单纯的更换了进程结构体的记录的根目录和限制cd操作，并不会更改当前工作目录，也不会释放任何指定根目录外的资源（包括文件描述符，进程通信等等全都不禁止）。最简单的，如果我们调用">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-08-05T08:00:00.000Z">
 <meta property="article:modified_time" content="2024-08-30T12:14:26.792Z">
@@ -495,35 +495,44 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="chroot"><a href="#chroot" class="headerlink" title="chroot"></a>chroot</h1><p>change root操作，既可以指一个系统调用，也可以指&#x2F;usr&#x2F;bin&#x2F;chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox.</p>
+        <h1>chroot</h1>
+<p>change root操作，既可以指一个系统调用，也可以指/usr/bin/chroot这个shell程序。会将制定的目录挂载为根目录，从而实现简单的sandbox.</p>
 <p>但是chroot只是提供最简单的隔离，它只是单纯的更换了进程结构体的记录的根目录和限制cd操作，并不会更改当前工作目录，也不会释放任何指定根目录外的资源（包括文件描述符，进程通信等等全都不禁止）。最简单的，如果我们调用chroot的时候cwd在根目录外，我们依然能够进行操作。</p>
 <p>同时， 如果我们能拿到权限，再次chroot一次，就会直接覆盖先前的结果。</p>
 <p>如果能获取到根目录外的一个已经打开的文件，也可以用openat等一系列xxat调用（相对操作）完成逃逸。因此chroot可谓是四面漏风。</p>
-<h1 id="BPF"><a href="#BPF" class="headerlink" title="BPF"></a>BPF</h1><p>（现在我们说的）seccomp的本质是内核中的seccomp-bpf虚拟机。BPF这个词我们在wireshark抓包的时候见到过，了解BPF有助于我们了解seccomp的本质。</p>
+<h1>BPF</h1>
+<p>（现在我们说的）seccomp的本质是内核中的seccomp-bpf虚拟机。BPF这个词我们在wireshark抓包的时候见到过，了解BPF有助于我们了解seccomp的本质。</p>
 <p>BPF本质是一个运行在内核态的vm程序，他拥有一个累加器，一个索引寄存器，一个内存和一个隐含的计数器，可以执行赋值，算术，跳转等等指令。每一条指令就是这样一个结构体:</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock_filter</span> &#123;</span>            <span class="comment">/* Filter block */</span></span><br><span class="line">    __u16 code;                 <span class="comment">/* Actual filter code */</span></span><br><span class="line">    __u8  jt;                   <span class="comment">/* Jump true */</span></span><br><span class="line">    __u8  jf;                   <span class="comment">/* Jump false */</span></span><br><span class="line">    __u32 k;                    <span class="comment">/* Generic multiuse field */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>每条规则都由这样一个结构维护：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock_fprog</span> &#123;</span>    <span class="comment">/* Required for SO_ATTACH_FILTER. */</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span>        len;    <span class="comment">/* BPF指令的数量 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sock_filter</span> __<span class="title">user</span> *<span class="title">filter</span>;</span>  <span class="comment">/*指向BPF数组的指针 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
 <p>因此一个<code>sock_filter</code>数组就构成了一段bpf的指令序列。编写BPF规则有指定的宏（<code>BPF_STMT</code>和<code>BPF_JUMP</code>），比如下面这段：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock_filter</span> <span class="title">filter</span>[] =</span> &#123;</span><br><span class="line">    BPF_STMT(BPF_LD+BPF_W+BPF_ABS,<span class="number">0</span>),           <span class="comment">//将帧的偏移0处，取4个字节数据，也就是系统调用号的值载入累加器</span></span><br><span class="line">    BPF_JUMP(BPF_JMP+BPF_JEQ,<span class="number">59</span>,<span class="number">0</span>,<span class="number">1</span>),           <span class="comment">//当A == 59时，顺序执行下一条规则，否则跳过下一条规则，这里的59就是x64的execve系统调用号</span></span><br><span class="line">    BPF_STMT(BPF_RET+BPF_K,SECCOMP_RET_KILL),   <span class="comment">//返回KILL</span></span><br><span class="line">    BPF_STMT(BPF_RET+BPF_K,SECCOMP_RET_ALLOW),  <span class="comment">//返回ALLOW</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>操作码就不讲了，本质上这是一个结构体数组的声明，这个数组所代表的指令序列就能实现过滤execve系统调用。开启seccomp后程序的所有系统调用都会经过bpf虚拟机，因此一定程度上会影响性能。所有系统调用都会向内核返回一个值，其中有16位是操作<code>SECCOMP_RET_ACTION</code>掩码，比如<code>SECCOMP_RET_KILL</code>这种，这部分会指定内核对该调用采取的操作。</p>
 <p>seccomp-BPF程序采用一个结构体作为输入：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">seccomp_data</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> nr ;                    <span class="comment">/* 系统调用号（依赖于体系架构） */</span></span><br><span class="line">  __u32 arch ;                <span class="comment">/* 架构（如AUDIT_ARCH_X86_64） */</span></span><br><span class="line">  __u64 instruction_pointer ; <span class="comment">/* CPU指令指针 */</span></span><br><span class="line">  __u64 args [<span class="number">6</span>];             <span class="comment">/* 系统调用参数，最多有6个参数 */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="怎么生效？"><a href="#怎么生效？" class="headerlink" title="怎么生效？"></a>怎么生效？</h2><h3 id="prctl"><a href="#prctl" class="headerlink" title="prctl"></a>prctl</h3><p>prctl是一个系统调用，用来控制进程的属性或程序设置，非常灵活。它可以在程序中显式的用函数形式调用：</p>
+<h2 id="怎么生效？">怎么生效？</h2>
+<h3 id="prctl">prctl</h3>
+<p>prctl是一个系统调用，用来控制进程的属性或程序设置，非常灵活。它可以在程序中显式的用函数形式调用：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">prctl</span><span class="params">(<span class="type">int</span> option, <span class="type">unsigned</span> <span class="type">long</span> arg2, <span class="type">unsigned</span> <span class="type">long</span> arg3, <span class="type">unsigned</span> <span class="type">long</span> arg4, <span class="type">unsigned</span> <span class="type">long</span> arg5)</span>;</span><br></pre></td></tr></table></figure>
 <p>在option中启用<code>PR_SET_SECCOMP</code>就可以为当前进程开启seccomp过滤。将arg2设置为FILTER过滤模式就可以用<code>sock_frog</code>来指定过滤了。</p>
 <blockquote>
 <p>另外，strict严格模式只允许read, write, sigreturn和exit四个系统调用</p>
 </blockquote>
-<h3 id="libseccomp"><a href="#libseccomp" class="headerlink" title="libseccomp"></a>libseccomp</h3><p>prctl执行的模式可能不够灵活，因此有了这么一个项目。这个库提供的函数允许不了解BPF规则也能使用seccomp过滤，提供了简化的接口。比如下面这一小段：</p>
+<h3 id="libseccomp">libseccomp</h3>
+<p>prctl执行的模式可能不够灵活，因此有了这么一个项目。这个库提供的函数允许不了解BPF规则也能使用seccomp过滤，提供了简化的接口。比如下面这一小段：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;seccomp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/seccomp.h&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span>&#123;</span><br><span class="line">    scmp_filter_ctx ctx;</span><br><span class="line">    ctx = seccomp_init(SCMP_ACT_ALLOW);</span><br><span class="line">    seccomp_rule_add(ctx, SCMP_ACT_KILL, SCMP_SYS(execve), <span class="number">0</span>);</span><br><span class="line">    seccomp_load(ctx);</span><br><span class="line"> </span><br><span class="line">    <span class="type">char</span> * filename = <span class="string">&quot;/bin/sh&quot;</span>;</span><br><span class="line">    <span class="type">char</span> * argv[] = &#123;<span class="string">&quot;/bin/sh&quot;</span>,<span class="literal">NULL</span>&#125;;</span><br><span class="line">    <span class="type">char</span> * envp[] = &#123;<span class="literal">NULL</span>&#125;;</span><br><span class="line">    write(<span class="number">1</span>,<span class="string">&quot;i will give you a shell\n&quot;</span>,<span class="number">24</span>);</span><br><span class="line">    syscall(<span class="number">59</span>,filename,argv,envp);<span class="comment">//execve</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
 <p>ctx就是一个规则（类似于上面说的结构体数组）。调用<code>seccomp_rule_add</code>就能简单方便的添加规则，最后用seccomp_load启用，将其加载至内核。</p>
-<h1 id="seccomp"><a href="#seccomp" class="headerlink" title="seccomp"></a>seccomp</h1><p>允许开发者手动限制程序的系统调用。本质上是在内核中有一个ebpf过滤器的小虚拟机。现代操作系统中，如果seccomp的过滤规则完美无缺，那么是无法逃逸的。但是几乎不存在这样的过滤，因此seccomp也是有办法逃逸。大体分为三种：过于宽松的规则，系统调用误用以及内核漏洞。</p>
-<h2 id="Permissive-Rules"><a href="#Permissive-Rules" class="headerlink" title="Permissive Rules"></a>Permissive Rules</h2><p>原本的限制就不严，可能没有禁用全部的可能有风险的系统调用，比如<code>ptrace()</code>允许启动调试器附加到进程，如果附加到一个没有沙盒的进程就完成了逃逸。另外比较冷门的还可以使用<code>sendmsg()</code>在进程间传递文件，<code>prctl()</code>, <code>process_vm_write()</code>等等很多方法。</p>
-<h2 id="Misuse-Syscall"><a href="#Misuse-Syscall" class="headerlink" title="Misuse Syscall"></a>Misuse Syscall</h2><p>amd64与x86的系统调用完全不一样，但amd64为了兼容其实是都支持的。如<code>exit()</code>使用<code>syscall 60</code>与<code>int 0x80</code>都能触发。结果在系统上是一致的。如果某些程序为了兼容开启了32位系统调用但是又没有做好限制，可以利用32位的x86调用进行逃逸。（但是seccomp默认如果没有对32位系统调用做任何设置的话会全部禁止）</p>
-<h2 id="Kernel-Vulnerability"><a href="#Kernel-Vulnerability" class="headerlink" title="Kernel Vulnerability"></a>Kernel Vulnerability</h2><p>内核层面的漏洞，通过系统调用陷入内核触发漏洞完成逃逸。</p>
-<h2 id="其他？"><a href="#其他？" class="headerlink" title="其他？"></a>其他？</h2><p>我们并不总是需要<code>execve</code>或者写入，很多时候读取就足够了。可以读的系统调用有很多，可以利用sleep, exit(code)，崩溃信息，甚至某些能够一位一位传输的调用（yes or no）都可以拿来绕过sandbox，用一些侧信道的思想。</p>
+<h1>seccomp</h1>
+<p>允许开发者手动限制程序的系统调用。本质上是在内核中有一个ebpf过滤器的小虚拟机。现代操作系统中，如果seccomp的过滤规则完美无缺，那么是无法逃逸的。但是几乎不存在这样的过滤，因此seccomp也是有办法逃逸。大体分为三种：过于宽松的规则，系统调用误用以及内核漏洞。</p>
+<h2 id="Permissive-Rules">Permissive Rules</h2>
+<p>原本的限制就不严，可能没有禁用全部的可能有风险的系统调用，比如<code>ptrace()</code>允许启动调试器附加到进程，如果附加到一个没有沙盒的进程就完成了逃逸。另外比较冷门的还可以使用<code>sendmsg()</code>在进程间传递文件，<code>prctl()</code>, <code>process_vm_write()</code>等等很多方法。</p>
+<h2 id="Misuse-Syscall">Misuse Syscall</h2>
+<p>amd64与x86的系统调用完全不一样，但amd64为了兼容其实是都支持的。如<code>exit()</code>使用<code>syscall 60</code>与<code>int 0x80</code>都能触发。结果在系统上是一致的。如果某些程序为了兼容开启了32位系统调用但是又没有做好限制，可以利用32位的x86调用进行逃逸。（但是seccomp默认如果没有对32位系统调用做任何设置的话会全部禁止）</p>
+<h2 id="Kernel-Vulnerability">Kernel Vulnerability</h2>
+<p>内核层面的漏洞，通过系统调用陷入内核触发漏洞完成逃逸。</p>
+<h2 id="其他？">其他？</h2>
+<p>我们并不总是需要<code>execve</code>或者写入，很多时候读取就足够了。可以读的系统调用有很多，可以利用sleep, exit(code)，崩溃信息，甚至某些能够一位一位传输的调用（yes or no）都可以拿来绕过sandbox，用一些侧信道的思想。</p>
 
     </article>
     <!-- license -->
@@ -679,7 +688,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#chroot"><span class="toc-number">1.</span> <span class="toc-text">chroot</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BPF"><span class="toc-number">2.</span> <span class="toc-text">BPF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E7%94%9F%E6%95%88%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">怎么生效？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#prctl"><span class="toc-number">2.1.1.</span> <span class="toc-text">prctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#libseccomp"><span class="toc-number">2.1.2.</span> <span class="toc-text">libseccomp</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#seccomp"><span class="toc-number">3.</span> <span class="toc-text">seccomp</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Permissive-Rules"><span class="toc-number">3.1.</span> <span class="toc-text">Permissive Rules</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Misuse-Syscall"><span class="toc-number">3.2.</span> <span class="toc-text">Misuse Syscall</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kernel-Vulnerability"><span class="toc-number">3.3.</span> <span class="toc-text">Kernel Vulnerability</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%EF%BC%9F"><span class="toc-number">3.4.</span> <span class="toc-text">其他？</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">chroot</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">BPF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E7%94%9F%E6%95%88%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">怎么生效？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#prctl"><span class="toc-number">2.1.1.</span> <span class="toc-text">prctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#libseccomp"><span class="toc-number">2.1.2.</span> <span class="toc-text">libseccomp</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">seccomp</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Permissive-Rules"><span class="toc-number">3.1.</span> <span class="toc-text">Permissive Rules</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Misuse-Syscall"><span class="toc-number">3.2.</span> <span class="toc-text">Misuse Syscall</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kernel-Vulnerability"><span class="toc-number">3.3.</span> <span class="toc-text">Kernel Vulnerability</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%EF%BC%9F"><span class="toc-number">3.4.</span> <span class="toc-text">其他？</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -959,6 +968,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1781,24 +1796,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1811,6 +1811,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1819,6 +1834,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1831,19 +1851,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1851,14 +1861,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

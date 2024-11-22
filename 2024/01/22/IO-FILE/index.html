@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="FILE结构体与glibc封装后的IO “一切皆文件”    IO_FILE首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
+    <meta name="description" content="FILE结构体与glibc封装后的IO  “一切皆文件”  IO_FILE 首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IO_FILE——File Stream Oriented Programming (1)">
 <meta property="og:url" content="http://example.com/2024/01/22/IO-FILE/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="FILE结构体与glibc封装后的IO “一切皆文件”    IO_FILE首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
+<meta property="og:description" content="FILE结构体与glibc封装后的IO  “一切皆文件”  IO_FILE 首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-01-22T07:53:37.000Z">
 <meta property="article:modified_time" content="2024-07-23T14:27:17.685Z">
@@ -495,10 +495,12 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="FILE结构体与glibc封装后的IO"><a href="#FILE结构体与glibc封装后的IO" class="headerlink" title="FILE结构体与glibc封装后的IO"></a>FILE结构体与glibc封装后的IO</h1><blockquote>
-<p>“一切皆文件”  </p>
+        <h1>FILE结构体与glibc封装后的IO</h1>
+<blockquote>
+<p>“一切皆文件”</p>
 </blockquote>
-<h2 id="IO-FILE"><a href="#IO-FILE" class="headerlink" title="IO_FILE"></a>IO_FILE</h2><p>首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，<strong>本质上没有真正操作文件，只是操作了缓冲区。</strong></p>
+<h2 id="IO-FILE">IO_FILE</h2>
+<p>首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，<strong>本质上没有真正操作文件，只是操作了缓冲区。</strong></p>
 <p><code>IO_FILE</code>是一个结构体，用于表示一个打开的文件。实际使用的时候是这样一个定义：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  _IO_FILE file;</span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span> *<span class="title">vtable</span>;</span><span class="comment">//32位下偏移0x94，64位下偏移0xd8</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>第一个字段是一个文件结构,里面定义了许许多多标识用的指针。glibc为了优化性能减少陷入内核态的次数，将系统调用read, write和open都进行了封装。我们平常调用的fopen,fwrite都是封装后的函数。这些函数在打开文件进行读写的时候会事先在堆上分配缓冲区，一般是一个内存页的大小。利用空间局部性的思想，每次先从文件中预装一个页进来，然后进行读写就会很快。这些指针都是用于标识和操作缓冲区的，只有在执行缓冲区刷新flush的时候才会将buffer的内容真正写入磁盘文件。</p>
@@ -507,59 +509,118 @@
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> _flags;       <span class="comment">/* High-order word is _IO_MAGIC; rest is flags. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _IO_file_flags _flags</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The following pointers correspond to the C++ streambuf protocol. */</span></span><br><span class="line">  <span class="comment">/* Note:  Tk uses the _IO_read_ptr and _IO_read_end fields directly. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_ptr;   <span class="comment">/* Current read pointer */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_end;   <span class="comment">/* End of get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_read_base;  <span class="comment">/* Start of putback+get area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_base; <span class="comment">/* Start of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_ptr;  <span class="comment">/* Current put pointer. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_write_end;  <span class="comment">/* End of put area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_base;   <span class="comment">/* Start of reserve area. */</span></span><br><span class="line">  <span class="type">char</span>* _IO_buf_end;    <span class="comment">/* End of reserve area. */</span></span><br><span class="line">  <span class="comment">/* The following fields are used to support backing up and undo. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_base; <span class="comment">/* Pointer to start of non-current get area. */</span></span><br><span class="line">  <span class="type">char</span> *_IO_backup_base;  <span class="comment">/* Pointer to first valid character of backup area */</span></span><br><span class="line">  <span class="type">char</span> *_IO_save_end; <span class="comment">/* Pointer to end of non-current get area. */</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_marker</span> *_<span class="title">markers</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> *_<span class="title">chain</span>;</span></span><br><span class="line">  <span class="comment">//这是一个IO_FILE类型的指针，对于一个进程，所有打开的文件用chain域链接</span></span><br><span class="line">  <span class="comment">//程序会维护一个全局变量_IO_list_all作为链表头</span></span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> _fileno;</span><br><span class="line"></span><br><span class="line">......</span><br></pre></td></tr></table></figure>
 <p>我们平常所说的那些stdin，stdout，stderr都是这样的结构体（或者说缓冲区），链接在_IO_list_all后。不过这三个文件流位于libc的数据段，我们用fopen手动打开的文件会被分配在堆上。</p>
-<h2 id="任意读写？"><a href="#任意读写？" class="headerlink" title="任意读写？"></a>任意读写？</h2><p>pwntools提供了<code>FileStruct</code>对象，可以直接手动设置一个文件结构体然后进行覆盖。</p>
-<h3 id="任意读"><a href="#任意读" class="headerlink" title="任意读"></a>任意读</h3><p>我们先用fopen打开一个文件，然后如果有能通过标准输入覆盖这个结构体的机会（直接将FILE* 传入read，调用<code>read(0,file,0x100)</code>这种），只要将fileno设置为0，buf_base设置为起始地址，buf_end设置为结束地址，再调用fread，那么输入就会从stdin写入内容到buf_base指向的指定长度的空间。<br>对于一个正常工作的buffer当然要设置<br>最简的攻击设置如下（是的没错不用设置read_ptr什么的）</p>
-<ul>
-<li>设置flag，0xFBAD00就行</li>
-<li>buf_end和buf_base需要设置为攻击地址，足够大</li>
-<li>其他指针都为空没关系，如果要从标准输入读取fileno要为0</li>
+<h2 id="任意读写？">任意读写？</h2>
+<p>pwntools提供了<code>FileStruct</code>对象，可以直接手动设置一个文件结构体然后进行覆盖。</p>
+<h3 id="任意读">任意读</h3>
+<p>我们先用fopen打开一个文件，然后如果有能通过标准输入覆盖这个结构体的机会（直接将FILE* 传入read，调用<code>read(0,file,0x100)</code>这种），只要将fileno设置为0，buf_base设置为起始地址，buf_end设置为结束地址，再调用fread，那么输入就会从stdin写入内容到buf_base指向的指定长度的空间。对于一个正常工作的buffer当然要设置最简的攻击设置如下（是的没错不用设置read_ptr什么的）</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>设置flag，0xFBAD00就行</p>
+</li>
+<li class="lvl-2">
+<p>buf_end和buf_base需要设置为攻击地址，足够大</p>
+</li>
+<li class="lvl-2">
+<p>其他指针都为空没关系，如果要从标准输入读取fileno要为0</p>
+</li>
 </ul>
-<h3 id="任意写"><a href="#任意写" class="headerlink" title="任意写"></a>任意写</h3><p>任意写在glibc中有一些额外检查，对于一个正常工作的buffer来说：</p>
-<ul>
-<li>设置flag</li>
-<li>将write_base指向要写的起始地址</li>
-<li>write_ptr指向自己定义的位置，因为write_base到write_ptr中间的内容是“已经写入但还没有刷新”的部分，可以在里面定义需要泄露的内容</li>
-<li><strong>read_end&#x3D;write_base</strong>来通过libc检查，只有这样才会调用flush</li>
-<li>buf_end-buf_base足够大<br>但我们攻击同样，只需要设置read_end&#x3D;write_base和write_ptr就行了！这会将从write_base到write_ptr的内容在flush的时候写进file。</li>
+<h3 id="任意写">任意写</h3>
+<p>任意写在glibc中有一些额外检查，对于一个正常工作的buffer来说：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>设置flag</p>
+</li>
+<li class="lvl-2">
+<p>将write_base指向要写的起始地址</p>
+</li>
+<li class="lvl-2">
+<p>write_ptr指向自己定义的位置，因为write_base到write_ptr中间的内容是“已经写入但还没有刷新”的部分，可以在里面定义需要泄露的内容</p>
+</li>
+<li class="lvl-2">
+<p><strong>read_end=write_base</strong>来通过libc检查，只有这样才会调用flush</p>
+</li>
+<li class="lvl-2">
+<p>buf_end-buf_base足够大但我们攻击同样，只需要设置read_end=write_base和write_ptr就行了！这会将从write_base到write_ptr的内容在flush的时候写进file。</p>
+</li>
 </ul>
-<h2 id="vtable"><a href="#vtable" class="headerlink" title="vtable"></a>vtable</h2><p>IO_FILE_plus的第二个字段，这个指针指向一系列的函数指针，包括对于这个file实现的各种操作，这种包装便于实现多态（即对套接字、普通文件、管道等使用同一个结构进行封装）。</p>
+<h2 id="vtable">vtable</h2>
+<p>IO_FILE_plus的第二个字段，这个指针指向一系列的函数指针，包括对于这个file实现的各种操作，这种包装便于实现多态（即对套接字、普通文件、管道等使用同一个结构进行封装）。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> JUMP_FIELD(TYPE, NAME) TYPE NAMEstruct _IO_jump_t</span></span><br><span class="line">&#123;</span><br><span class="line">    JUMP_FIELD(<span class="type">size_t</span>, __dummy); <span class="comment">//0x0</span></span><br><span class="line">    JUMP_FIELD(<span class="type">size_t</span>, __dummy2); <span class="comment">//0x0</span></span><br><span class="line">    JUMP_FIELD(_IO_finish_t, __finish);</span><br><span class="line">    JUMP_FIELD(_IO_overflow_t, __overflow);</span><br><span class="line">    JUMP_FIELD(_IO_underflow_t, __underflow);</span><br><span class="line">    JUMP_FIELD(_IO_underflow_t, __uflow);</span><br><span class="line">    JUMP_FIELD(_IO_pbackfail_t, __pbackfail);</span><br><span class="line">    <span class="comment">/* showmany */</span></span><br><span class="line">    JUMP_FIELD(_IO_xsputn_t, __xsputn);</span><br><span class="line">    JUMP_FIELD(_IO_xsgetn_t, __xsgetn);</span><br><span class="line">    JUMP_FIELD(_IO_seekoff_t, __seekoff);</span><br><span class="line">    JUMP_FIELD(_IO_seekpos_t, __seekpos);</span><br><span class="line">    JUMP_FIELD(_IO_setbuf_t, __setbuf);</span><br><span class="line">    JUMP_FIELD(_IO_sync_t, __sync);</span><br><span class="line">    JUMP_FIELD(_IO_doallocate_t, __doallocate);</span><br><span class="line">    JUMP_FIELD(_IO_read_t, __read);</span><br><span class="line">    JUMP_FIELD(_IO_write_t, __write);</span><br><span class="line">    JUMP_FIELD(_IO_seek_t, __seek);</span><br><span class="line">    JUMP_FIELD(_IO_close_t, __close);</span><br><span class="line">    JUMP_FIELD(_IO_stat_t, __stat);</span><br><span class="line">    JUMP_FIELD(_IO_showmanyc_t, __showmanyc);</span><br><span class="line">    JUMP_FIELD(_IO_imbue_t, __imbue);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> 0</span></span><br><span class="line">    get_column;</span><br><span class="line">    set_column;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>目前的理解是，我们平常用的那些puts等等这些IO函数，最后都是通过层层的封装调用的相应文件的vtable中的函数。比如puts的本质是<code>__xsputn</code>，fread本质是<code>__xsgetn</code>之类的。这些东西最后都是封装然后接系统调用open，read，write。下面给几个CTFWiki的例子，参考<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/io-file/introduction/%EF%BC%9A">https://ctf-wiki.org/pwn/linux/user-mode/io-file/introduction/：</a>  </p>
-<ul>
-<li><strong>fread</strong><br>比如fread，核心在<code>_IO_sgetn</code><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bytes_read = _IO_sgetn (fp, (<span class="type">char</span> *) buf, bytes_requested);</span><br></pre></td></tr></table></figure>
-而这个函数核心又是<code>_IO_xsgetn</code>，也就是vtable中的函数：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_IO_size_t</span><br><span class="line">_IO_sgetn (fp, data, n)</span><br><span class="line">     _IO_FILE *fp;</span><br><span class="line">     <span class="type">void</span> *data;</span><br><span class="line">     _IO_size_t n;</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> _IO_XSGETN (fp, data, n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><strong>fwrite</strong><br>同理，fwrite是<code>_io_xsputn</code>的封装，同时也会调用缓冲区刷新函数<code>_io_overflow</code></li>
-<li><strong>fopen</strong><br>fopen的内部是先调用了malloc，在堆上分配我们的file结构，然后初始化vtable和相应的file结构，并将新的file结构连接到当前的file链表中，最后调用<code>_IO_file_open</code>打开文件，而这个函数又是对系统调用的封装。</li>
-<li><strong>fclose</strong><br>fclose同理，只是反着来一遍。先从链表中unlink出来，然后调用系统接口close关闭文件，最后调用vtable中的<code>_IO_finish</code>，其中会调用free释放之前的file结构。</li>
+<p>目前的理解是，我们平常用的那些puts等等这些IO函数，最后都是通过层层的封装调用的相应文件的vtable中的函数。比如puts的本质是<code>__xsputn</code>，fread本质是<code>__xsgetn</code>之类的。这些东西最后都是封装然后接系统调用open，read，write。下面给几个CTFWiki的例子，参考<a target="_blank" rel="noopener" href="https://ctf-wiki.org/pwn/linux/user-mode/io-file/introduction/%EF%BC%9A">https://ctf-wiki.org/pwn/linux/user-mode/io-file/introduction/：</a></p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><strong>fread</strong><br>
+比如fread，核心在<code>_IO_sgetn</code></p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bytes_read = _IO_sgetn (fp, (<span class="type">char</span> *) buf, bytes_requested);</span><br></pre></td></tr></table></figure>
+<p>而这个函数核心又是<code>_IO_xsgetn</code>，也就是vtable中的函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_IO_size_t</span><br><span class="line">_IO_sgetn (fp, data, n)</span><br><span class="line">     _IO_FILE *fp;</span><br><span class="line">     <span class="type">void</span> *data;</span><br><span class="line">     _IO_size_t n;</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> _IO_XSGETN (fp, data, n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p><strong>fwrite</strong><br>
+同理，fwrite是<code>_io_xsputn</code>的封装，同时也会调用缓冲区刷新函数<code>_io_overflow</code></p>
+</li>
+<li class="lvl-2">
+<p><strong>fopen</strong><br>
+fopen的内部是先调用了malloc，在堆上分配我们的file结构，然后初始化vtable和相应的file结构，并将新的file结构连接到当前的file链表中，最后调用<code>_IO_file_open</code>打开文件，而这个函数又是对系统调用的封装。</p>
+</li>
+<li class="lvl-2">
+<p><strong>fclose</strong><br>
+fclose同理，只是反着来一遍。先从链表中unlink出来，然后调用系统接口close关闭文件，最后调用vtable中的<code>_IO_finish</code>，其中会调用free释放之前的file结构。</p>
+</li>
 </ul>
 <p>printf什么的也是类似，之前看调用栈看不懂其实是因为printf封装了好几层。首先是vfprintf，然后是vtable中的函数，并且printf如果结尾是\n的纯字符串会被编译器优化为puts，puts也是调用vtable里面的函数，类似于fwrite。</p>
-<h1 id="我们怎么攻击？"><a href="#我们怎么攻击？" class="headerlink" title="我们怎么攻击？"></a>我们怎么攻击？</h1><h2 id="简单粗暴：覆盖结构体"><a href="#简单粗暴：覆盖结构体" class="headerlink" title="简单粗暴：覆盖结构体"></a>简单粗暴：覆盖结构体</h2><p>如果能劫持到_IO_FILE结构体，只要改改里面的指针，我们就能从标准输入向内存任意地址写或者从任意地址读到标准输入。非常简单。</p>
-<p>我们想实现的，永远是通过非法的内存修改整蛊恶搞劫持程序的执行流或者控制流。既然文件对象有这么一个vtable存放函数指针，最简单最直接的方式就是通过某些手段篡改vtable，劫持到我们想要的地址。而fopen分配的文件是在堆上的，所以经常会和堆的一些指定地址分配chunk的技术等等一起利用。就像篡改<code>malloc_hook</code>然后使用<code>malloc(&#39;/bin/sh&#39;)</code>这样，我们也可以篡改vtable，然后在exit或是某些程序操作的时候触发对应的函数（IO_flush一类）。</p>
-<h2 id="vtable攻击"><a href="#vtable攻击" class="headerlink" title="vtable攻击"></a>vtable攻击</h2><p>vtable在IO_FILE_plus的最后，也就是整个FILE结构体的最后面。要从FILE覆盖到vtable，就需要覆盖里面的所有内容。这就要谈到IO_FILE的一个字段：lock。</p>
+<h1>我们怎么攻击？</h1>
+<h2 id="简单粗暴：覆盖结构体">简单粗暴：覆盖结构体</h2>
+<p>如果能劫持到_IO_FILE结构体，只要改改里面的指针，我们就能从标准输入向内存任意地址写或者从任意地址读到标准输入。非常简单。</p>
+<p>我们想实现的，永远是通过非法的内存修改整蛊恶搞劫持程序的执行流或者控制流。既然文件对象有这么一个vtable存放函数指针，最简单最直接的方式就是通过某些手段篡改vtable，劫持到我们想要的地址。而fopen分配的文件是在堆上的，所以经常会和堆的一些指定地址分配chunk的技术等等一起利用。就像篡改<code>malloc_hook</code>然后使用<code>malloc('/bin/sh')</code>这样，我们也可以篡改vtable，然后在exit或是某些程序操作的时候触发对应的函数（IO_flush一类）。</p>
+<h2 id="vtable攻击">vtable攻击</h2>
+<p>vtable在IO_FILE_plus的最后，也就是整个FILE结构体的最后面。要从FILE覆盖到vtable，就需要覆盖里面的所有内容。这就要谈到IO_FILE的一个字段：lock。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">_IO_lock_t *_lock;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 <p>这个字段是用于多线程访问用的。我们作为pwn方向只关心他应该怎么设置，简单来说他需要指向一个可写内存地址同时值要为0x0。这是一个互斥锁，加锁的时候会向这个地址写入值，释放的时候会减小这个值，只要指向0x0就不会出问题。</p>
 <p>在glibc-2.23以及之前，vtable是几乎没有检查的。也就是说只要劫持了就能调用。只需要：</p>
 <ol>
-<li>将文件结构体中的vtable指针指向我们布局好的一个fake_vtable。</li>
-<li>将vtable指向的真正结构体中对应的函数指针替换为我们自己的函数。</li>
+<li class="lvl-3">
+<p>将文件结构体中的vtable指针指向我们布局好的一个fake_vtable。</p>
+</li>
+<li class="lvl-3">
+<p>将vtable指向的真正结构体中对应的函数指针替换为我们自己的函数。</p>
+</li>
 </ol>
 <p>这种攻击要知道的先置知识：</p>
-<ul>
-<li>程序中某些固定触发&#x2F;我们可以触发的一些函数最终会调用vtable中的哪一项</li>
-<li>知道这一项在vtable中的偏移，可以查到</li>
-<li>知道vtable的地址，在glibc2.23中64位下vtable的偏移为文件结构体+0xd8</li>
-<li>如果要传入参数，我们还要知道vtable中的函数的定义。比如printf会调用的<code>_IO_xsputn</code>，传入的第一个参数是文件结构体<code>_IO_FILE_plus</code>的地址</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>程序中某些固定触发/我们可以触发的一些函数最终会调用vtable中的哪一项</p>
+</li>
+<li class="lvl-2">
+<p>知道这一项在vtable中的偏移，可以查到</p>
+</li>
+<li class="lvl-2">
+<p>知道vtable的地址，在glibc2.23中64位下vtable的偏移为文件结构体+0xd8</p>
+</li>
+<li class="lvl-2">
+<p>如果要传入参数，我们还要知道vtable中的函数的定义。比如printf会调用的<code>_IO_xsputn</code>，传入的第一个参数是文件结构体<code>_IO_FILE_plus</code>的地址</p>
+</li>
 </ul>
 <p>在2.24之后，libc会检查vtable指向的内存地址是不是libc预留好的vtable area。也就是说我们不能乱搞，但是可以在这个vtable内进行偏移或是选择我们要调用哪个函数。一个常见的手法是尝试触发<code>IO_wfile_overflow</code>，然后触发<code>do_allocbuf</code>，将虚表指向<code>FILE-&gt;wide_data</code>，而这个vtable不需要地址验证。这应该是现代高版本libc的一个手法。</p>
-<ul>
-<li>将file.wide_data-&gt;vtable指向我们的exp_vtable</li>
-<li>覆盖file.vtable让IO_wfile_overflow被调用</li>
-<li>触发do_allocbuf</li>
-<li>使用没有检查的wide_data中的vtable进行劫持</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>将file.wide_data-&gt;vtable指向我们的exp_vtable</p>
+</li>
+<li class="lvl-2">
+<p>覆盖file.vtable让IO_wfile_overflow被调用</p>
+</li>
+<li class="lvl-2">
+<p>触发do_allocbuf</p>
+</li>
+<li class="lvl-2">
+<p>使用没有检查的wide_data中的vtable进行劫持</p>
+</li>
 </ul>
 <p>这部分可能需要大量用到overlapping struct（结构体重叠）的手法，来构建fake struct（我们只关心使用到的数据的偏移，不需要真的有一个结构体）</p>
-<h2 id="FSOP"><a href="#FSOP" class="headerlink" title="FSOP"></a>FSOP</h2><p>另外，这些IO_FILE被用chain连接成一个单链表。系统维护这个链表是为了保证程序在退出的时候，所有的缓冲区都被flush。也就是说，在调用<code>exit()</code>此类的函数时，程序就会遍历一遍这个进程打开的FILE list，然后对所有有写权限的文件buffer执行flush。而flush会触发vtable的相关函数，那么我们就能利用这一点，对多个FILE结构体的vtable都进行篡改，将每个会在关闭前执行flush的FILE结构体视为一个gadget，利用关闭的时候逐个flush的特性，形成一种类似于ROP的控制流，这就是面向文件流编程（File Stream Oriented Programming，FSOP）。</p>
+<h2 id="FSOP">FSOP</h2>
+<p>另外，这些IO_FILE被用chain连接成一个单链表。系统维护这个链表是为了保证程序在退出的时候，所有的缓冲区都被flush。也就是说，在调用<code>exit()</code>此类的函数时，程序就会遍历一遍这个进程打开的FILE list，然后对所有有写权限的文件buffer执行flush。而flush会触发vtable的相关函数，那么我们就能利用这一点，对多个FILE结构体的vtable都进行篡改，将每个会在关闭前执行flush的FILE结构体视为一个gadget，利用关闭的时候逐个flush的特性，形成一种类似于ROP的控制流，这就是面向文件流编程（File Stream Oriented Programming，FSOP）。</p>
 <p>pwn.college推荐了这篇blog：<a target="_blank" rel="noopener" href="https://blog.kylebot.net/2022/10/22/angry-FSROP/">https://blog.kylebot.net/2022/10/22/angry-FSROP/</a></p>
 
     </article>
@@ -716,7 +777,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#FILE%E7%BB%93%E6%9E%84%E4%BD%93%E4%B8%8Eglibc%E5%B0%81%E8%A3%85%E5%90%8E%E7%9A%84IO"><span class="toc-number">1.</span> <span class="toc-text">FILE结构体与glibc封装后的IO</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-FILE"><span class="toc-number">1.1.</span> <span class="toc-text">IO_FILE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E8%AF%BB%E5%86%99%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">任意读写？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E8%AF%BB"><span class="toc-number">1.2.1.</span> <span class="toc-text">任意读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E5%86%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">任意写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vtable"><span class="toc-number">1.3.</span> <span class="toc-text">vtable</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%88%91%E4%BB%AC%E6%80%8E%E4%B9%88%E6%94%BB%E5%87%BB%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">我们怎么攻击？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%B2%97%E6%9A%B4%EF%BC%9A%E8%A6%86%E7%9B%96%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-number">2.1.</span> <span class="toc-text">简单粗暴：覆盖结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vtable%E6%94%BB%E5%87%BB"><span class="toc-number">2.2.</span> <span class="toc-text">vtable攻击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FSOP"><span class="toc-number">2.3.</span> <span class="toc-text">FSOP</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">FILE结构体与glibc封装后的IO</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-FILE"><span class="toc-number">1.1.</span> <span class="toc-text">IO_FILE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E8%AF%BB%E5%86%99%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">任意读写？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E8%AF%BB"><span class="toc-number">1.2.1.</span> <span class="toc-text">任意读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E5%86%99"><span class="toc-number">1.2.2.</span> <span class="toc-text">任意写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vtable"><span class="toc-number">1.3.</span> <span class="toc-text">vtable</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">我们怎么攻击？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%B2%97%E6%9A%B4%EF%BC%9A%E8%A6%86%E7%9B%96%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-number">2.1.</span> <span class="toc-text">简单粗暴：覆盖结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vtable%E6%94%BB%E5%87%BB"><span class="toc-number">2.2.</span> <span class="toc-text">vtable攻击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FSOP"><span class="toc-number">2.3.</span> <span class="toc-text">FSOP</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -996,6 +1057,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1818,24 +1885,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1848,6 +1900,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1856,6 +1923,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1868,19 +1940,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1888,14 +1950,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

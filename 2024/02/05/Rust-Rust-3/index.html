@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊生命周期：引用一个比自己活得久的变量才会通过编译特征对象依托，反正知道闭包什么的复杂的类型直接先用Box包裹一下Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（可变）引">
+    <meta name="description" content="说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？ 子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊 生命周期：引用一个比自己活得久的变量才会通过编译 特征对象依托，反正知道闭包什么的复杂的类型直接先用Box包裹一下 Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Rust？Rust！(3)——自用整合终极版">
 <meta property="og:url" content="http://example.com/2024/02/05/Rust-Rust-3/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊生命周期：引用一个比自己活得久的变量才会通过编译特征对象依托，反正知道闭包什么的复杂的类型直接先用Box包裹一下Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（可变）引">
+<meta property="og:description" content="说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？ 子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊 生命周期：引用一个比自己活得久的变量才会通过编译 特征对象依托，反正知道闭包什么的复杂的类型直接先用Box包裹一下 Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-02-05T08:29:55.000Z">
 <meta property="article:modified_time" content="2024-10-06T08:03:20.512Z">
@@ -495,50 +495,86 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <p>说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？<br>子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊<br>生命周期：引用一个比自己活得久的变量才会通过编译<br>特征对象依托，反正知道闭包什么的复杂的类型直接先用Box<dyn >包裹一下<br>Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（可变）引用参数的函数在函数内调用方法的时候不报错是因为这个规则的存在 </p>
+        <p>说实话没有开发需求在看这些新机制的时候没有动力了，打算搞个Web应用或者什么试试看？<br>
+子模块内容对父模块全部不可见，但是子模块可以访问其所有上级模块内容。特殊<br>
+生命周期：引用一个比自己活得久的变量才会通过编译<br>
+特征对象依托，反正知道闭包什么的复杂的类型直接先用Box<dyn >包裹一下<br>
+Reborrow再借用：对一个可变引用可以再次借用，只要在再次借用的变量的生命周期内不适用上级的引用就不会报错。许多传入了（可变）引用参数的函数在函数内调用方法的时候不报错是因为这个规则的存在</p>
 <blockquote>
 <p><a target="_blank" rel="noopener" href="https://github.com/LearningOS/rust-rustlings-2024-autumn-ZjW1nd">https://github.com/LearningOS/rust-rustlings-2024-autumn-ZjW1nd</a></p>
 </blockquote>
-<h2 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h2><p>闭包：FnOnce，FnMut和Fn，依次代表调用时直接拿走闭包所有权，捕获可变引用和获取不可变引用。这三个东西是trait，实现FnMut必须要实现FnOnce，实现Fn必须要实现FnMut。所以约束的时候先无脑声明Fn然后看编译器。实际上：  </p>
+<h2 id="闭包">闭包</h2>
+<p>闭包：FnOnce，FnMut和Fn，依次代表调用时直接拿走闭包所有权，捕获可变引用和获取不可变引用。这三个东西是trait，实现FnMut必须要实现FnOnce，实现Fn必须要实现FnMut。所以约束的时候先无脑声明Fn然后看编译器。实际上：</p>
 <blockquote>
-<ul>
-<li>所有的闭包都自动实现了 FnOnce 特征，因此任何一个闭包都至少可以被调用一次</li>
-<li>没有移出所捕获变量的所有权的闭包自动实现了 FnMut 特征</li>
-<li>不需要对捕获变量进行改变的闭包自动实现了 Fn 特征<br>返回闭包要用特征对象（每一个闭包都是独一无二的类型，即使他们的定义相同）<br>同样的定义如果遇到了生命周期问题尽量改成函数，编译器无法在闭包上应用像函数那样智能的消除规则。</li>
+<ul class="lvl-1">
+<li class="lvl-2">所有的闭包都自动实现了 FnOnce 特征，因此任何一个闭包都至少可以被调用一次</li>
+<li class="lvl-2">没有移出所捕获变量的所有权的闭包自动实现了 FnMut 特征</li>
+<li class="lvl-2">不需要对捕获变量进行改变的闭包自动实现了 Fn 特征返回闭包要用特征对象（每一个闭包都是独一无二的类型，即使他们的定义相同）<br>
+同样的定义如果遇到了生命周期问题尽量改成函数，编译器无法在闭包上应用像函数那样智能的消除规则。</li>
 </ul>
 </blockquote>
-<h2 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h2><h3 id="Box"><a href="#Box" class="headerlink" title="Box"></a>Box</h3><p>Box智能指针：用jemalloc管理的智能指针，强制将其包裹的对象分配在堆上，然后在栈上保留一份指针。这种操作主要是为了处理动态大小的对象（如<strong>递归</strong>的类型），因为Box实际上某种意义上更改了数据类型以及其底层操作和存储逻辑，会少很多方法。但是许多标准方法自动提供了自动Deref解引用。<br>Box指针作为右值的时候，栈上的指针发生了copy，但是堆上的数据发生了所有权的转移。即<code>let a=b</code>之后，原Box指针b无法再访问数据。<br>在Rust的表达式中无法进行自动的解引用，需要用*手动解引用<br><code>Box::leak</code>函数：消费掉Box并强制目标从内存中泄露（？？），可以用于将运行中生成的值转为’static周期。</p>
+<h2 id="智能指针">智能指针</h2>
+<h3 id="Box">Box</h3>
+<p>Box智能指针：用jemalloc管理的智能指针，强制将其包裹的对象分配在堆上，然后在栈上保留一份指针。这种操作主要是为了处理动态大小的对象（如<strong>递归</strong>的类型），因为Box实际上某种意义上更改了数据类型以及其底层操作和存储逻辑，会少很多方法。但是许多标准方法自动提供了自动Deref解引用。<br>
+Box指针作为右值的时候，栈上的指针发生了copy，但是堆上的数据发生了所有权的转移。即<code>let a=b</code>之后，原Box指针b无法再访问数据。在Rust的表达式中无法进行自动的解引用，需要用*手动解引用<br>
+<code>Box::leak</code>函数：消费掉Box并强制目标从内存中泄露（？？），可以用于将运行中生成的值转为’static周期。</p>
 <blockquote>
-<p>Box::from_raw()和Box::into_raw可以操作unsafe裸指针<br>rust中的智能指针本质上是一种比直接引用更复杂的数据类型（一个结构体），但实现了deref和drop方法。Box只是最简单的一种，仅仅只是将值强制分配在堆上而已。<br>其实其他有GC的语言本质上也是这样，只不过是自动的</p>
+<p>Box::from_raw()和Box::into_raw可以操作unsafe裸指针<br>
+rust中的智能指针本质上是一种比直接引用更复杂的数据类型（一个结构体），但实现了deref和drop方法。Box只是最简单的一种，仅仅只是将值强制分配在堆上而已。其实其他有GC的语言本质上也是这样，只不过是自动的</p>
 </blockquote>
-<h3 id="deref特性"><a href="#deref特性" class="headerlink" title="deref特性"></a>deref特性</h3><p>解引用发生了什么：指针解引用的时候会变成<code>*(p.deref())</code>，deref方法会返回一个常规的引用而不是值，从而避免智能指针一被解引用，其中指向的数据所有权就被拿走（那太抽象了）。而且deref()只会替换调用一次。<br>隐式转换：对于实现了Deref特征的数据类型，在做参数的时候编译器会根据函数&#x2F;方法的签名决定是否进行自动隐式的deref转换。比如String类型会自动转为&amp;str这样：</p>
+<h3 id="deref特性">deref特性</h3>
+<p>解引用发生了什么：指针解引用的时候会变成<code>*(p.deref())</code>，deref方法会返回一个常规的引用而不是值，从而避免智能指针一被解引用，其中指向的数据所有权就被拿走（那太抽象了）。而且deref()只会替换调用一次。<br>
+隐式转换：对于实现了Deref特征的数据类型，在做参数的时候编译器会根据函数/方法的签名决定是否进行自动隐式的deref转换。比如String类型会自动转为&amp;str这样：</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">s</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello world&quot;</span>);</span><br><span class="line">    <span class="title function_ invoke__">display</span>(&amp;s)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">display</span>(s: &amp;<span class="type">str</span>) &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>,s);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以连续隐式转换，参数是引用类型的时候才会触发。另外要记住，Deref特征只为“引用”类型实现，也就是deref函数的self参数实际上是：<code>self: &amp;Self</code>的意思。总之，记住多个引用的时候每调用一次deref会少一个&amp;就行了（引用归一化）。Deref还能将可变引用隐式转换为不可变引用。还有DerefMut: Deref这个特征，允许将可变引用转为另一个可变引用</p>
-<p>Drop特征赛高！如果实现了Drop特征，编译器在变量离开作用域时会自动插入代码执行drop函数。作用域内的变量按逆序释放，结构体内的字段按定义顺序（而非创建顺序）依次释放。几乎所有数据类型都有drop特征，它会传入self的可变引用。<br>drop使用可变引用就会引入一个问题：编译器不允许我们手动调用Drop::drop析构函数（显然会导致UAF）。手动释放使用的是std::mem::drop函数，它会拿走self的所有权。然后在其内部再调用Drop::drop进行释放</p>
-<h3 id="1VN所有权：智能指针Rc和Arc"><a href="#1VN所有权：智能指针Rc和Arc" class="headerlink" title="1VN所有权：智能指针Rc和Arc"></a>1VN所有权：智能指针Rc和Arc</h3><p>解决多线程和图等需要多个变量持有一个数据的问题。Rc(Reference counting)引用计数智能指针，它可以复制很多副本。参考：</p>
+<p>Drop特征赛高！如果实现了Drop特征，编译器在变量离开作用域时会自动插入代码执行drop函数。作用域内的变量按逆序释放，结构体内的字段按定义顺序（而非创建顺序）依次释放。几乎所有数据类型都有drop特征，它会传入self的可变引用。<br>
+drop使用可变引用就会引入一个问题：编译器不允许我们手动调用Drop::drop析构函数（显然会导致UAF）。手动释放使用的是std::mem::drop函数，它会拿走self的所有权。然后在其内部再调用Drop::drop进行释放</p>
+<h3 id="1VN所有权：智能指针Rc和Arc">1VN所有权：智能指针Rc和Arc</h3>
+<p>解决多线程和图等需要多个变量持有一个数据的问题。Rc(Reference counting)引用计数智能指针，它可以复制很多副本。参考：</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::rc::Rc;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">a</span> = Rc::<span class="title function_ invoke__">new</span>(<span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello, world&quot;</span>));<span class="comment">//引用计数+1</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">b</span> = Rc::<span class="title function_ invoke__">clone</span>(&amp;a);<span class="comment">//引用计数+1，浅拷贝</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(<span class="number">2</span>, Rc::<span class="title function_ invoke__">strong_count</span>(&amp;a));</span><br><span class="line">    <span class="built_in">assert_eq!</span>(Rc::<span class="title function_ invoke__">strong_count</span>(&amp;a), Rc::<span class="title function_ invoke__">strong_count</span>(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>rc的clone方法是浅拷贝，仅复制指针并增加引用计数。rc内部是数据的不可变借用，无法通过rc修改数据。修改见多线程，智能指针比引用好用很多，同线程多个读可以多用rc。多线程用Arc（原子化，线程安全），接口一样。</p>
-<h3 id="Cell-RefCell"><a href="#Cell-RefCell" class="headerlink" title="Cell&#x2F;RefCell"></a>Cell&#x2F;RefCell</h3><p>使用内部可变性Cell&#x2F;RefCell智能指针允许在拥有不可变引用的同时修改数据，Cell&#x2F;RefCell内部是用了unsafe特性实现的，但是封装后完全safe。  </p>
+<h3 id="Cell-RefCell">Cell/RefCell</h3>
+<p>使用内部可变性Cell/RefCell智能指针允许在拥有不可变引用的同时修改数据，Cell/RefCell内部是用了unsafe特性实现的，但是封装后完全safe。</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::cell::Cell;</span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">c</span> = Cell::<span class="title function_ invoke__">new</span>(<span class="string">&quot;asdf&quot;</span>);</span><br><span class="line">  <span class="keyword">let</span> <span class="variable">one</span> = c.<span class="title function_ invoke__">get</span>();<span class="comment">//one是一个c的不可变借用</span></span><br><span class="line">  c.<span class="title function_ invoke__">set</span>(<span class="string">&quot;qwer&quot;</span>);<span class="comment">//修改值，正常情况下编译器是不允许的</span></span><br><span class="line">  <span class="keyword">let</span> <span class="variable">two</span> = c.<span class="title function_ invoke__">get</span>();</span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;,&#123;&#125;&quot;</span>, one, two);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Cell是针对实现了Copy特征的类型，RefCell实现了其他的类型。</p>
 <blockquote>
-<p>试了一下，Cell没啥用，c如果声明为mut直接改也可以，实现了Copy直接写赋值就行。<br>对于堆上的数据，借用规则在运行的时候仍然是生效的。使用RefCell只是在编译的时候不会报错，将问题推迟到了运行时（panic）。RefCell的使用只是在你坚信代码正确而编译器发电的时候，或者某个引用被大量的使用和修改难以管理的时候。</p>
+<p>试了一下，Cell没啥用，c如果声明为mut直接改也可以，实现了Copy直接写赋值就行。对于堆上的数据，借用规则在运行的时候仍然是生效的。使用RefCell只是在编译的时候不会报错，将问题推迟到了运行时（panic）。RefCell的使用只是在你坚信代码正确而编译器发电的时候，或者某个引用被大量的使用和修改难以管理的时候。</p>
 </blockquote>
-<h3 id="Weak"><a href="#Weak" class="headerlink" title="Weak"></a>Weak</h3><p>weak: 不持有所有权的RC，这玩意不保证引用关系的存在（不持有所有权所以数据不在了也无所谓）。使用weak的<code>upgrade()</code>方法会返回一个Option&lt;RC(T)&gt;类型，有值是Some(RC(T)),没有就返回None。用weak和RC结合能够避免链表的循环引用问题发生，即子节点和父节点之间的引用使用weak和rc交替。</p>
-<h3 id="NonNull"><a href="#NonNull" class="headerlink" title="NonNull"></a>NonNull</h3><p>这个智能指针能够操作裸指针，它包裹的指针能够保证不为空，解引用需要unsafe声明，可以用<code>Option&lt;NonNull&lt;Box&lt;...&gt;&gt;&gt;</code>这种东西加上一些模式匹配和结构来使用类似C不过更安全的指针思想。Rust会强迫你在每一个裸指针处思考，不灵活但是安全。<br>看不懂 自引用和链表一坨大便</p>
-<h2 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h2><ul>
-<li>thread::spawn开新线程，参数中传入一个闭包代码块作为新线程执行的内容</li>
-<li>thread::spawn返回一个JoinHandle结构，调用join方法可以强制当前线程阻塞等待JoinHandle指向的线程结束</li>
-<li>Arc::clone线程安全的复制数据</li>
-<li>Mutex互斥锁，也是智能指针，new了之后包裹的内容需要先使用<code>.lock()</code>申请锁才能写入，此时其他线程都无法写入<br>async和await，先略</li>
+<h3 id="Weak">Weak</h3>
+<p>weak: 不持有所有权的RC，这玩意不保证引用关系的存在（不持有所有权所以数据不在了也无所谓）。使用weak的<code>upgrade()</code>方法会返回一个Option&lt;RC(T)&gt;类型，有值是Some(RC(T)),没有就返回None。用weak和RC结合能够避免链表的循环引用问题发生，即子节点和父节点之间的引用使用weak和rc交替。</p>
+<h3 id="NonNull">NonNull</h3>
+<p>这个智能指针能够操作裸指针，它包裹的指针能够保证不为空，解引用需要unsafe声明，可以用<code>Option&lt;NonNull&lt;Box&lt;...&gt;&gt;&gt;</code>这种东西加上一些模式匹配和结构来使用类似C不过更安全的指针思想。Rust会强迫你在每一个裸指针处思考，不灵活但是安全。看不懂 自引用和链表一坨大便</p>
+<h2 id="并发">并发</h2>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>thread::spawn开新线程，参数中传入一个闭包代码块作为新线程执行的内容</p>
+</li>
+<li class="lvl-2">
+<p>thread::spawn返回一个JoinHandle结构，调用join方法可以强制当前线程阻塞等待JoinHandle指向的线程结束</p>
+</li>
+<li class="lvl-2">
+<p>Arc::clone线程安全的复制数据</p>
+</li>
+<li class="lvl-2">
+<p>Mutex互斥锁，也是智能指针，new了之后包裹的内容需要先使用<code>.lock()</code>申请锁才能写入，此时其他线程都无法写入<br>
+async和await，先略</p>
+</li>
 </ul>
-<h2 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h2><p>一般来说手写比较没必要，结构体成员用引用或者函数返回引用的时候要用。rust编译器有三条生命周期消除规则：</p>
-<ul>
-<li>首先为函数的每个参数设置一个单独的生命周期</li>
-<li>如果只有一个输入的生命周期，则其会返回给全部的输出生命周期</li>
-<li>如果有多个输入生命周期而其中一个是&amp;self，那么self的生命周期会返回给所有的输出生命周期<br>所以，生命周期在多个引用非self输入的构造方法，或者在结构体和枚举中使用引用类型才会用到。</li>
+<h2 id="生命周期">生命周期</h2>
+<p>一般来说手写比较没必要，结构体成员用引用或者函数返回引用的时候要用。rust编译器有三条生命周期消除规则：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>首先为函数的每个参数设置一个单独的生命周期</p>
+</li>
+<li class="lvl-2">
+<p>如果只有一个输入的生命周期，则其会返回给全部的输出生命周期</p>
+</li>
+<li class="lvl-2">
+<p>如果有多个输入生命周期而其中一个是&amp;self，那么self的生命周期会返回给所有的输出生命周期所以，生命周期在多个引用非self输入的构造方法，或者在结构体和枚举中使用引用类型才会用到。</p>
+</li>
 </ul>
-<h2 id="特征接口Trait"><a href="#特征接口Trait" class="headerlink" title="特征接口Trait"></a>特征接口Trait</h2><p>一类方法，标注这个特性的类型就能使用对应的方法，也可以用trait来约束泛型。</p>
+<h2 id="特征接口Trait">特征接口Trait</h2>
+<p>一类方法，标注这个特性的类型就能使用对应的方法，也可以用trait来约束泛型。</p>
 
     </article>
     <!-- license -->
@@ -1438,6 +1474,12 @@
         
         
         
+        
+        
+        
+        
+        
+        
     
     
     
@@ -1796,24 +1838,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1826,6 +1853,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1834,6 +1876,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1846,19 +1893,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1866,14 +1903,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

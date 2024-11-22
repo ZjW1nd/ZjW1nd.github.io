@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="写在前面：其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。 对于本lab的要求，请参考https:&#x2F;&#x2F;arthals.ink&#x2F;posts&#x2F;experience&#x2F;mallo">
+    <meta name="description" content="写在前面： 其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。 对于本lab的要求，请参考https:&#x2F;&#x2F;arthals.ink&#x2F;posts&#x2F;experience&#x2F;mall">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CSAPP Labs——Malloc Lab">
 <meta property="og:url" content="http://example.com/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="写在前面：其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。 对于本lab的要求，请参考https:&#x2F;&#x2F;arthals.ink&#x2F;posts&#x2F;experience&#x2F;mallo">
+<meta property="og:description" content="写在前面： 其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。 对于本lab的要求，请参考https:&#x2F;&#x2F;arthals.ink&#x2F;posts&#x2F;experience&#x2F;mall">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-07-11T08:54:32.000Z">
 <meta property="article:modified_time" content="2024-07-17T16:54:20.387Z">
@@ -501,95 +501,133 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="写在前面："><a href="#写在前面：" class="headerlink" title="写在前面："></a>写在前面：</h1><p>其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。</p>
+        <h1>写在前面：</h1>
+<p>其实没想着在这个动态分配上浪费太多时间优化什么的，没必要，主要还是想更清楚heap怎么工作，因此下面我自己的方案其实最后没怎么参考，基本是自己对着glibc 2.23 malloc.c的源码写的。所以也没什么参考价值。本来目标也是能过就行，主要是借这个机会有看了看libc源码。</p>
 <p>对于本lab的要求，请参考<a target="_blank" rel="noopener" href="https://arthals.ink/posts/experience/malloc-lab">https://arthals.ink/posts/experience/malloc-lab</a>.</p>
-<h1 id="介绍和要求："><a href="#介绍和要求：" class="headerlink" title="介绍和要求："></a>介绍和要求：</h1><p>我们要在mm.c中实现自己的动态内存分配函数, 他们的原型如下：</p>
-<ul>
-<li>int    mm_init(void)</li>
-<li>void * mm_malloc(size_t size)</li>
-<li>void   mm_free(void* ptr)</li>
-<li>void * mm_realloc(void* ptr, size_t size)</li>
-</ul>
-<p>这四个函数的功能如下：</p>
-<ul>
-<li>mm_init: 一切必要的堆初始化。正常返回0有错误返回-1.</li>
-<li>mm_malloc: 类比<code>malloc()</code>，返回一个堆块指针，同时要求8字节对齐</li>
-<li>mm_free: 类比<code>free()</code>，不返回，只有传入的是先前通过malloc或realloc分配的指针时才工作</li>
-<li>mm_realloc: 重新修改堆块。如果传入NULL指针则功能等于malloc。如果传入非空指针（堆指针），则返回一个新块的地址。将旧的块修改为新的大小。<blockquote>
-<p>看起来就不好搞。。没有系统概念</p>
-</blockquote>
+<h1>介绍和要求：</h1>
+<p>我们要在mm.c中实现自己的动态内存分配函数, 他们的原型如下：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>int    mm_init(void)</p>
+</li>
+<li class="lvl-2">
+<p>void * mm_malloc(size_t size)</p>
+</li>
+<li class="lvl-2">
+<p>void   mm_free(void* ptr)</p>
+</li>
+<li class="lvl-2">
+<p>void * mm_realloc(void* ptr, size_t size)</p>
 </li>
 </ul>
+<p>这四个函数的功能如下：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>mm_init: 一切必要的堆初始化。正常返回0有错误返回-1.</p>
+</li>
+<li class="lvl-2">
+<p>mm_malloc: 类比<code>malloc()</code>，返回一个堆块指针，同时要求8字节对齐</p>
+</li>
+<li class="lvl-2">
+<p>mm_free: 类比<code>free()</code>，不返回，只有传入的是先前通过malloc或realloc分配的指针时才工作</p>
+</li>
+<li class="lvl-2">
+<p>mm_realloc: 重新修改堆块。如果传入NULL指针则功能等于malloc。如果传入非空指针（堆指针），则返回一个新块的地址。将旧的块修改为新的大小。</p>
+</li>
+</ul>
+<blockquote>
+<p>看起来就不好搞。。没有系统概念</p>
+</blockquote>
 <p>同时，实验已经给我们写好了一些操作接口：</p>
-<ul>
-<li>void*  mem_heap_lo(void): 返回指向堆第一个字节的指针</li>
-<li>void*  mem_heap_hi(void): 返回指向堆最后一个字节的指针</li>
-<li>size_t mem_heapsize(void): 返回当前堆大小（字节）</li>
-<li>size_t mem_pagesize(void): 返回系统的页大小，linux上是4k</li>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>void*  mem_heap_lo(void): 返回指向堆第一个字节的指针</p>
+</li>
+<li class="lvl-2">
+<p>void*  mem_heap_hi(void): 返回指向堆最后一个字节的指针</p>
+</li>
+<li class="lvl-2">
+<p>size_t mem_heapsize(void): 返回当前堆大小（字节）</p>
+</li>
+<li class="lvl-2">
+<p>size_t mem_pagesize(void): 返回系统的页大小，linux上是4k</p>
+</li>
 </ul>
 <p>另外，实验不允许任何全局或静态数据结构（结构体、数组等）的定义。同时我们可能还要写一个检查器来检查释放、合并、空闲列表完整性、是否有overlapping、是否指针失效等等。光是看着就觉得离谱了。这个lab参考了<a target="_blank" rel="noopener" href="https://arthals.ink/posts/experience/malloc-lab">这篇100分的通关blog</a>，感谢北大佬arthal的博客。</p>
-<h1 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h1><p>这部分CSAPP上讲的非常少，而且对于优化的实现方式没有给出实例（只给了最简单的隐式空闲链表的实现），我们要想做一个能满分过关的肯定是要用和ptmalloc类似的那种分离空闲链表的实现方式的。而且根据CSAPP的描述：</p>
+<h1>内容</h1>
+<p>这部分CSAPP上讲的非常少，而且对于优化的实现方式没有给出实例（只给了最简单的隐式空闲链表的实现），我们要想做一个能满分过关的肯定是要用和ptmalloc类似的那种分离空闲链表的实现方式的。而且根据CSAPP的描述：</p>
 <blockquote>
 <p>对分离空闲链表的简单的首次适配搜索，其内存利用率近似于对整个堆的最佳适配搜索的内存利用率</p>
 </blockquote>
 <p>因此肯定是分离空闲链表+首次适配的管理方式。</p>
-<h2 id="数据结构设计以及一个总体的堆观念"><a href="#数据结构设计以及一个总体的堆观念" class="headerlink" title="数据结构设计以及一个总体的堆观念"></a>数据结构设计以及一个总体的堆观念</h2><p>我们不需要像ptmalloc那么复杂的机制，但是chunk的数据结构是可以参考的。大概回顾一下ptmalloc2的chunk数据结构：</p>
+<h2 id="数据结构设计以及一个总体的堆观念">数据结构设计以及一个总体的堆观念</h2>
+<p>我们不需要像ptmalloc那么复杂的机制，但是chunk的数据结构是可以参考的。大概回顾一下ptmalloc2的chunk数据结构：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span> &#123;</span></span><br><span class="line"></span><br><span class="line">  INTERNAL_SIZE_T      prev_size;  <span class="comment">/* Size of previous chunk (if free).  */</span></span><br><span class="line">  INTERNAL_SIZE_T      size;       <span class="comment">/* Size in bytes, including overhead. */</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span>         <span class="comment">/* double links -- used only if free. */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Only used for large blocks: pointer to next larger size.  */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd_nextsize</span>;</span> <span class="comment">/* double links -- used only if free. */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk_nextsize</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>由于size是8字节对齐的，所以低三位被设置了标志位。</p>
-<p>我们不需要那么高的性能也不用考虑生产场景，因此large bin的两个指针不需要，<br>然后makefile使用了m32参数，那堆的大小肯定不会超过$2^{32}$，4字节的size就够用了。但是ptmalloc中prev_size是可以复用的，参考实现中是在chunk末尾添加了脚部的元数据信息方便合并获取，这里我们就直接按照ptmalloc的来。其实本质是一样的，下一个chunk的开头加一个字段和上一个的结尾加一个字段没啥区别。</p>
+<p>我们不需要那么高的性能也不用考虑生产场景，因此large bin的两个指针不需要，然后makefile使用了m32参数，那堆的大小肯定不会超过$2^{32}$，4字节的size就够用了。但是ptmalloc中prev_size是可以复用的，参考实现中是在chunk末尾添加了脚部的元数据信息方便合并获取，这里我们就直接按照ptmalloc的来。其实本质是一样的，下一个chunk的开头加一个字段和上一个的结尾加一个字段没啥区别。</p>
 <p>那我们的chunk，一个字段的32位低3位用2位表示inuse和prev_inuse就行了（其实是冗余的，只需要prev_inuse就够用了，第一个chunk永远将这一位置1就行）。mmap和main_arena的事不用考虑。后来考虑到冗余，加了一位<code>IS_TOP</code>。</p>
 <p>最后我们的chunk数据结构如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>&#123;</span></span><br><span class="line">    <span class="type">size_t</span> prev_size;</span><br><span class="line">    <span class="type">size_t</span> size; <span class="comment">//低三位不用，其中低三位表示IS_TOP,INUSE和PREV_INUSE</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">fd</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">malloc_chunk</span>* <span class="title">bk</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>然后考虑我们这个堆的排布。回顾一下ptmalloc的bin管理，对于大小小于80字节的块，不清空他们的prev_inuse位然后用单向链表链到fastbin里。fastbin的实现就类似于我们今天的这个分离式空闲链表，指针数组连续存储指定大小（范围）的chunk链表的头指针，用一个获取下标的操作返回对应的位置，回顾<code>struct malloc_state main_arena</code>的内容。我们这里相当于实现了一个smallbin。然后将Bins放在堆的起始位置，不设置序言chunk。</p>
 <p>然后，为了搞一个四不像，我也学ptmalloc，操作系统第一次是分配一个topchunk供分配器去使用，我也学，第一次初始化的时候扩展brk直接给一个topchunk，用全局变量存（这个正常是存在av-&gt;top）。开始分配的时候按照bin-&gt;topchunk-&gt;sbrk的顺序去分配。这里会导致空间利用率严重的低（最后我只有1%），所以无所谓了。</p>
-<p>机制就是大概这样，后续具体部分会再写，<br>然后我们有了这个堆的实现架构：</p>
-<ul>
-<li>申请的时候，第一次的话就初始化堆，在start_brk处放一个指针数组，开始置空。同时分一个topchunk，不要太大，我们后面要实现相对完整的malloc就得有top chunk的重新分配环节。</li>
-<li>如果不是第一次，那首先搜索bin。bin是一个类smallbin的指针数组，通过调用get_index返回下标然后遍历看有没有大小合适的，有就unlink后返回。</li>
-<li>bin没有的话就得从top chunk切，切了更新top。</li>
-<li>top chunk也不够一个最小chunk的话就调用sbrk，同时联系house of orange攻击这里也一样把旧的top直接free掉</li>
-<li>free操作就是先合并然后链接就行了。</li>
+<p>机制就是大概这样，后续具体部分会再写，然后我们有了这个堆的实现架构：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>申请的时候，第一次的话就初始化堆，在start_brk处放一个指针数组，开始置空。同时分一个topchunk，不要太大，我们后面要实现相对完整的malloc就得有top chunk的重新分配环节。</p>
+</li>
+<li class="lvl-2">
+<p>如果不是第一次，那首先搜索bin。bin是一个类smallbin的指针数组，通过调用get_index返回下标然后遍历看有没有大小合适的，有就unlink后返回。</p>
+</li>
+<li class="lvl-2">
+<p>bin没有的话就得从top chunk切，切了更新top。</p>
+</li>
+<li class="lvl-2">
+<p>top chunk也不够一个最小chunk的话就调用sbrk，同时联系house of orange攻击这里也一样把旧的top直接free掉</p>
+</li>
+<li class="lvl-2">
+<p>free操作就是先合并然后链接就行了。</p>
+</li>
 </ul>
-<p>PS：放弃了进一步的优化，因为显然在后面的代码中prev_size是多余的foot……<br>参考内容用偏移让指针变成了对堆起始地址的4字节偏移进一步压缩空间，然后对指针操作的时候全部加上堆起始地址，是一个可行的方案。</p>
-<h2 id="我们应该干什么？"><a href="#我们应该干什么？" class="headerlink" title="我们应该干什么？"></a>我们应该干什么？</h2><h3 id="宏"><a href="#宏" class="headerlink" title="宏"></a>宏</h3><p>先写宏，那些在后面会频繁使用的宏，做成函数是不现实的，太浪费时间了。参考前辈blog与glibc定义的那些宏，大概写一写：<br>首先是标志位：</p>
+<p>PS：放弃了进一步的优化，因为显然在后面的代码中prev_size是多余的foot…<br>
+参考内容用偏移让指针变成了对堆起始地址的4字节偏移进一步压缩空间，然后对指针操作的时候全部加上堆起始地址，是一个可行的方案。</p>
+<h2 id="我们应该干什么？">我们应该干什么？</h2>
+<h3 id="宏">宏</h3>
+<p>先写宏，那些在后面会频繁使用的宏，做成函数是不现实的，太浪费时间了。参考前辈blog与glibc定义的那些宏，大概写一写：<br>
+首先是标志位：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 和真实的libc一样，定义一些宏操作来保证运行速度</span></span><br><span class="line"><span class="comment">// 下面的宏定义和命名参考自glibc2.23下的malloc.c</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PREV_INUSE 0x1</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IS_INUSE 0x2</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> IS_TOP 0x4</span></span><br></pre></td></tr></table></figure>
 <p>然后，操作已分配chunk的一些操作（读），包括取标志位，取大小，以及将请求的大小通过对齐和增加元数据返回一个正确大小的req2size等。第一次编译报错了，记得括号加全不然运算顺序得翻车。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 已分配的chunk：</span></span><br><span class="line"><span class="comment">/*--获取元数据--*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> chunksize(p) ((size_t)(((malloc_chunk*)(p))-&gt;size) &amp; (~0x7))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> request2size(req) (ALIGN((req) + (SIZE_T_SIZE)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> prev_inuse(p) ((size_t)(((malloc_chunk*)(p))-&gt;size) &amp; PREV_INUSE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> inuse(p) ((size_t)(((malloc_chunk*)(p))-&gt;size) &amp; IS_INUSE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> is_top(p) ((size_t)(((malloc_chunk*)(p))-&gt;size) &amp; IS_TOP)</span></span><br></pre></td></tr></table></figure>
-
 <p>写操作，修改元数据，包括置位、清空、写入size等操作。大部分用位运算<code>|=</code>实现。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*--修改元数据--*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> set_inuse(p) (((malloc_chunk*)(p))-&gt;size |= IS_INUSE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> set_prev_inuse(p) (((malloc_chunk*)(p))-&gt;size |= PREV_INUSE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> set_size(p, s) (((malloc_chunk*)(p))-&gt;size = (((malloc_chunk*)(p))-&gt;size &amp; (IS_TOP | IS_INUSE | PREV_INUSE)) | (s))</span></span><br><span class="line"><span class="comment">//不改变原size域的低3位</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> set_foot(p, s)  (((malloc_chunk*) ((char *) (p) + (s)))-&gt;prev_size = (s))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> set_top(p) (((malloc_chunk*)(p))-&gt;size |= IS_TOP)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> clear_inuse(p) (((malloc_chunk*)(p))-&gt;size &amp;= ~IS_INUSE) </span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> clear_prev_inuse(p) (((malloc_chunk*)(p))-&gt;size &amp;= ~PREV_INUSE)</span></span><br></pre></td></tr></table></figure>
-
 <p>指针操作，定位前后chunk或者偏移地址的chunk，先转char*进行计算最后转回malloc_chunk*</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*--指针定位--*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> next_chunk(p) ((malloc_chunk*)((char*)(p) + chunksize(p)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> prev_chunk(p) ((malloc_chunk*)((char*)(p) - ((p)-&gt;prev_size)))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> chunk_at_offset(p, s) ((malloc_chunk*)((char*)(p) + s))</span></span><br></pre></td></tr></table></figure>
-
 <p>操作空闲chunk的宏，next_bin事实上被get_index函数代替了没有用到。这里面有经典的unlink操作，ptmalloc的版本更复杂也只是多了一些检查什么的而已。这个取出链表的操作让我们在能修改p-&gt;fd和p-&gt;bk的前提下做出一些恶搞。如果没有任何检查，只要有能劫持fd的机会应该就能实现任意地址写。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 空闲的chunk：</span></span><br><span class="line"><span class="comment">// 空闲链表16个bin</span></span><br><span class="line"><span class="comment">/*--空闲链表--*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NBINS 16</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> next_bin(b) ((malloc_chunk*)((char*)(b)+ (sizeof(malloc_chunk*)&lt;&lt;1)))</span></span><br><span class="line"><span class="comment">// 这里我们先不做那个经典的unlink检查</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unlink(P,FD,BK) &#123;\</span></span><br><span class="line"><span class="meta">    FD = (P)-&gt;fd;\</span></span><br><span class="line"><span class="meta">    BK = (P)-&gt;bk;\</span></span><br><span class="line"><span class="meta">    FD-&gt;bk = BK;\</span></span><br><span class="line"><span class="meta">    BK-&gt;fd = FD;\</span></span><br><span class="line"><span class="meta">&#125;</span></span><br></pre></td></tr></table></figure>
-
 <p>top和bins的全局变量以及写入和真实chunk的地址转换，lab评测估计用不到</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> writeable(p) ((malloc_chunk*)((char*)(p)+8))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> real(p) ((malloc_chunk*)((char*)(p)-8))</span></span><br><span class="line"><span class="type">static</span> malloc_chunk* top=<span class="literal">NULL</span>;</span><br><span class="line"><span class="type">static</span> malloc_chunk** Bins;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*--链上操作--*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> prev_free(p) ((malloc_chunk*)(p)-&gt;bk)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> next_free(p) ((malloc_chunk*)(p)-&gt;fd)</span></span><br></pre></td></tr></table></figure>
-
 <p>最后没用到，一个检查的宏</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// mm_check</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> check_size(size) (((size &gt;= MAX_HEAP)||size==0) ? 0 : 1)</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="mm-init"><a href="#mm-init" class="headerlink" title="mm_init"></a>mm_init</h3><p>调用时机的问题参考mm_malloc部分.</p>
+<h3 id="mm-init">mm_init</h3>
+<p>调用时机的问题参考mm_malloc部分.</p>
 <p>这个函数就是初始化top和bin用的，借助memlib中给我们的函数实现。<code>mem_init()</code>调用了真正的malloc分配了MAX_HEAP(20M)空间给我们，同时设置了brk，另外这个brk是private的，说明出题人期望我们仅通过接口访问，我们也就不要人为修改了。</p>
 <p>通过一个循环设置好Bins指针数组（在堆的开头），同时用sbrk直接返回一个topchunk，并且设置元数据。topchunk是地址最高的那块，任何相邻它的空闲chunk都会被直接合并</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">mm_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 初始化Bins,参考blog全部将bin链表写成堆起始地址,我们和ptmalloc一致，放在开头</span></span><br><span class="line">    <span class="comment">// ptmalloc是将这些东西放在libc的main_arena中</span></span><br><span class="line">    mem_init();</span><br><span class="line">    Bins = mem_heap_lo();</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; NBINS; i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(mem_sbrk(<span class="keyword">sizeof</span>(malloc_chunk*)) == (<span class="type">void</span>*)<span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        Bins[i] = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 爆改，不要序言chunk，直接按ptmalloc那种分一个最大的空闲chunk然后从里面切</span></span><br><span class="line">    <span class="type">size_t</span> size= request2size(MAX_HEAP&gt;&gt;<span class="number">4</span>);<span class="comment">// 调小一点,1/16的MAXHEAP</span></span><br><span class="line">    malloc_chunk* top_chunk = mem_sbrk(size);</span><br><span class="line">    <span class="keyword">if</span>(top_chunk == (<span class="type">void</span>*)<span class="number">-1</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    top_chunk-&gt;prev_size = <span class="number">0xffffffff</span>;</span><br><span class="line">    <span class="comment">// topchunk永远允许被合并，一个挨着topchunk的空闲块在释放时总会被并入top</span></span><br><span class="line">    clear_inuse(top_chunk);</span><br><span class="line">    set_top(top_chunk);</span><br><span class="line">    set_prev_inuse(top_chunk);</span><br><span class="line">    set_size(top_chunk, size);</span><br><span class="line">    top=top_chunk;</span><br><span class="line">    <span class="comment">// 目前的堆结构：</span></span><br><span class="line">    <span class="comment">// 低地址-----------------------------------高地址</span></span><br><span class="line">    <span class="comment">// Bins[0] Bins[1] ... Bins[15] ^ top_chunk Unuse --边界8字节对齐</span></span><br><span class="line">    <span class="comment">//                          新的chunk从这里分配</span></span><br><span class="line">    <span class="comment">// 按ptmalloc的话topchunk应该开始就占一大部分然后往外切</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="mm-malloc"><a href="#mm-malloc" class="headerlink" title="mm_malloc"></a>mm_malloc</h3><p>偷的get_index()。我们的bins青春版其实就是维护了一个smallbin。</p>
+<h3 id="mm-malloc">mm_malloc</h3>
+<p>偷的get_index()。我们的bins青春版其实就是维护了一个smallbin。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">size_t</span> <span class="title function_">get_index</span><span class="params">(<span class="type">size_t</span> size)</span> &#123;</span><br><span class="line">    <span class="comment">//if(unsorted bin) return 0;</span></span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">24</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">32</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">64</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">80</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">120</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">240</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">480</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">7</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">960</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">8</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">1920</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">9</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">3840</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">7680</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">11</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">15360</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">12</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">30720</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">13</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt;= <span class="number">61440</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">14</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">15</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>下面是自己的构式malloc，判断是否已经初始化看的是top指针有没有设置。然后按照Bins-&gt;Topchunk-&gt;sbrk的顺序依次进行检查和分配chunk。在ptmalloc中，放入对应bin的操作反而是在malloc里实现的，这种设计思路可能有助于优化。下面的malloc也是遵循这种逐级查找的思路。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mm_malloc</span><span class="params">(<span class="type">size_t</span> size)</span></span><br><span class="line">&#123;  </span><br><span class="line">    <span class="keyword">if</span> (!check_size(size))&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;size out of range or null\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> newsize = request2size(size);</span><br><span class="line">    <span class="keyword">if</span>(top==<span class="literal">NULL</span>)</span><br><span class="line">        mm_init();</span><br><span class="line">    <span class="comment">// 从Bins中找到合适的chunk</span></span><br><span class="line">    <span class="type">size_t</span> index = get_index(newsize);</span><br><span class="line">    malloc_chunk* p = Bins[index];</span><br><span class="line">    malloc_chunk *FD, *BK;</span><br><span class="line">    <span class="type">short</span> flag=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(p!=<span class="literal">NULL</span>&amp;&amp;!flag)&#123;</span><br><span class="line">        <span class="keyword">if</span>(chunksize(p)&gt;=newsize)&#123;</span><br><span class="line">            unlink(p, FD, BK);</span><br><span class="line">            set_size(p,newsize);</span><br><span class="line">            set_inuse(p);</span><br><span class="line">            set_foot(p, newsize);</span><br><span class="line">            <span class="keyword">return</span> writeable(p);</span><br><span class="line">        &#125;</span><br><span class="line">        p = next_free(p);</span><br><span class="line">        <span class="keyword">if</span>(p==Bins[index])<span class="comment">//土办法，跑完一轮（所以我为什么要双向链表）</span></span><br><span class="line">            flag=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 没找到，走到这里代表对应链上虽然都在范围内但是大小都过小，从top_chunk中分配</span></span><br><span class="line">    <span class="comment">// 从top_chunk中分配</span></span><br><span class="line">    p = top;</span><br><span class="line">    <span class="type">size_t</span> top_size = chunksize(p);</span><br><span class="line">    <span class="type">int</span> remainder_size = top_size - newsize;</span><br><span class="line">    <span class="keyword">if</span>(remainder_size &lt;= <span class="number">24</span>)</span><br><span class="line">    <span class="comment">// 从top_chunk中分配失败，扩展top</span></span><br><span class="line">    <span class="comment">// 在ptmalloc2中，这里会发生将topchunk置入unsorted bin然后申请一个新的（如果是brk扩展）</span></span><br><span class="line">    <span class="comment">// 过大的话会让操作系统接着mmap新的内存，house of orange攻击在这里产生。</span></span><br><span class="line">    <span class="comment">// 将初始top调小点</span></span><br><span class="line">    &#123;</span><br><span class="line">        p-&gt;size &amp;= ~IS_TOP;</span><br><span class="line">        <span class="built_in">free</span>(p);<span class="comment">//UAF</span></span><br><span class="line">        top = mem_sbrk(newsize+top_size);<span class="comment">//模拟新top</span></span><br><span class="line">        <span class="keyword">if</span>(top == (<span class="type">void</span>*)<span class="number">-1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">        p=top;</span><br><span class="line">    &#125;</span><br><span class="line">    malloc_chunk* remainder= chunk_at_offset(p, newsize);</span><br><span class="line">    set_size(p, newsize);</span><br><span class="line">    set_foot(p, newsize);</span><br><span class="line">    set_inuse(p);</span><br><span class="line"></span><br><span class="line">    set_size(remainder, remainder_size);</span><br><span class="line">    set_inuse(remainder);</span><br><span class="line">    set_top(remainder);</span><br><span class="line">    set_prev_inuse(remainder);</span><br><span class="line">    top = remainder;</span><br><span class="line">    <span class="keyword">return</span> writeable(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="mm-free"><a href="#mm-free" class="headerlink" title="mm_free"></a>mm_free</h3><p>ptmalloc中free是直接按fastbin和非fastbin处理的，不是fastbin直接放到unsorted等下次malloc调用的时候触发合并整理。这里我不会写所以放弃了。这个free函数的功能（包括核心部分的代码逻辑、判断控制流）基本上和ptmalloc的free是一样的：先合并再放入bin。</p>
+<h3 id="mm-free">mm_free</h3>
+<p>ptmalloc中free是直接按fastbin和非fastbin处理的，不是fastbin直接放到unsorted等下次malloc调用的时候触发合并整理。这里我不会写所以放弃了。这个free函数的功能（包括核心部分的代码逻辑、判断控制流）基本上和ptmalloc的free是一样的：先合并再放入bin。</p>
 <p>合并操作先看低地址合并，用prevsize定位后unlink掉p。检查高地址的时候观察是否挨着top，挨着top直接放进去。然后看是否在使用，没有的话再合并。合并完后按照__int_free中放入unsortedbin的代码大概抄一下，双向链表insert。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mm_free</span><span class="params">(<span class="type">void</span> *ptr)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(ptr == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    malloc_chunk* p=real(ptr);</span><br><span class="line">    <span class="comment">// 清理标志位</span></span><br><span class="line">    clear_inuse(p);</span><br><span class="line">    clear_prev_inuse(next_chunk(p));</span><br><span class="line">    <span class="comment">// 尝试合并</span></span><br><span class="line">    <span class="comment">// 合并chunk 简单讨论</span></span><br><span class="line">    malloc_chunk* next = next_chunk(p);</span><br><span class="line">    malloc_chunk* prev = prev_chunk(p);</span><br><span class="line">    malloc_chunk* FD;</span><br><span class="line">    malloc_chunk* BK;</span><br><span class="line">    <span class="type">size_t</span> size= chunksize(p);</span><br><span class="line">    <span class="comment">//参考ptmalloc2的合并思路</span></span><br><span class="line">    <span class="keyword">if</span>(!prev_inuse(p))&#123;</span><br><span class="line">        <span class="comment">// 低地址合并</span></span><br><span class="line">        <span class="type">size_t</span> prev_size = chunksize(prev);<span class="comment">//他妈的数据冗余</span></span><br><span class="line">        size+=prev_size;</span><br><span class="line">        p=prev;</span><br><span class="line">        unlink(p, FD, BK);</span><br><span class="line">        <span class="comment">//set_size(p, chunksize(p) + chunksize(next));</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(next!=top)<span class="comment">//不是topchunk</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(inuse(next)!=IS_INUSE)&#123;</span><br><span class="line">            <span class="comment">// 高地址合并</span></span><br><span class="line">            unlink(next, FD, BK);</span><br><span class="line">            size+=chunksize(next);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            clear_inuse(p);</span><br><span class="line">            clear_prev_inuse(next);</span><br><span class="line">        &#125;</span><br><span class="line">        set_size(p, size);</span><br><span class="line">        set_foot(p, size);</span><br><span class="line">        malloc_chunk* header=Bins[get_index(size)];</span><br><span class="line">        <span class="keyword">if</span>(header==<span class="literal">NULL</span>)&#123;</span><br><span class="line">            Bins[get_index(size)]=p;</span><br><span class="line">            p-&gt;fd=p;</span><br><span class="line">            p-&gt;bk=p;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            BK=header;</span><br><span class="line">            FD=BK-&gt;fd;</span><br><span class="line">            p-&gt;fd=FD;</span><br><span class="line">            p-&gt;bk=BK;</span><br><span class="line">            BK-&gt;fd=p;</span><br><span class="line">            FD-&gt;bk=p;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将chunk直接连入Bins[0],等待下一次malloc触发整理</span></span><br><span class="line">        <span class="comment">// Bins[0]为头连接的双向链表是unsorted bin</span></span><br><span class="line">        <span class="comment">// if(unsorted == NULL)&#123;</span></span><br><span class="line">        <span class="comment">//     // unsorted 空</span></span><br><span class="line">        <span class="comment">//     Bins[0] = p;</span></span><br><span class="line">        <span class="comment">//     p-&gt;fd = p;</span></span><br><span class="line">        <span class="comment">//     p-&gt;bk = p;</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line">        <span class="comment">// else&#123;</span></span><br><span class="line">        <span class="comment">//     BK=unsorted;</span></span><br><span class="line">        <span class="comment">//     FD=BK-&gt;fd;</span></span><br><span class="line">        <span class="comment">//     p-&gt;fd=FD;</span></span><br><span class="line">        <span class="comment">//     p-&gt;bk=BK;</span></span><br><span class="line">        <span class="comment">//     BK-&gt;fd=p;</span></span><br><span class="line">        <span class="comment">//     FD-&gt;bk=p;</span></span><br><span class="line">        <span class="comment">//     set_size(p,size);</span></span><br><span class="line">        <span class="comment">//     set_foot(p, size);</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        size+=chunksize(next);</span><br><span class="line">        set_top(p);</span><br><span class="line">        set_inuse(p);</span><br><span class="line">        set_size(p, size);</span><br><span class="line">        top=p;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="mm-realloc"><a href="#mm-realloc" class="headerlink" title="mm_realloc"></a>mm_realloc</h3><p>默认实现就够了感觉，realloc是调用free和malloc实现的。</p>
+<h3 id="mm-realloc">mm_realloc</h3>
+<p>默认实现就够了感觉，realloc是调用free和malloc实现的。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mm_realloc</span><span class="params">(<span class="type">void</span> *ptr, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *oldp = ptr;</span><br><span class="line">    <span class="type">void</span> *p;</span><br><span class="line">    <span class="type">size_t</span> copySize;</span><br><span class="line">    </span><br><span class="line">    p = mm_malloc(size);</span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>) </span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    copySize = ((malloc_chunk*)oldp)-&gt;size<span class="number">-8</span>;</span><br><span class="line">    <span class="keyword">if</span> (size &lt; copySize)</span><br><span class="line">      copySize = size;</span><br><span class="line">    <span class="built_in">memcpy</span>(p, oldp, copySize);</span><br><span class="line">    mm_free(oldp);</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>看一下幽默得分</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Team Name:nothing</span><br><span class="line">Member 1 :Zj_W1nD:123123</span><br><span class="line">Member 2 :123:123</span><br><span class="line">Using default tracefiles <span class="keyword">in</span> ./</span><br><span class="line">Measuring performance with gettimeofday().</span><br><span class="line"></span><br><span class="line">Results <span class="keyword">for</span> mm malloc:</span><br><span class="line">trace  valid  util     ops      secs  Kops</span><br><span class="line"> 0       <span class="built_in">yes</span>    1%      32  0.000009  3441</span><br><span class="line"> 1       <span class="built_in">yes</span>    1%      12  0.000014   857</span><br><span class="line">Total           1%      44  0.000023  1888</span><br><span class="line"></span><br><span class="line">Perf index = 1 (util) + 40 (thru) = 41/100</span><br></pre></td></tr></table></figure>
-<h1 id="写在最后："><a href="#写在最后：" class="headerlink" title="写在最后："></a>写在最后：</h1><p>这个lab给我的感觉很糟糕，动态内存分配凹分的意义并不是很大，我也是大部分时间放在了看源码上。blog也不想多写没什么内容和心得好说。本来还想着试着能不能攻击一下我自己的堆分配器，但是实在懒得搞了，下次想玩了再说。</p>
+<h1>写在最后：</h1>
+<p>这个lab给我的感觉很糟糕，动态内存分配凹分的意义并不是很大，我也是大部分时间放在了看源码上。blog也不想多写没什么内容和心得好说。本来还想着试着能不能攻击一下我自己的堆分配器，但是实在懒得搞了，下次想玩了再说。</p>
 
     </article>
     <!-- license -->
@@ -745,7 +783,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">写在前面：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%E5%92%8C%E8%A6%81%E6%B1%82%EF%BC%9A"><span class="toc-number">2.</span> <span class="toc-text">介绍和要求：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AE%B9"><span class="toc-number">3.</span> <span class="toc-text">内容</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%BB%A5%E5%8F%8A%E4%B8%80%E4%B8%AA%E6%80%BB%E4%BD%93%E7%9A%84%E5%A0%86%E8%A7%82%E5%BF%B5"><span class="toc-number">3.1.</span> <span class="toc-text">数据结构设计以及一个总体的堆观念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E4%BB%AC%E5%BA%94%E8%AF%A5%E5%B9%B2%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">我们应该干什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8F"><span class="toc-number">3.2.1.</span> <span class="toc-text">宏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-init"><span class="toc-number">3.2.2.</span> <span class="toc-text">mm_init</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-malloc"><span class="toc-number">3.2.3.</span> <span class="toc-text">mm_malloc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-free"><span class="toc-number">3.2.4.</span> <span class="toc-text">mm_free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-realloc"><span class="toc-number">3.2.5.</span> <span class="toc-text">mm_realloc</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E%EF%BC%9A"><span class="toc-number">4.</span> <span class="toc-text">写在最后：</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">介绍和要求：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">内容</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%BB%A5%E5%8F%8A%E4%B8%80%E4%B8%AA%E6%80%BB%E4%BD%93%E7%9A%84%E5%A0%86%E8%A7%82%E5%BF%B5"><span class="toc-number">3.1.</span> <span class="toc-text">数据结构设计以及一个总体的堆观念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E4%BB%AC%E5%BA%94%E8%AF%A5%E5%B9%B2%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">我们应该干什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8F"><span class="toc-number">3.2.1.</span> <span class="toc-text">宏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-init"><span class="toc-number">3.2.2.</span> <span class="toc-text">mm_init</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-malloc"><span class="toc-number">3.2.3.</span> <span class="toc-text">mm_malloc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-free"><span class="toc-number">3.2.4.</span> <span class="toc-text">mm_free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mm-realloc"><span class="toc-number">3.2.5.</span> <span class="toc-text">mm_realloc</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">写在最后：</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1025,6 +1063,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1847,24 +1891,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1877,6 +1906,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1885,6 +1929,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1897,19 +1946,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1917,14 +1956,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

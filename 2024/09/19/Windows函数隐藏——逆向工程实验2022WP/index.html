@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="前情提要这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。 但是实际在实验课上我被这个题卡了很久，按照正常执行流程，程序的入口点后面没有任何关于flag的“判断”内容，将我们的输入异或一次">
+    <meta name="description" content="前情提要 这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。 但是实际在实验课上我被这个题卡了很久，按照正常执行流程，程序的入口点后面没有任何关于flag的“判断”内容，将我们的输入异或一">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Windows函数隐藏——逆向工程实验2022WP">
 <meta property="og:url" content="http://example.com/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="前情提要这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。 但是实际在实验课上我被这个题卡了很久，按照正常执行流程，程序的入口点后面没有任何关于flag的“判断”内容，将我们的输入异或一次">
+<meta property="og:description" content="前情提要 这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。 但是实际在实验课上我被这个题卡了很久，按照正常执行流程，程序的入口点后面没有任何关于flag的“判断”内容，将我们的输入异或一">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/backtrace.png">
 <meta property="og:image" content="http://example.com/images/backtrace2.png">
@@ -498,47 +498,58 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前情提要"><a href="#前情提要" class="headerlink" title="前情提要"></a>前情提要</h1><p>这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。</p>
+        <h1>前情提要</h1>
+<p>这道题目是按照课堂上演示的逻辑只改了加密用的数组（换成了学号），逻辑是一样的。上课的演示是啥也看不懂然后ida搜索异或指令进去一个个看，诶🤓，我们就找到了一个输入异或的简单加密函数，这题就解了。事实上之前没有逆向经验的同学也是按照这个步骤很简单就做出了这个题。</p>
 <p>但是实际在实验课上我被这个题卡了很久，按照正常执行流程，程序的入口点后面没有任何关于flag的“判断”内容，将我们的输入异或一次后程序就退出了。怪异。</p>
-<h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><p>这个题目的结构非常简单，入口点main0进去后就是一个输入，检查长度，cpy到另一块内存之后检查第八个字符是不是’A’，然后就是一个简单的异或：</p>
+<h1>题目分析</h1>
+<p>这个题目的结构非常简单，入口点main0进去后就是一个输入，检查长度，cpy到另一块内存之后检查第八个字符是不是’A’，然后就是一个简单的异或：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">main_0</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> v4; <span class="comment">// [esp+0h] [ebp-D8h]</span></span><br><span class="line">  <span class="type">signed</span> <span class="type">int</span> len; <span class="comment">// [esp+D0h] [ebp-8h]</span></span><br><span class="line"></span><br><span class="line">  __CheckForDebuggerJustMyCode(&amp;unk_1166007);</span><br><span class="line">  sub_FFCD46(&amp;unk_11631E0, <span class="string">&quot;Please Input:&quot;</span>);</span><br><span class="line">  input(<span class="string">&quot;%s&quot;</span>, Source);</span><br><span class="line">  len = j__strlen(Source);</span><br><span class="line">  <span class="keyword">if</span> ( len &gt; <span class="number">30</span> || len &lt; <span class="number">10</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    sub_FFA6DB((<span class="type">int</span>)&amp;defined_str, v4);</span><br><span class="line">    j___exit_0(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  j__strcpy_s(Destination, <span class="number">0x1E</span>u, Source);</span><br><span class="line">  <span class="keyword">if</span> ( Destination[<span class="number">7</span>] != <span class="string">&#x27;A&#x27;</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    sub_FFA6DB((<span class="type">int</span>)&amp;defined_str, v4);</span><br><span class="line">    j___exit_0(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  j_xor(Destination);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>异或函数是这样：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> *__cdecl <span class="title function_">xor1</span><span class="params">(<span class="type">char</span> *Str)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> i; <span class="comment">// [esp+D0h] [ebp-8h]</span></span><br><span class="line"></span><br><span class="line">  __CheckForDebuggerJustMyCode(&amp;unk_1166007);</span><br><span class="line">  Str[<span class="number">7</span>] = <span class="string">&#x27;#&#x27;</span>;</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; j__strlen(Str); ++i )</span><br><span class="line">    Str[i] ^= <span class="number">0x1F</span>u;</span><br><span class="line">  <span class="keyword">return</span> Str;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>非常的简单啊，但是问题出现了，这个程序要我们输入什么？我们没有看到任何相关的判断和比较，就这么结束了。很吸引人。</p>
-<h1 id="猜测与实践"><a href="#猜测与实践" class="headerlink" title="猜测与实践"></a>猜测与实践</h1><h2 id="IDA坏了？"><a href="#IDA坏了？" class="headerlink" title="IDA坏了？"></a>IDA坏了？</h2><p>很容易想到的是，程序通过一些花指令或者混淆的方式干扰了IDA的反汇编伪代码，但是直接看汇编发现没有任何花指令和混淆：</p>
+<h1>猜测与实践</h1>
+<h2 id="IDA坏了？">IDA坏了？</h2>
+<p>很容易想到的是，程序通过一些花指令或者混淆的方式干扰了IDA的反汇编伪代码，但是直接看汇编发现没有任何花指令和混淆：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">.text:<span class="number">01011</span>A6B <span class="number">0E0</span>                 call    j___exit_0</span><br><span class="line">.text:<span class="number">01011</span>A70     ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">01011</span>A70</span><br><span class="line">.text:<span class="number">01011</span>A70     loc_1011A70:                            ; CODE XREF: _main_0+AA↑j</span><br><span class="line">.text:<span class="number">01011</span>A70 <span class="number">0</span>DC                 mov     eax, Destination</span><br><span class="line">.text:<span class="number">01011</span>A75 <span class="number">0</span>DC                 push    eax</span><br><span class="line">.text:<span class="number">01011</span>A76 <span class="number">0E0</span>                 call    j_xor</span><br><span class="line">.text:<span class="number">01011</span>A7B <span class="number">0E0</span>                 add     esp, <span class="number">4</span></span><br><span class="line">.text:<span class="number">01011</span>A7E</span><br><span class="line">.text:<span class="number">01011</span>A7E     loc_1011A7E:                            ; CODE XREF: _main_0+<span class="number">7</span>E↑j</span><br><span class="line">.text:<span class="number">01011</span>A7E <span class="number">0</span>DC                 xor     eax, eax</span><br><span class="line">.text:<span class="number">01011</span>A80 <span class="number">0</span>DC                 pop     edi</span><br><span class="line">.text:<span class="number">01011</span>A81 <span class="number">0</span>D8                 pop     esi</span><br><span class="line">.text:<span class="number">01011</span>A82 <span class="number">0</span>D4                 pop     ebx</span><br><span class="line">.text:<span class="number">01011</span>A83 <span class="number">0</span>D0                 add     esp, <span class="number">0</span>CCh</span><br><span class="line">.text:<span class="number">01011</span>A89 <span class="number">004</span>                 cmp     ebp, esp</span><br><span class="line">.text:<span class="number">01011</span>A8B <span class="number">004</span>                 call    j___RTC_CheckEsp</span><br><span class="line">.text:<span class="number">01011</span>A90 <span class="number">004</span>                 mov     esp, ebp</span><br><span class="line">.text:<span class="number">01011</span>A92 <span class="number">004</span>                 pop     ebp</span><br><span class="line">.text:<span class="number">01011</span>A93 <span class="number">000</span>                 retn</span><br><span class="line">.text:<span class="number">01011</span>A93     _main_0         endp ; sp-analysis failed <span class="comment">// 不知道为什么，栈是平衡的</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 <p>难道IDA出问题了？？（当时我真的是这么想的），IDA内动态调试按汇编一步步走也没有任何的报错，可以确定反汇编没有问题了，那程序真正的逻辑在哪？</p>
-<h2 id="hint"><a href="#hint" class="headerlink" title="hint"></a>hint</h2><p>程序在平台给的时候是一个大压缩包，里面放了所有选这门课的人的学号.exe文件，并且强调flag没法共享每个人都不一样。那我们直接字符串搜索学号试试，果然有，交叉引用找到了另外一个加密函数：</p>
+<h2 id="hint">hint</h2>
+<p>程序在平台给的时候是一个大压缩包，里面放了所有选这门课的人的学号.exe文件，并且强调flag没法共享每个人都不一样。那我们直接字符串搜索学号试试，果然有，交叉引用找到了另外一个加密函数：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __stdcall <span class="title function_">sub_100DC80</span><span class="params">(<span class="type">char</span> *Str1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> i; <span class="comment">// [esp+E8h] [ebp-14h]</span></span><br><span class="line"></span><br><span class="line">  __CheckForDebuggerJustMyCode(&amp;unk_1166007);</span><br><span class="line">  <span class="keyword">if</span> ( Str1 )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; j__strlen(Str1); ++i )</span><br><span class="line">      Str1[i] ^= <span class="number">0x1C</span>u;</span><br><span class="line">    <span class="keyword">if</span> ( !j__strcmp(Str1, Destination) )</span><br><span class="line">    &#123;</span><br><span class="line">      sub_FFB4AA((<span class="type">int</span>)&amp;unk_11631E0, <span class="string">&#x27;o&#x27;</span>);</span><br><span class="line">      sub_FFB4AA((<span class="type">int</span>)&amp;unk_11631E0, <span class="string">&#x27;k&#x27;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看到这里应该是会输出OK，也就代表这里非常可能，或者说就是我们真正要去的地方。但是这个函数在哪里被调用了？为什么main_0里面没有？</p>
-<h2 id="发生了什么？"><a href="#发生了什么？" class="headerlink" title="发生了什么？"></a>发生了什么？</h2><p>动调在这里下断点然后看trace，一看吓一跳：</p>
+<h2 id="发生了什么？">发生了什么？</h2>
+<p>动调在这里下断点然后看trace，一看吓一跳：</p>
 <blockquote>
-<p>后续：这些都是IDA识别错了，函数名都是假的，都是找已经有的库函数加的偏移<br><img src="/images/backtrace.png" alt="backtrace.png"><br>这里我们附带主函数执行到retn的时候的trace：<br><img src="/images/backtrace2.png" alt="backtrace2.png"><br>感觉这里是类似于linux下_exit会触发的fini_array，但是windows这个debug模式编译的程序除了用户代码以外塞了太多构式东西了，很多机制都很复杂，我们从主函数返回看一眼，首先退出到invoke_main:</p>
+<p>后续：这些都是IDA识别错了，函数名都是假的，都是找已经有的库函数加的偏移<img src="/images/backtrace.png" alt="backtrace.png"><br>
+这里我们附带主函数执行到retn的时候的trace：<img src="/images/backtrace2.png" alt="backtrace2.png"><br>
+感觉这里是类似于linux下_exit会触发的fini_array，但是windows这个debug模式编译的程序除了用户代码以外塞了太多构式东西了，很多机制都很复杂，我们从主函数返回看一眼，首先退出到invoke_main:</p>
 </blockquote>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">.text:<span class="number">0037</span>A9D0 ?invoke_main@@YAHXZ proc near           ; CODE XREF: __scrt_common_main_seh(<span class="type">void</span>):loc_37A882↑p</span><br><span class="line">.text:<span class="number">0037</span>A9D0                 push    ebp</span><br><span class="line">.text:<span class="number">0037</span>A9D1                 mov     ebp, esp</span><br><span class="line">.text:<span class="number">0037</span>A9D3                 call    j_unknown_libname_935</span><br><span class="line">.text:<span class="number">0037</span>A9D8                 push    eax             ; envp</span><br><span class="line">.text:<span class="number">0037</span>A9D9                 call    sub_31E6DC</span><br><span class="line">.text:<span class="number">0037</span>A9DE                 mov     eax, [eax]</span><br><span class="line">.text:<span class="number">0037</span>A9E0                 push    eax             ; argv</span><br><span class="line">.text:<span class="number">0037</span>A9E1                 call    sub_31C2DD</span><br><span class="line">.text:<span class="number">0037</span>A9E6                 mov     ecx, [eax]</span><br><span class="line">.text:<span class="number">0037</span>A9E8                 push    ecx             ; argc</span><br><span class="line">.text:<span class="number">0037</span>A9E9                 call    _main</span><br><span class="line">.text:<span class="number">0037</span>A9EE                 add     esp, <span class="number">0</span>Ch <span class="comment">// &lt;----here</span></span><br><span class="line">.text:<span class="number">0037</span>A9F1                 pop     ebp</span><br><span class="line">.text:<span class="number">0037</span>A9F2                 retn</span><br><span class="line">.text:<span class="number">0037</span>A9F2 ?invoke_main@@YAHXZ endp</span><br></pre></td></tr></table></figure>
 <p>然后退出到__scrt_common_main_seh，在16A的地方调用一个<code>loaddll</code>，然后内部call这么一个函数：<code>?common_exit@@YAXHW4_crt_exit_cleanup_mode@@W4_crt_exit_return_mode@@@Z</code>，在common_exit里，调用了一个函数（没有符号不知道是什么）</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">.text:<span class="number">003</span>D9F90 sub_3D9F90      proc near ; CODE XREF: common_exit(<span class="type">int</span>,_crt_exit_cleanup_mode,_crt_exit_return_mode)+<span class="number">45</span>↓p</span><br><span class="line">.text:<span class="number">003</span>D9F90</span><br><span class="line">.text:<span class="number">003</span>D9F90 var_C           = byte ptr <span class="number">-0</span>Ch</span><br><span class="line">.text:<span class="number">003</span>D9F90 var_8           = byte ptr <span class="number">-8</span></span><br><span class="line">.text:<span class="number">003</span>D9F90 var_1           = byte ptr <span class="number">-1</span></span><br><span class="line">.text:<span class="number">003</span>D9F90 arg_0           = byte ptr  <span class="number">8</span></span><br><span class="line">.text:<span class="number">003</span>D9F90 arg_4           = dword ptr  <span class="number">0</span>Ch</span><br><span class="line">.text:<span class="number">003</span>D9F90</span><br><span class="line">.text:<span class="number">003</span>D9F90                 mov     edi, edi</span><br><span class="line">.text:<span class="number">003</span>D9F92                 push    ebp</span><br><span class="line">.text:<span class="number">003</span>D9F93                 mov     ebp, esp</span><br><span class="line">.text:<span class="number">003</span>D9F95                 sub     esp, <span class="number">0</span>Ch</span><br><span class="line">.text:<span class="number">003</span>D9F98                 lea     eax, [ebp+arg_0]</span><br><span class="line">.text:<span class="number">003</span>D9F9B                 push    eax</span><br><span class="line">.text:<span class="number">003</span>D9F9C                 lea     ecx, [ebp+var_8]</span><br><span class="line">.text:<span class="number">003</span>D9F9F                 call    unknown_libname_845 ; Microsoft VisualC universal runtime</span><br><span class="line">.text:<span class="number">003</span>D9FA4                 push    eax</span><br><span class="line">.text:<span class="number">003</span>D9FA5                 mov     ecx, [ebp+arg_4]</span><br><span class="line">.text:<span class="number">003</span>D9FA8                 push    ecx</span><br><span class="line">.text:<span class="number">003</span>D9FA9                 lea     edx, [ebp+arg_0]</span><br><span class="line">.text:<span class="number">003</span>D9FAC                 push    edx</span><br><span class="line">.text:<span class="number">003</span>D9FAD                 lea     ecx, [ebp+var_C]</span><br><span class="line">.text:<span class="number">003</span>D9FB0                 call    unknown_libname_844 ; Microsoft VisualC universal runtime</span><br><span class="line">.text:<span class="number">003</span>D9FB5                 push    eax</span><br><span class="line">.text:<span class="number">003</span>D9FB6                 lea     ecx, [ebp+var_1]</span><br><span class="line">.text:<span class="number">003</span>D9FB9                 call    sub_3D9EF0 <span class="comment">// &lt;--here</span></span><br><span class="line">.text:<span class="number">003</span>D9FBE                 mov     esp, ebp</span><br><span class="line">.text:<span class="number">003</span>D9FC0                 pop     ebp</span><br><span class="line">.text:<span class="number">003</span>D9FC1                 retn</span><br><span class="line">.text:<span class="number">003</span>D9FC1 sub_3D9F90      endp</span><br></pre></td></tr></table></figure>
 <p>这个函数又call了3d9ef0，然后莫名其妙跳两次就到了我们的加密函数了。从IDAtrace中压入的内容来看（可能是自动识别），猜测程序是把加密函数注册在了visualc++编译的一个退出处理程序中。</p>
-<h1 id="最后的分析"><a href="#最后的分析" class="headerlink" title="最后的分析"></a>最后的分析</h1><p>不知道从哪里开始看，我们先看这个加密函数头IDA为我们自动标注的内容：SEH</p>
-<h2 id="SEH"><a href="#SEH" class="headerlink" title="SEH"></a>SEH</h2><p>copilot：</p>
+<h1>最后的分析</h1>
+<p>不知道从哪里开始看，我们先看这个加密函数头IDA为我们自动标注的内容：SEH</p>
+<h2 id="SEH">SEH</h2>
+<p>copilot：</p>
 <blockquote>
 <p>SEH（Structured Exception Handling）是Windows操作系统提供的一种异常处理机制。它允许程序在运行时捕获和处理异常，如访问冲突、除零错误等。SEH的主要特点包括：</p>
 <ol>
-<li>异常处理框架：SEH使用__try和__except块来定义异常处理代码。</li>
-<li>异常过滤器：__except块可以包含一个过滤器表达式，用于确定是否处理异常。</li>
-<li>异常处理程序：如果过滤器表达式返回EXCEPTION_EXECUTE_HANDLER，则执行异常处理代码。</li>
+<li class="lvl-3">异常处理框架：SEH使用__try和__except块来定义异常处理代码。</li>
+<li class="lvl-3">异常过滤器：__except块可以包含一个过滤器表达式，用于确定是否处理异常。</li>
+<li class="lvl-3">异常处理程序：如果过滤器表达式返回EXCEPTION_EXECUTE_HANDLER，则执行异常处理代码。</li>
 </ol>
 </blockquote>
 <p>但是用x64dbg查seh链没查到，不是这个（也可能不直接是）。</p>
-<h2 id="aexit和回调函数"><a href="#aexit和回调函数" class="headerlink" title="aexit和回调函数"></a>aexit和回调函数</h2><p>这个应该是这个程序实现隐藏的方式。跟踪到执行加密2函数的时候查看调用堆栈，存在一个ida识别为<code>__execute_onexit_table</code>的函数，这个函数用于在程序退出的时候执行回调函数，而这些函数在编写程序的时候通过atexit注册并形成指针数组（类似finiarray）</p>
+<h2 id="aexit和回调函数">aexit和回调函数</h2>
+<p>这个应该是这个程序实现隐藏的方式。跟踪到执行加密2函数的时候查看调用堆栈，存在一个ida识别为<code>__execute_onexit_table</code>的函数，这个函数用于在程序退出的时候执行回调函数，而这些函数在编写程序的时候通过atexit注册并形成指针数组（类似finiarray）</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">.text:<span class="number">00173</span>D20 ; <span class="type">int</span> __cdecl _execute_onexit_table(<span class="type">_onexit_table_t</span> *Table)</span><br><span class="line">.text:<span class="number">00173</span>D20 __execute_onexit_table proc near        ; CODE XREF: j___execute_onexit_table↑j</span><br><span class="line">.text:<span class="number">00173</span>D20</span><br><span class="line">.text:<span class="number">00173</span>D20 var_4           = byte ptr <span class="number">-4</span></span><br><span class="line">.text:<span class="number">00173</span>D20 Table           = dword ptr  <span class="number">8</span></span><br><span class="line">.text:<span class="number">00173</span>D20</span><br><span class="line">.text:<span class="number">00173</span>D20                 mov     edi, edi</span><br><span class="line">.text:<span class="number">00173</span>D22                 push    ebp</span><br><span class="line">.text:<span class="number">00173</span>D23                 mov     ebp, esp</span><br><span class="line">.text:<span class="number">00173</span>D25                 push    ecx</span><br><span class="line">.text:<span class="number">00173</span>D26                 lea     eax, [ebp+Table]</span><br><span class="line">.text:<span class="number">00173</span>D29                 push    eax</span><br><span class="line">.text:<span class="number">00173</span>D2A                 lea     ecx, [ebp+var_4]</span><br><span class="line">.text:<span class="number">00173</span>D2D                 call    unknown_libname_942 ; Microsoft VisualC universal runtime</span><br><span class="line">.text:<span class="number">00173</span>D32                 push    eax</span><br><span class="line">.text:<span class="number">00173</span>D33                 call    j_unknown_libname_848</span><br><span class="line">.text:<span class="number">00173</span>D38                 push    eax</span><br><span class="line">.text:<span class="number">00173</span>D39                 call    sub_173500 <span class="comment">// &lt;--here</span></span><br><span class="line">.text:<span class="number">00173</span>D3E                 add     esp, <span class="number">8</span></span><br><span class="line">.text:<span class="number">00173</span>D41                 mov     esp, ebp</span><br><span class="line">.text:<span class="number">00173</span>D43                 pop     ebp</span><br><span class="line">.text:<span class="number">00173</span>D44                 retn</span><br><span class="line">.text:<span class="number">00173</span>D44 __execute_onexit_table endp</span><br></pre></td></tr></table></figure>
 <p>跟进table（居然是栈）：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF958                 dd <span class="number">0</span>A08BC5FCh</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF95C                 dd offset sub_1BFCB0</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF960                 dd <span class="number">0</span>CCCCCCCCh</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF964                 dd <span class="number">0</span>CCCCCCCCh</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF968                 dd offset sub_1BFCB0</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF96C                 dd <span class="number">0</span>A0373C60h</span><br><span class="line">Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF970                 dd <span class="number">0</span>CCCCCCCCh</span><br></pre></td></tr></table></figure>
-
 <p>可以看到有个函数在里面，而这个函数内部调用了真正的加密函数</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">text:<span class="number">001B</span>FCB0 sub_1BFCB0      proc near               ; DATA XREF: sub_A57B0+<span class="number">28</span>↑o</span><br><span class="line">.text:<span class="number">001B</span>FCB0                                         ; Stack[<span class="number">000070E0</span>]:<span class="number">00B</span>CF95C↓o ...</span><br><span class="line">.text:<span class="number">001B</span>FCB0</span><br><span class="line">.text:<span class="number">001B</span>FCB0 var_C0          = byte ptr <span class="number">-0</span>C0h</span><br><span class="line">.text:<span class="number">001B</span>FCB0</span><br><span class="line">.text:<span class="number">001B</span>FCB0                 push    ebp</span><br><span class="line">.text:<span class="number">001B</span>FCB1                 mov     ebp, esp</span><br><span class="line">.text:<span class="number">001B</span>FCB3                 sub     esp, <span class="number">0</span>C0h</span><br><span class="line">.text:<span class="number">001B</span>FCB9                 push    ebx</span><br><span class="line">.text:<span class="number">001B</span>FCBA                 push    esi</span><br><span class="line">.text:<span class="number">001B</span>FCBB                 push    edi</span><br><span class="line">.text:<span class="number">001B</span>FCBC                 lea     edi, [ebp+var_C0]</span><br><span class="line">.text:<span class="number">001B</span>FCC2                 mov     ecx, <span class="number">30</span>h</span><br><span class="line">.text:<span class="number">001B</span>FCC7                 mov     eax, <span class="number">0</span>CCCCCCCCh</span><br><span class="line">.text:<span class="number">001B</span>FCCC                 rep stosd</span><br><span class="line">.text:<span class="number">001B</span>FCCE                 mov     ecx, offset unk_203086</span><br><span class="line">.text:<span class="number">001B</span>FCD3                 call    sub_9C28D</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">.text:<span class="number">0009</span>C28D sub_9C28D       proc near               ; CODE XREF: sub_1BFCB0+<span class="number">23</span>↓p</span><br><span class="line">.text:<span class="number">0009</span>C28D                 jmp     sub_ACEB0 <span class="comment">// &lt;--加密函数</span></span><br><span class="line">.text:<span class="number">0009</span>C28D sub_9C28D       endp</span><br></pre></td></tr></table></figure>
 <p>而中间的那些lambda调用估计是源码风格的原因，可能是套了几个调用搞出来的东西。</p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>神秘</p>
+<h1>总结</h1>
+<p>神秘</p>
 
     </article>
     <!-- license -->
@@ -694,7 +705,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E6%83%85%E6%8F%90%E8%A6%81"><span class="toc-number">1.</span> <span class="toc-text">前情提要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8C%9C%E6%B5%8B%E4%B8%8E%E5%AE%9E%E8%B7%B5"><span class="toc-number">3.</span> <span class="toc-text">猜测与实践</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E5%9D%8F%E4%BA%86%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">IDA坏了？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hint"><span class="toc-number">3.2.</span> <span class="toc-text">hint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">发生了什么？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E7%9A%84%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">最后的分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SEH"><span class="toc-number">4.1.</span> <span class="toc-text">SEH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aexit%E5%92%8C%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">aexit和回调函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">前情提要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">题目分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">猜测与实践</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E5%9D%8F%E4%BA%86%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">IDA坏了？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hint"><span class="toc-number">3.2.</span> <span class="toc-text">hint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">发生了什么？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">最后的分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SEH"><span class="toc-number">4.1.</span> <span class="toc-text">SEH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#aexit%E5%92%8C%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">aexit和回调函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -974,6 +985,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1796,24 +1813,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1826,6 +1828,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1834,6 +1851,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1846,19 +1868,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1866,14 +1878,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">

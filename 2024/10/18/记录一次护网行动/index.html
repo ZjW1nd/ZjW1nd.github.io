@@ -19,12 +19,12 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="写在前面首先这次的体验就两个字：坐牢。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。 Web渗透大概记录一下 “内网渗透的本质是信息搜集”  首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Yak">
+    <meta name="description" content="写在前面 首先这次的体验就两个字：坐牢。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。 Web渗透大概记录一下  “内网渗透的本质是信息搜集”  首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Y">
 <meta property="og:type" content="article">
 <meta property="og:title" content="记录一次护网行动">
 <meta property="og:url" content="http://example.com/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="写在前面首先这次的体验就两个字：坐牢。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。 Web渗透大概记录一下 “内网渗透的本质是信息搜集”  首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Yak">
+<meta property="og:description" content="写在前面 首先这次的体验就两个字：坐牢。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。 Web渗透大概记录一下  “内网渗透的本质是信息搜集”  首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Y">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/hvv/poc1.png">
 <meta property="og:image" content="http://example.com/images/hvv/poc2.png">
@@ -498,19 +498,26 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>首先这次的体验就两个字：<strong>坐牢</strong>。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置<br>很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。</p>
-<h1 id="Web渗透大概记录一下"><a href="#Web渗透大概记录一下" class="headerlink" title="Web渗透大概记录一下"></a>Web渗透大概记录一下</h1><blockquote>
+        <h1>写在前面</h1>
+<p>首先这次的体验就两个字：<strong>坐牢</strong>。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。</p>
+<h1>Web渗透大概记录一下</h1>
+<blockquote>
 <p>“内网渗透的本质是信息搜集”</p>
 </blockquote>
 <p>首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Yakit），一键扫描一键搜集一键测poc，感叹web吃的也太好了。</p>
-<h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><p>最后搞了半天就bp最熟，另一个用的最多的就是轻量化的dudesuite，fofa和重放就够了。信息搜集密探似乎最好用可惜后期才发现。awvs看起来也牛逼但是没用到。</p>
-<h2 id="代理池"><a href="#代理池" class="headerlink" title="代理池"></a>代理池</h2><p>第一天没什么进展，中医院的OA指纹识别后测POC发两次就被ban ip，不懂还以为是玩不起，后来问学长和裁判才了解到应该是物理的小盒WAF。不走域名的话测poc被ban一般就要么配代理池要么换目标了。</p>
-<p>代理池又折腾了几天，开始说要一个vps来，要来了也没啥用，CentOS上面什么也没有自己还得配环境，手动编译python装一年装好了还不能用一拖史。整个攻击的网络都是内网，出口ip一样，没有ipv6网段，v4的公网ip自己就不能乱写了。第三天大部分时间在折腾这个，<br>终于放弃了，从网上买新用户白嫖的来发包测poc（到中期都没有能直连访问的了，要么开自己梯子要么代理池）。</p>
-<h2 id="成果"><a href="#成果" class="headerlink" title="成果"></a>成果</h2><p>第二天从学长了解到上次中医院挖了小程序的越权。这次也试试，主要目标都防护太厉害了。然后学了一手小程序抓包（Proxifier代理有点厉害，进程指定），然后开始人工审计流量（上次也是这么干的）。没想到还真让我审到了，各个接口一个个乱试的时候发现，查地址的时候就算把Token字段全删掉也返回200，测试了一下果然，只认GET里的UserId手机号，token是假的…遂喊人注册验证，果然平行越权随便查。各个接口测一遍下来，只有关联的就诊人这个最敏感的（身份证）有验证，地址和就诊记录都不看Token，太抽象了。<br><img src="/images/hvv/poc1.png" alt="poc1.png"></p>
+<h2 id="工具">工具</h2>
+<p>最后搞了半天就bp最熟，另一个用的最多的就是轻量化的dudesuite，fofa和重放就够了。信息搜集密探似乎最好用可惜后期才发现。awvs看起来也牛逼但是没用到。</p>
+<h2 id="代理池">代理池</h2>
+<p>第一天没什么进展，中医院的OA指纹识别后测POC发两次就被ban ip，不懂还以为是玩不起，后来问学长和裁判才了解到应该是物理的小盒WAF。不走域名的话测poc被ban一般就要么配代理池要么换目标了。</p>
+<p>代理池又折腾了几天，开始说要一个vps来，要来了也没啥用，CentOS上面什么也没有自己还得配环境，手动编译python装一年装好了还不能用一拖史。整个攻击的网络都是内网，出口ip一样，没有ipv6网段，v4的公网ip自己就不能乱写了。第三天大部分时间在折腾这个，终于放弃了，从网上买新用户白嫖的来发包测poc（到中期都没有能直连访问的了，要么开自己梯子要么代理池）。</p>
+<h2 id="成果">成果</h2>
+<p>第二天从学长了解到上次中医院挖了小程序的越权。这次也试试，主要目标都防护太厉害了。然后学了一手小程序抓包（Proxifier代理有点厉害，进程指定），然后开始人工审计流量（上次也是这么干的）。没想到还真让我审到了，各个接口一个个乱试的时候发现，查地址的时候就算把Token字段全删掉也返回200，测试了一下果然，只认GET里的UserId手机号，token是假的…遂喊人注册验证，果然平行越权随便查。各个接口测一遍下来，只有关联的就诊人这个最敏感的（身份证）有验证，地址和就诊记录都不看Token，太抽象了。<br>
+<img src="/images/hvv/poc1.png" alt="poc1.png"></p>
 <p><img src="/images/hvv/poc2.png" alt="poc2.png"></p>
 <p>交涉3天后拿到1500分，按200w+的数据算了，最后也比武大高，小win</p>
-<p>最后绝大部分还是先弱口令&#x2F;社工&#x2F;钓鱼的内网突破，就算没有这些也大部分都是弱口令拿分。我们一个都没找到，发现的都像是蜜罐。</p>
-<h1 id="anyway"><a href="#anyway" class="headerlink" title="anyway"></a>anyway</h1><p>不熟悉任何的常见框架，webfuzz，漏洞挖掘，代码审计。人工审小程序硬是拿了1500也算不错了。主要还是不熟悉真实的渗透流程和体系化的那种操作。密探里有一张备忘图就很好。信息搜集该干什么，网站拿到了根据注册框、敏感信息等等我们能做什么攻击测试，有漏洞之后怎么利用最后进入内网等等。前期的准备和信息搜集太少了基本是无头苍蝇，在没用的地方浪费了很多时间。还得是快速找弱口令突破口，另外教程得找同样的护网记录给思路。</p>
+<p>最后绝大部分还是先弱口令/社工/钓鱼的内网突破，就算没有这些也大部分都是弱口令拿分。我们一个都没找到，发现的都像是蜜罐。</p>
+<h1>anyway</h1>
+<p>不熟悉任何的常见框架，webfuzz，漏洞挖掘，代码审计。人工审小程序硬是拿了1500也算不错了。主要还是不熟悉真实的渗透流程和体系化的那种操作。密探里有一张备忘图就很好。信息搜集该干什么，网站拿到了根据注册框、敏感信息等等我们能做什么攻击测试，有漏洞之后怎么利用最后进入内网等等。前期的准备和信息搜集太少了基本是无头苍蝇，在没用的地方浪费了很多时间。还得是快速找弱口令突破口，另外教程得找同样的护网记录给思路。</p>
 
     </article>
     <!-- license -->
@@ -666,7 +673,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Web%E6%B8%97%E9%80%8F%E5%A4%A7%E6%A6%82%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%8B"><span class="toc-number">2.</span> <span class="toc-text">Web渗透大概记录一下</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7"><span class="toc-number">2.1.</span> <span class="toc-text">工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E6%B1%A0"><span class="toc-number">2.2.</span> <span class="toc-text">代理池</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%90%E6%9E%9C"><span class="toc-number">2.3.</span> <span class="toc-text">成果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#anyway"><span class="toc-number">3.</span> <span class="toc-text">anyway</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Web渗透大概记录一下</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7"><span class="toc-number">2.1.</span> <span class="toc-text">工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%90%86%E6%B1%A0"><span class="toc-number">2.2.</span> <span class="toc-text">代理池</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%90%E6%9E%9C"><span class="toc-number">2.3.</span> <span class="toc-text">成果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">anyway</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -946,6 +953,12 @@
         
         
     
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1768,24 +1781,9 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1798,6 +1796,21 @@
                 heap
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="CSAPP">
                 <span class="iconfont-archer">&#xe606;</span>
                 CSAPP
@@ -1806,6 +1819,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Windows">
@@ -1818,19 +1836,9 @@
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -1838,14 +1846,19 @@
                 FSOP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="llvm">
+            <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
-                llvm
+                kernel
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
