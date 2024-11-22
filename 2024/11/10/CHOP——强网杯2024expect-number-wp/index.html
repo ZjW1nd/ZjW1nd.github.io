@@ -16,22 +16,22 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="参考自溢出漏洞在异常处理中的攻击利用手法-上和溢出漏洞在异常处理中的攻击利用手法-下  简单了解下C++异常处理C++有这样的关键字，支持执行异常的处理： 12345678910try&amp;#123;    do_sth();    throw exception;&amp;#125;catch(exception typeA)&amp;#123;    my_handler();&amp;#125;catch(excep">
+    <meta name="description" content="参考自溢出漏洞在异常处理中的攻击利用手法-上和溢出漏洞在异常处理中的攻击利用手法-下  简单了解下C++异常处理C++有这样的关键字，支持执行异常的处理： 1234567891011try&amp;#123;    do_sth();    throw exception;    nothing_will_happen_here();&amp;#125;catch(exception typeA)&amp;#123;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CHOP——强网杯2024expect_number wp">
 <meta property="og:url" content="http://example.com/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="参考自溢出漏洞在异常处理中的攻击利用手法-上和溢出漏洞在异常处理中的攻击利用手法-下  简单了解下C++异常处理C++有这样的关键字，支持执行异常的处理： 12345678910try&amp;#123;    do_sth();    throw exception;&amp;#125;catch(exception typeA)&amp;#123;    my_handler();&amp;#125;catch(excep">
+<meta property="og:description" content="参考自溢出漏洞在异常处理中的攻击利用手法-上和溢出漏洞在异常处理中的攻击利用手法-下  简单了解下C++异常处理C++有这样的关键字，支持执行异常的处理： 1234567891011try&amp;#123;    do_sth();    throw exception;    nothing_will_happen_here();&amp;#125;catch(exception typeA)&amp;#123;">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-11-10T15:27:20.000Z">
-<meta property="article:modified_time" content="2024-11-13T03:36:37.691Z">
+<meta property="article:modified_time" content="2024-11-20T12:42:03.374Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
-<meta property="article:tag" content="wp">
 <meta property="article:tag" content="chop">
+<meta property="article:tag" content="wp">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -331,9 +331,9 @@
     
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="chop">chop</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
     
 </div>
 
@@ -502,10 +502,36 @@
 <p>参考自<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12967">溢出漏洞在异常处理中的攻击利用手法-上</a>和<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12994">溢出漏洞在异常处理中的攻击利用手法-下</a></p>
 </blockquote>
 <h1 id="简单了解下C-异常处理"><a href="#简单了解下C-异常处理" class="headerlink" title="简单了解下C++异常处理"></a>简单了解下C++异常处理</h1><p>C++有这样的关键字，支持执行异常的处理：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="built_in">do_sth</span>();</span><br><span class="line">    <span class="keyword">throw</span> exception;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">catch</span>(exception typeA)&#123;</span><br><span class="line">    <span class="built_in">my_handler</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">catch</span>(exception typeB)&#123;</span><br><span class="line">    <span class="built_in">my_handler2</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>简单的来说，任何函数都可以通过throw关键字抛出异常。对于可能抛出异常的代码，要用try去包裹。而后续需要用catch去捕获异常。<br>catch可以在后面添加类型来声明catch内处理的异常类型。</p>
-<p>编译后，throw函数会对应一些操作，本篇文章以linux的libstdc++的实现为例进行讨论。首先，当使用throw关键字的时候，程序会调用<br><code>__cxa_throw()</code>抛出异常，</p>
-<h1 id="什么是CHOP"><a href="#什么是CHOP" class="headerlink" title="什么是CHOP?"></a>什么是CHOP?</h1><p>CHOP是Catch Handler Oriented Programming。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>&#123;</span><br><span class="line">    <span class="built_in">do_sth</span>();</span><br><span class="line">    <span class="keyword">throw</span> exception;</span><br><span class="line">    <span class="built_in">nothing_will_happen_here</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">catch</span>(exception typeA)&#123;</span><br><span class="line">    <span class="built_in">my_handler</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">catch</span>(exception typeB)&#123;</span><br><span class="line">    <span class="built_in">my_handler2</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关于C++的异常处理：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sgawscd/p/13870406.html">https://www.cnblogs.com/sgawscd/p/13870406.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/GrayOnDream/article/details/138469330">https://blog.csdn.net/GrayOnDream/article/details/138469330</a>  &lt;– 具体的细节参考这一篇即可</p>
+</blockquote>
+<p>简单的来说，任何函数都可以通过throw关键字抛出异常。对于可能抛出异常的代码，要用try去包裹。而后续需要用catch去捕获异常。<br>catch可以在后面添加类型来声明catch内处理的异常类型。触发throw后，在开发者的视角下，会从抛出异常的try块向外匹配第一个类型合适的catch块，然后程序会将控制权移交到catch块中的异常处理代码。此时throw后面的代码全部都不会执行，因此这种控制流的强行跳转给了我们利用的机会。这种对于catch逐层向上的匹配机制，叫做**栈展开(Stack Unwind)**。</p>
+<h2 id="libstdc-的异常处理实现"><a href="#libstdc-的异常处理实现" class="headerlink" title="libstdc++的异常处理实现"></a>libstdc++的异常处理实现</h2><p>下面以linux的libstdc++的实现为例大概看一下throw之后发生了什么</p>
+<p>首先，当使用throw关键字的时候，编译器会先用<code>__cxa_allocate_exception</code>分配一些处理所需要的对象空间。然后程序会调用<code>__cxa_throw()</code>抛出异常，最后核心函数会进入<code>_Unwind_RaiseException()</code>。再后面就是gdb跟进困难的内容了，具体细节不再赘述。不过会用Unwind以及程序中<code>eh_frame</code>节中相关的信息去对堆栈进行回溯。</p>
+<p>既然会回溯找代码，那么一定会设计到堆栈中pc的恢复，也就是返回地址。如果我们能够覆盖try块的返回地址然后去throw，就可能能劫持到控制流到其他的catch块（不是其他catch块的话，回溯到main发现没有catch代码，会被terminate退出）</p>
+<p>另外，由于throw后面的内容其实都根本不会执行，所以这个操作能够绕过canary（check根本不执行，覆盖了canary也没事），这是比较神奇的一点。</p>
+<h1 id="对于这道题目"><a href="#对于这道题目" class="headerlink" title="对于这道题目"></a>对于这道题目</h1><h2 id="流程分析"><a href="#流程分析" class="headerlink" title="流程分析"></a>流程分析</h2><p>这一部分我们不多讲，程序是通过一个以1为种子的伪随机数序列，然后通过用户输入0 1 2进行加，乘，除操作。程序提供了一个<br>system gift（但是没用）。</p>
+<p>指针初始化在initarray，程序有4个类，一个基类和3个派生（猜测这是为了让它们函数虚表的地址相邻），其中两个派生类一个是退出一个是存在溢出的漏洞函数。5010-&gt;5520-&gt;vtable-&gt;func</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">data.rel.ro:<span class="number">0000000000004</span>C20 ; `vtable <span class="keyword">for</span><span class="number">&#x27;</span>Derived3</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C20 _ZTV8Derived3   dq <span class="number">0</span>                    ; offset to this</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C28                 dq offset _ZTI8Derived3 ; `typeinfo <span class="keyword">for</span><span class="number">&#x27;</span>Derived3</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C30 off_4C30        dq offset display_d3    ; DATA XREF: set_d3_display+<span class="number">1</span>C↑o</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C38 ; `vtable <span class="keyword">for</span><span class="number">&#x27;</span>Derived2</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C38 _ZTV8Derived2   dq <span class="number">0</span>                    ; offset to this</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C40                 dq offset _ZTI8Derived2 ; `typeinfo <span class="keyword">for</span><span class="number">&#x27;</span>Derived2</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C48 quit_ptr        dq offset quit          ; DATA XREF: set_quit+<span class="number">1</span>C↑o</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C50 ; `vtable <span class="keyword">for</span><span class="number">&#x27;</span>Derived</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C50 _ZTV7Derived    dq <span class="number">0</span>                    ; offset to this</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C58                 dq offset _ZTI7Derived  ; `typeinfo <span class="keyword">for</span><span class="number">&#x27;</span>Derived</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C60 vuln_off        dq offset vuln          ; DATA XREF: init_game+<span class="number">1</span>C↑o</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C68 ; `vtable <span class="keyword">for</span><span class="number">&#x27;B</span>ase</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C68 _ZTV4Base       dq <span class="number">0</span>                    ; offset to this</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C70                 dq offset _ZTI4Base     ; `typeinfo <span class="keyword">for</span><span class="number">&#x27;B</span>ase</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C78 base_display_ptr dq offset base_display ; DATA XREF: set_base_display_ptr+C↑o</span><br><span class="line">.data.rel.ro:<span class="number">0000000000004</span>C80                 public _ZTISt13runtime_error ; weak</span><br></pre></td></tr></table></figure>
+<p>5520正好在输入结构的+288位置，重复288次输入没有考虑结构体头的12字节，可以溢出12字节。但是每次写入之后前一个就会被覆盖为上次操作我们实际上只能溢出1个字节。恰巧的是，1个就够了，50-&gt;60即可<br>总之我们就利用程序的逻辑和一个offbyone的漏洞将正常退出的指针劫持到了虚表里另一个派生类的漏洞函数上。</p>
+<p>我们重点关注这个有栈溢出的后门：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 <span class="title function_">vuln</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v0; <span class="comment">// rax</span></span><br><span class="line">  <span class="built_in">std</span>::runtime_error *exception; <span class="comment">// rbx</span></span><br><span class="line">  _BYTE buf[<span class="number">8</span>]; <span class="comment">// [rsp+20h] [rbp-20h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v4; <span class="comment">// [rsp+28h] [rbp-18h]</span></span><br><span class="line"></span><br><span class="line">  v4 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  v0 = <span class="built_in">std</span>::operator&lt;&lt;&lt;<span class="built_in">std</span>::char_traits&lt;<span class="type">char</span>&gt;&gt;();</span><br><span class="line">  <span class="built_in">std</span>::ostream::operator&lt;&lt;(v0, &amp;<span class="built_in">std</span>::<span class="built_in">endl</span>&lt;<span class="type">char</span>,<span class="built_in">std</span>::char_traits&lt;<span class="type">char</span>&gt;&gt;);</span><br><span class="line">  <span class="keyword">if</span> ( read(<span class="number">0</span>, buf, <span class="number">0x30</span>uLL) &gt; <span class="number">8</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    exception = (<span class="built_in">std</span>::runtime_error *)__cxa_allocate_exception(<span class="number">0x10</span>uLL);</span><br><span class="line">    <span class="built_in">std</span>::runtime_error::runtime_error(exception, <span class="string">&quot;Input too long&quot;</span>);</span><br><span class="line">    __cxa_throw(exception,</span><br><span class="line">    (<span class="keyword">struct</span> type_info *)&amp;`typeinfo forstd`::runtime_error,</span><br><span class="line">    (<span class="type">void</span> (*)(<span class="type">void</span> *))&amp;<span class="built_in">std</span>::runtime_error::~runtime_error);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> v4 - __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>同时程序里还有这样的catch块：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">.text:<span class="number">00000000000024E1</span> ; __unwind &#123; <span class="comment">// __gxx_personality_v0</span></span><br><span class="line">.text:<span class="number">00000000000024E1</span>                 endbr64</span><br><span class="line">.text:<span class="number">00000000000024E5</span>                 push    rbp</span><br><span class="line">.text:<span class="number">00000000000024E6</span>                 mov     rbp, rsp</span><br><span class="line">.text:<span class="number">00000000000024E9</span>                 push    rbx</span><br><span class="line">.text:<span class="number">00000000000024</span>EA                 sub     rsp, <span class="number">28</span>h</span><br><span class="line">.text:<span class="number">00000000000024</span>EE                 mov     rax, fs:<span class="number">28</span>h</span><br><span class="line">.text:<span class="number">00000000000024F</span>7                 mov     [rbp+var_18], rax</span><br><span class="line">.text:<span class="number">00000000000024F</span>B                 xor     eax, eax</span><br><span class="line">.text:<span class="number">00000000000024F</span>D                 mov     [rbp+var_24], <span class="number">0</span></span><br><span class="line">.text:<span class="number">0000000000002504</span>                 lea     rax, [rbp+var_24]</span><br><span class="line">.text:<span class="number">0000000000002508</span>                 mov     rsi, rax</span><br><span class="line">.text:<span class="number">000000000000250B</span>                 lea     rax, _ZSt3cin   ; <span class="built_in">std</span>::<span class="built_in">cin</span></span><br><span class="line">.text:<span class="number">0000000000002512</span>                 mov     rdi, rax</span><br><span class="line">.text:<span class="number">0000000000002515</span> ;   try &#123;</span><br><span class="line">.text:<span class="number">0000000000002515</span>                 call    __ZNSirsERi     ; <span class="built_in">std</span>::istream::operator&gt;&gt;(<span class="type">int</span> &amp;)</span><br><span class="line">.text:<span class="number">0000000000002515</span> ;   &#125; <span class="comment">// starts at 2515</span></span><br><span class="line">.text:<span class="number">000000000000251</span>A                 mov     eax, [rbp+var_24]</span><br><span class="line">.text:<span class="number">000000000000251</span>D                 jmp     <span class="type">short</span> loc_256A</span><br><span class="line">.text:<span class="number">000000000000251F</span> ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">000000000000251F</span> ;   catch(<span class="built_in">std</span>::runtime_error) <span class="comment">// owned by 2515</span></span><br><span class="line">.text:<span class="number">000000000000251F</span>                 endbr64</span><br><span class="line">.text:<span class="number">0000000000002523</span>                 cmp     rdx, <span class="number">1</span></span><br><span class="line">.text:<span class="number">0000000000002527</span>                 jz      <span class="type">short</span> loc_2531</span><br><span class="line">.text:<span class="number">0000000000002529</span>                 mov     rdi, rax        ; <span class="class"><span class="keyword">struct</span> _<span class="title">Unwind_Exception</span> *</span></span><br><span class="line"><span class="class">.<span class="title">text</span>:</span><span class="number">000000000000252</span>C                 call    __Unwind_Resume</span><br><span class="line">.text:<span class="number">0000000000002531</span> ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">0000000000002531</span></span><br><span class="line">.text:<span class="number">0000000000002531</span> loc_2531:                               ; CODE XREF: <span class="built_in">cin</span>+<span class="number">46</span>↑j</span><br><span class="line">.text:<span class="number">0000000000002531</span>                 mov     rdi, rax        ; <span class="type">void</span> *</span><br><span class="line">.text:<span class="number">0000000000002534</span>                 call    ___cxa_begin_catch</span><br><span class="line">.text:<span class="number">0000000000002539</span>                 mov     [rbp+var_20], rax</span><br><span class="line">.text:<span class="number">000000000000253</span>D                 lea     rax, command    ; <span class="string">&quot;/bin/sh&quot;</span></span><br><span class="line">.text:<span class="number">0000000000002544</span>                 mov     rdi, rax        ; command</span><br><span class="line">.text:<span class="number">0000000000002547</span> ;   try &#123;</span><br><span class="line">.text:<span class="number">0000000000002547</span>                 call    _system  ; ------&gt; system</span><br><span class="line">.text:<span class="number">0000000000002547</span> ;   &#125; <span class="comment">// starts at 2547</span></span><br><span class="line">.text:<span class="number">000000000000254</span>C                 call    ___cxa_end_catch</span><br><span class="line">.text:<span class="number">0000000000002551</span>                 jmp     <span class="type">short</span> loc_256A</span><br><span class="line">.text:<span class="number">0000000000002553</span> ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">0000000000002553</span> ;   cleanup() <span class="comment">// owned by 2547</span></span><br><span class="line">.text:<span class="number">0000000000002553</span>                 endbr64</span><br><span class="line">.text:<span class="number">0000000000002557</span>                 mov     rbx, rax</span><br><span class="line">.text:<span class="number">000000000000255</span>A                 call    ___cxa_end_catch</span><br><span class="line">.text:<span class="number">000000000000255F</span>                 mov     rax, rbx</span><br><span class="line">.text:<span class="number">0000000000002562</span>                 mov     rdi, rax        ; <span class="class"><span class="keyword">struct</span> _<span class="title">Unwind_Exception</span> *</span></span><br><span class="line"><span class="class">.<span class="title">text</span>:</span><span class="number">0000000000002565</span>                 call    __Unwind_Resume</span><br><span class="line">.text:<span class="number">000000000000256</span>A ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">000000000000256</span>A</span><br><span class="line">.text:<span class="number">000000000000256</span>A loc_256A:                               ; CODE XREF: <span class="built_in">cin</span>+<span class="number">3</span>C↑j</span><br><span class="line">.text:<span class="number">000000000000256</span>A                                         ; <span class="built_in">cin</span>+<span class="number">70</span>↑j</span><br><span class="line">.text:<span class="number">000000000000256</span>A                 mov     rdx, [rbp+var_18]</span><br><span class="line">.text:<span class="number">000000000000256</span>E                 sub     rdx, fs:<span class="number">28</span>h</span><br><span class="line">.text:<span class="number">0000000000002577</span>                 jz      <span class="type">short</span> loc_257E</span><br><span class="line">.text:<span class="number">0000000000002579</span>                 call    ___stack_chk_fail</span><br><span class="line">.text:<span class="number">000000000000257</span>E ; ---------------------------------------------------------------------------</span><br><span class="line">.text:<span class="number">000000000000257</span>E</span><br><span class="line">.text:<span class="number">000000000000257</span>E loc_257E:                               ; CODE XREF: <span class="built_in">cin</span>+<span class="number">96</span>↑j</span><br><span class="line">.text:<span class="number">000000000000257</span>E                 mov     rbx, [rbp+var_8]</span><br><span class="line">.text:<span class="number">0000000000002582</span>                 leave</span><br><span class="line">.text:<span class="number">0000000000002583</span>                 retn</span><br><span class="line">.text:<span class="number">0000000000002583</span> ; &#125; <span class="comment">// starts at 24E1</span></span><br><span class="line">.text:<span class="number">0000000000002583</span> <span class="built_in">cin</span>             endp</span><br></pre></td></tr></table></figure>
+
+<p>想办法让程序返回到这就可以了。本着实践大于理论的原则比赛的时候试了好久（其实也就一小时可能）都没成，结果是要返回到0x251a，我就低了5个字节。</p>
+<p>事实上是，将返回地址填成我们想要跳转到的catch块，rbp的值只要是一个可读写的地址就行了，防止中间汇编rbp寻址的时候sigsegv。</p>
+<h1 id="几个小问题"><a href="#几个小问题" class="headerlink" title="几个小问题"></a>几个小问题</h1><h2 id="程序怎么识别的try-catch块？"><a href="#程序怎么识别的try-catch块？" class="headerlink" title="程序怎么识别的try-catch块？"></a>程序怎么识别的try-catch块？</h2><p>编译器为程序生成了一个异常处理表<code>.gcc_except_table</code>，作为一个单独的节存放相关的信息。</p>
+<h2 id="rbp的作用？"><a href="#rbp的作用？" class="headerlink" title="rbp的作用？"></a>rbp的作用？</h2><p>如果在handler中有<code>leave;ret</code>的gadget，我们理论上在溢出后控制rbp就能劫持控制流。其他情况下一般要注意rbp地址有效。</p>
+<h2 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h2><p>这个ret地址的范围并不精确，尽量要写到带有catch的函数的try范围内，如果不成功一定要换附近地址多试几次，血泪教训。</p>
+<h1 id="什么是CHOP"><a href="#什么是CHOP" class="headerlink" title="什么是CHOP?"></a>什么是CHOP?</h1><p>CHOP是Catch Handler Oriented Programming。出自一篇论文，更多的可以去看开篇提到的blog。总之这玩意的思想就是：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> __cxa_call_unexpected (<span class="type">void</span> *exc_obj_in) &#123;</span><br><span class="line"> xh_terminate_handler = xh-&gt;terminateHandler;</span><br><span class="line"> <span class="keyword">try</span> &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line"> <span class="built_in">catch</span> (...) &#123;</span><br><span class="line"> __terminate(xh_terminate_handler);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> __terminate (<span class="built_in">void</span> (*handler)()) <span class="keyword">throw</span> () &#123;</span><br><span class="line"> <span class="comment">/* ... */</span></span><br><span class="line"> <span class="built_in">handler</span>();</span><br><span class="line"> std::<span class="built_in">abort</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有函数指针的地方就有pwn，libstdc++中有这样一个调用指针的地方。如果异常处理前存在栈溢出能劫持返回地址，我们控制好xh_terminate_handler这一局部变量后返回到<br><code>__cxa_call_unexpected</code>的catch块就能实现控制流劫持。通过这个Golden Gadget，我们可以将有canary的栈溢出变成无canary的栈溢出，只需要以这个catch做跳板。</p>
+<p>版本更高的libc也只是调用路径更复杂了。</p>
+<p>摸了</p>
 
     </article>
     <!-- license -->
@@ -661,7 +687,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E4%BA%86%E8%A7%A3%E4%B8%8BC-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">简单了解下C++异常处理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFCHOP"><span class="toc-number">2.</span> <span class="toc-text">什么是CHOP?</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E4%BA%86%E8%A7%A3%E4%B8%8BC-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">简单了解下C++异常处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#libstdc-%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.1.</span> <span class="toc-text">libstdc++的异常处理实现</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AF%B9%E4%BA%8E%E8%BF%99%E9%81%93%E9%A2%98%E7%9B%AE"><span class="toc-number">2.</span> <span class="toc-text">对于这道题目</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-number">2.1.</span> <span class="toc-text">流程分析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%A0%E4%B8%AA%E5%B0%8F%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">几个小问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E6%80%8E%E4%B9%88%E8%AF%86%E5%88%AB%E7%9A%84try-catch%E5%9D%97%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">程序怎么识别的try-catch块？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rbp%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">rbp的作用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%EF%BC%9A"><span class="toc-number">3.3.</span> <span class="toc-text">注意：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFCHOP"><span class="toc-number">4.</span> <span class="toc-text">什么是CHOP?</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -941,10 +967,6 @@
         
         
     
-        
-        
-        
-        
         
         
         
@@ -1767,9 +1789,24 @@
                 算法
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1792,16 +1829,6 @@
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -1812,14 +1839,14 @@
                 CVE
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="FSOP">
-                <span class="iconfont-archer">&#xe606;</span>
-                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="kernel">
@@ -1827,14 +1854,19 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Rust">
+            <span class="sidebar-tag-name" data-tags="FSOP">
                 <span class="iconfont-archer">&#xe606;</span>
-                Rust
+                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -1857,11 +1889,6 @@
                 Others
             </span>
         
-            <span class="sidebar-tag-name" data-tags="ROP">
-                <span class="iconfont-archer">&#xe606;</span>
-                ROP
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="IDA">
                 <span class="iconfont-archer">&#xe606;</span>
                 IDA
@@ -1872,6 +1899,11 @@
                 编译
             </span>
         
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="web">
                 <span class="iconfont-archer">&#xe606;</span>
                 web
@@ -1880,11 +1912,6 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
     </div>

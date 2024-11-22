@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
     <meta name="description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
@@ -27,7 +27,7 @@
 <meta property="og:description" content="题目分析 到手一拖史不知道是什么，逆向扣了符号表，很多函数根本看不懂。  字符串交叉引用到主函数，发现首先是开沙箱（这里第一次没注意到没有load规则是个假的沙箱但是本来也没办法就没管）。 主函数： 1234567891011121314151617181920212223void __fastcall __noreturn main(__int64 a1, char **a2, char **a">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-05T10:52:39.000Z">
-<meta property="article:modified_time" content="2024-09-05T12:57:23.235Z">
+<meta property="article:modified_time" content="2024-11-17T07:40:13.096Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -1491,10 +1491,6 @@
         
         
         
-        
-        
-        
-        
     
     
     
@@ -1853,9 +1849,24 @@
                 算法
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="pwn">
                 <span class="iconfont-archer">&#xe606;</span>
                 pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="wp">
@@ -1878,16 +1889,6 @@
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Develop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -1898,14 +1899,14 @@
                 CVE
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="FSOP">
-                <span class="iconfont-archer">&#xe606;</span>
-                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="kernel">
@@ -1913,14 +1914,19 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Rust">
+            <span class="sidebar-tag-name" data-tags="FSOP">
                 <span class="iconfont-archer">&#xe606;</span>
-                Rust
+                FSOP
             </span>
         
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -1943,11 +1949,6 @@
                 Others
             </span>
         
-            <span class="sidebar-tag-name" data-tags="ROP">
-                <span class="iconfont-archer">&#xe606;</span>
-                ROP
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="IDA">
                 <span class="iconfont-archer">&#xe606;</span>
                 IDA
@@ -1958,6 +1959,11 @@
                 编译
             </span>
         
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="web">
                 <span class="iconfont-archer">&#xe606;</span>
                 web
@@ -1966,11 +1972,6 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
             </span>
         
     </div>
