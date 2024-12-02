@@ -19,24 +19,18 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="摆了，可以参考https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 Basic： UAF free后指针不置空可以再次使用。 Overflow 溢出，这个一般用于篡改size或prevsize域比较多，能溢出fd和bk也行。 Off By One 只能溢出1字节。可以篡改下一个chunk的PREV_INUSE位造成合并等。 Double">
-<meta property="og:type" content="article">
-<meta property="og:title" content="How2Heap总集篇导演剪辑剧场版">
-<meta property="og:url" content="http://example.com/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/index.html">
+    <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/archives/2024/09/page/2/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="摆了，可以参考https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 Basic： UAF free后指针不置空可以再次使用。 Overflow 溢出，这个一般用于篡改size或prevsize域比较多，能溢出fd和bk也行。 Off By One 只能溢出1字节。可以篡改下一个chunk的PREV_INUSE位造成合并等。 Double">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2024-07-22T13:51:19.000Z">
-<meta property="article:modified_time" content="2024-11-22T03:38:01.842Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="pwn">
-<meta property="article:tag" content="heap">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>How2Heap总集篇导演剪辑剧场版 · Zj_W1nd&#39;s BLOG</title>
+    <title>Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -224,8 +218,6 @@
         }
     </script>
     
-        <body class="post-body">
-    
         <!-- header -->
         <header class="header header-mobile">
     <!-- top read progress line -->
@@ -255,17 +247,6 @@
     </div>
     <!-- toggle banner for post layout -->
     
-        
-            <div class="banner">
-        
-            <div class="blog-title header-element">
-                <a href="/">Zj_W1nd&#39;s BLOG</a>
-            </div>
-            <div class="post-title header-element">
-                <a href="#" class="post-name">How2Heap总集篇导演剪辑剧场版</a>
-            </div>
-        </div>
-    
 </header>
 
         <!-- fixed footer -->
@@ -292,78 +273,24 @@
 
 
 
-    height:50vh;
-
 ">
     
     <!-- 主页  -->
     
-        
-    <!-- 404页  -->
-    
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
-            
-                How2Heap总集篇导演剪辑剧场版
-            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
-                
-            <!-- 404 -->
-            
         </p>
         <!-- 文章页 meta -->
-        
-            <div class="post-intros">
-                <!-- 文章页标签  -->
-                
-                    <div class= post-intro-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
-    
-</div>
-
-                
-                <!-- 文章字数统计 -->
-                
-                <div class="post-intro-meta">
-                    <!-- 撰写日期 -->
-                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2024/07/22</span>
-                    <!-- busuanzi -->
-                    
-                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
-                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
-                            <span id="busuanzi_value_page_pv"></span>
-                        </span>
-                    
-                    <!-- 文章分享 -->
-                    <span class="share-wrapper">
-                        <span class="iconfont-archer share-icon">&#xe71d;</span>
-                        <span class="share-text">Share</span>
-                        <ul class="share-list">
-                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
-                                <div class="share-qrcode"></div>
-                            </li>
-                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
-                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
-                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
-                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
-                        </ul>
-                    </span>
-                </div>
-            </div>
         
     </div>
 </div>
@@ -493,363 +420,53 @@
 
             <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
             <div class="container container-unloaded">
-                <main class="main post-page">
-    <article class="article-entry">
-        <p>摆了，可以参考<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a></p>
-<h1>Basic：</h1>
-<h2 id="UAF">UAF</h2>
-<p>free后指针不置空可以再次使用。</p>
-<h2 id="Overflow">Overflow</h2>
-<p>溢出，这个一般用于篡改size或prevsize域比较多，能溢出fd和bk也行。</p>
-<h2 id="Off-By-One">Off By One</h2>
-<p>只能溢出1字节。可以篡改下一个chunk的PREV_INUSE位造成合并等。</p>
-<h2 id="Double-Free">Double Free</h2>
-<p>多次释放同一堆块。接着通过分配可以获得指向同一堆块的多个不同指针。可以类型混淆，也可以获取UAF。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>对于fastbin chunk，PREV_INUSE永远为1，因此double free会有奇效。同时只检查第一块是否double free。</p>
-</li>
-</ul>
-<h2 id="Overlap">Overlap</h2>
-<p>重叠。本质上也是借助上面几个漏洞修改size（向前重叠）或者prevsize（向后重叠）域然后释放。这样就有一个chunk内部的一个额外指针了。<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/03/How2Heap-2/">（未必）更加细节的介绍</a><br>
-house of Rabbit也是差不多</p>
-<h2 id="Leak">Leak</h2>
-<h3 id="Unsorted-Bin-Leak">Unsorted Bin Leak</h3>
-<p>unsortedbin中的头部chunk的fd会指向main_arena+88的位置。只有一个chunk的话fd和bk都会指向其中。</p>
-<h3 id="tcache-leak">tcache leak</h3>
-<p>用tcache可以泄露堆的起始地址。</p>
-<h3 id="其他">其他</h3>
-<p>类似的放入bin中然后打出内容的思想都可以。</p>
-<h2 id="一些常识：">一些常识：</h2>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> NBINS             128</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NSMALLBINS         64</span></span><br></pre></td></tr></table></figure>
-<p>tcache最多64个，每个最大连接7个chunk。下标就是按malloc_align分，以64位为例，0-24大小的对应idx0，25-40对应idx1，41-56对应idx2依次类推每个+16。然后32位就是0-12，13-20这样。</p>
-<h1>Glibc 2.23</h1>
-<blockquote>
-<p>无tcache，检查较少，很经典</p>
-</blockquote>
-<h2 id="arena-attack（House-of-Mind-House-of-Gods）">arena attack（House of Mind &amp; House of Gods）</h2>
-<p>实战利用价值小，看个乐</p>
-<h3 id="House-of-mind">House of mind</h3>
-<p>伪造arena，blog没写，是一种通过伪造arena从而将释放的chunk连入假arena的过程，利用比较抽象而且最后似乎还没有任意写。</p>
-<h3 id="House-of-Gods">House of Gods</h3>
-<p>利用arena结构体中的数据和错位实现在main_arena中构建一个chunk进行写入，然后篡改arena的next指针将堆变成我们自己的arena来劫持整个堆。具体参见<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/17/How2Heap-3/">How2Heap3</a>，虽然非常复杂没什么用但是可以看看这个堆风水的过程，非常的神必，有助于理解main_arena的结构：</p>
-<ol>
-<li class="lvl-3">
-<p>泄露unsorted bin 头的地址，malloc一个smallchunk然后直接读。通过free+malloc(intm)启动遍历过程，将位图置位。这个时候我们让bin[0]作为伪造的size域存在。此时它是0x200.</p>
-</li>
-<li class="lvl-3">
-<p>首先将smallchunk放回unsortedbin中。用上面的leak在main_arena内寻址。利用UAF修改smallchunk的bk，在unsortedbin里面链接上这个伪造chunk。</p>
-</li>
-<li class="lvl-3">
-<p>利用malloc_state的特性，修改fastbin chunk的bk字段然后将其释放，控制其在malloc_state的开头，接着作为一个伪造的bk字段存在，链接到INTM。巧妙至极。</p>
-<blockquote>
-<p>这时候的unsorted bin：head-&gt;smallchunk-&gt;binmap[last]（伪造的）-&gt;main_arena的开头（由于next指针开始就是指向本身的）-&gt;fast40-&gt;INTM</p>
-</blockquote>
-</li>
-<li class="lvl-3">
-<p>将binmap chunk作为一个“chunk”取出。得到了写入main_arena（即便是部分）的权限！开始为触发<code>reused_arena()</code>的条件铺路。</p>
-</li>
-<li class="lvl-3">
-<p>接着UAF改INTM的bk，让INTM后面再连接上narenas字段。然后取出INTM触发unsortedbin attack，将narenas写为一个大数。同时用binmap chunk，改掉system_mem字段。</p>
-</li>
-<li class="lvl-3">
-<p>用binmap chunk将arena的next指针随便写成你想分配的地址</p>
-</li>
-<li class="lvl-3">
-<p>连续调用两次<code>malloc(0xffffffffffffffbf + 1)</code>，arena直接全部hijack掉。</p>
-</li>
-<li class="lvl-3">
-<p>随便操。</p>
-</li>
-</ol>
-<h2 id="Top-chunk-related-attack（House-of-Force-House-of-Orange）">Top chunk related attack（House of Force &amp; House of Orange）</h2>
-<p>利用topchunk的一些特性达成我们的目的。House of Force可以实现任意地址分配，House of Orange可以实现不调用free情况下的一次释放。</p>
-<h3 id="House-of-Force">House of Force</h3>
-<p>见<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/17/How2Heap-3/">How2Heap3</a><br>
-将top chunk的size域改到极大，然后通过分配evil_size的chunk将topchunk推进到我们想分配的地址，随后下次分配就会从top中切出我们指定地址的chunk。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>其中top的size一般写成-1，evil_size的计算如下</p>
-</li>
-</ul>
-<blockquote>
-<p>new_top = old_top + nb<br>
-nb = new_top - old_top<br>
-req + 2sizeof(long) = new_top - old_top<br>
-req = new_top - old_top - 2sizeof(long)<br>
-req = dest - 2sizeof(long) - old_top - 2sizeof(long)<br>
-req = dest - old_top - 4*sizeof(long)</p>
-</blockquote>
-<h3 id="House-of-Orange">House of Orange</h3>
-<p>见<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/30/How2Heap-4/">How2Heap4</a><br>
-神中神，适用于没有free的情况。通过先改小top chunk的size域然后申请一个较大的chunk来触发sysmalloc中的brk扩展，就会将旧的top放进unsortedbin中。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>top的size需要页对齐，动调确定，一般改为0xfe1然后申请0x1000刚好。</p>
-</li>
-<li class="lvl-2">
-<p>新申请的会放在新的内存页。</p>
-</li>
-<li class="lvl-2">
-<p>【glibc 2.23】借助unsorted bin attack改写IO_LIST_ALL为unsorted(av)后将old top放入smallbins[4](改写size为0x61)从而实现用伪造chunk链接至IO_list_all触发fsop。</p>
-</li>
-</ul>
-<h2 id="Fastbin（normal-house-of-spirit-House-of-Rabbit）">Fastbin（normal, house of spirit, House of Rabbit）</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/11/09/How2Heap-1/">（未必）更加细节的介绍</a></p>
-<h3 id="Normal-fast-bin-attack：">Normal fast bin attack：</h3>
-<p>将一个fastbin分配在我们想要的位置。通过劫持已在fastbin中的一个chunk的fd指针来做到这一点。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>会检查size域，需要提前伪装。</p>
-</li>
-<li class="lvl-2">
-<p>分配在malloc_hook或free_hook的话经常配合0x7f的字节错位来伪造size域</p>
-</li>
-<li class="lvl-2">
-<p>UAF和Double free，fastbin在2.23中只检查头部是否double free从而我们可以用dup来实现Write after free</p>
-</li>
-</ul>
-<h3 id="House-of-Spirit">House of Spirit</h3>
-<p>伪造fastbin的chunk。通过free放入bin。需要注意：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>边界0x10对齐</p>
-</li>
-<li class="lvl-2">
-<p>size域大小合适，满足fastbin要求</p>
-</li>
-<li class="lvl-2">
-<p>next的地址不能是top，而且size要正常（不用必须是fastbin）</p>
-</li>
-</ul>
-<h3 id="House-of-Rabbit">House of Rabbit</h3>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/04/17/How2Heap-6/">参考</a><br>
-针对consolidate不严格检查size的fastbin attack. 要能修改size域并且有触发consolidate的条件</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>修改size，然后触发consolidate变成overlap。</p>
-</li>
-<li class="lvl-2">
-<p>修改fd然后触发consolidate将fake_chunk放入bin中变成合法chunk（注意伪造size）</p>
-</li>
-</ul>
-<h2 id="Unsorted-Bin-Attack">Unsorted Bin Attack</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/01/25/How2Heap-5/">参考</a><br>
-利用Unsorted Bin取出chunk时候的这个特性（双向链表，bk遍历）：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bck = victim-&gt;bk;</span><br><span class="line">...</span><br><span class="line">bck-&gt;fd = unsorted_chunks (av);</span><br></pre></td></tr></table></figure>
-<p>控制住unsorted bin中的下一个会取出的chunk的bk域，我们就能将一个大数（<code>unsorted_chunks(av)</code>）写入我们想要的地址，由于是fd偏移，所以将chunk中的bk写成targetaddr-16即可。可以用于篡改循环次数或<code>GLOBAL_MAX_FAST</code>等。</p>
-<h2 id="House-of-Lore（Small-bin-attack）">House of Lore（Small bin attack）</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/01/25/How2Heap-5/">参考</a><br>
-smallbin attack。一个UAF改一下smallchunk的fd就是任意地址fakechunk分配。只要能绕过smallbin分配唯一的检查就行</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (__glibc_unlikely (bck-&gt;fd != victim))</span><br><span class="line">&#123;</span><br><span class="line">    errstr = <span class="string">&quot;malloc(): smallbin double linked list corrupted&quot;</span>;</span><br><span class="line">    <span class="keyword">goto</span> errout;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Large-Bin-Attack">Large Bin Attack</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">参考</a><br>
-利用large bin的指针将指定地址的内容写成一个合法的large chunk的地址。将已经在largebin中的chunk的bk或bk_nextsize篡改为target-16、-32即可实现在下一次victim放入largebin时触发将victim写入target的效果。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>从 unsorted bin 中来的 large chunk 要紧跟在攻击过的large chunk后面，也就是要连在一个bin里，大小也要相邻。</p>
-</li>
-<li class="lvl-2">
-<p>可以篡改io_list_all进行fsop</p>
-</li>
-<li class="lvl-2">
-<p>可以帮助tcache smash unlink？</p>
-</li>
-</ul>
-<h2 id="COMBO-FISTS-（House-of-Roman-House-of-Storm）">COMBO FISTS （House of Roman, House of Storm）</h2>
-<h3 id="House-of-Roman（组合拳，getshell思路很常用而且允许爆破-Fastbin-atk-Unsorted-bin-atk）">House of Roman（组合拳，getshell思路很常用而且允许爆破, Fastbin atk + Unsorted bin atk）</h3>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/04/17/How2Heap-6/">参考</a><br>
-通过分配一个malloc_hook附近的chunk（确切的说是在<code>malloc_hook-0x23</code>处获取一个fastbinchunk）写入one_gadget。<br>
-这个思路是非常好的，只要是2.23并且任意地址分配chunk就可以用来getshell。有libc地址最好，没有也没关系借助unsorted bin attack+爆破来实现。<br>
-原poc的流程如下：</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>拿一个0x60的fastbin chunk 1（实际大小0x70）</p>
-</li>
-<li class="lvl-2">
-<p>分配一个不用的chunk，大小0x80，实际大小0x90，此时相对堆基址的偏移来到了0x100，这灵性的一步是为了待会我们改一个字节就能修改指针指向的chunk</p>
-</li>
-<li class="lvl-2">
-<p>分配一个0x80的chunk 2，等会放入unsorted bin，chunk2的地址此时是0x100对齐的</p>
-</li>
-<li class="lvl-2">
-<p>分配一个0x60的fastbin chunk 3，该chunk的偏移地址来到了0x190</p>
-</li>
-<li class="lvl-2">
-<p>释放chunk2，放入unsorted bin，此时其fd和bk存有main_arena+0x68</p>
-</li>
-<li class="lvl-2">
-<p>取0x60大小的chunk4（fake_libc_chunk），会从chunk2中进行分割，带有main_arena地址</p>
-</li>
-<li class="lvl-2">
-<p>读取取出的chunk4，泄露main_arena地址然后计算偏移获取malloc_hook</p>
-</li>
-<li class="lvl-2">
-<p>释放chunk3，放入fastbin</p>
-</li>
-<li class="lvl-2">
-<p>释放chunk1，接入fastbin链表头，其fd指向chunk3（0x190）</p>
-</li>
-<li class="lvl-2">
-<p>模拟一个UAF，写chunk1的fd一字节0x00将其fd指向0x100的chunk2（chunk 4）</p>
-</li>
-<li class="lvl-2">
-<p>写chunk4，修改低位地址令其fd指向目标地址</p>
-</li>
-<li class="lvl-2">
-<p>最后将fastbin中的chunk1和3取出，再次取就取到了malloc_hook-0x23处的chunk</p>
-</li>
-</ul>
-<h3 id="House-of-Storm-unsorted-bin-atk-largebin-atk">House of Storm (unsorted bin atk + largebin atk)</h3>
-<blockquote>
-<p>BLOG没有写懒得补了写在这里，该技术实现任意地址chunk分配<br>
-2.26-2.28 需要tcache填满，再往后该漏洞不可用这个技术最关键的一步是largebin attack将fake_chunk地址写上一个堆地址，而且非常巧妙的利用了一个字节错位将其作为了size。下面是POC的流程</p>
-</blockquote>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>准备一个unsortedbin堆块一个largebin堆块，其中unsortedbin中的堆块要比largebin中的大 （还要防止top合并）</p>
-</li>
-<li class="lvl-2">
-<p>将unsortedbin的地址进行一下处理，算出一个移位偏移量。</p>
-</li>
-<li class="lvl-2">
-<p>将unsorted bin的chunk bk写为fake_chunk，将large chunk的bk写成fake_chunk+8</p>
-</li>
-<li class="lvl-2">
-<p>将large chunk的bk_nextsize写成fake chunk-0x18-shift_amount，shift是我们先前的偏移</p>
-</li>
-<li class="lvl-2">
-<p>利用一个large_bin attack将unsorted chunk的地址写入一个恰当的位置正好伪造出fakechunk的size</p>
-</li>
-<li class="lvl-2">
-<p>申请相应大小（堆地址高8位？）即可获得fake_chunk</p>
-</li>
-</ul>
-<h2 id="House-of-Einhejar——off-by-null">House of Einhejar——off by null</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/30/How2Heap-4/">参考</a><br>
-仅需off by one就能工作。控制住当前chunk的末8字节（prev_size写成evil_size，差值）然后溢出修改掉下一个chunk的PREV_INUSE位。然后通过free下一个chunk触发合并后，下次分配就能从指定地址取chunk了（prev_size错误合并，overlap）。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>由于off by one，最好溢出的下个chunk的size是0x100对齐的，便于改写</p>
-</li>
-<li class="lvl-2">
-<p>fakechunk的size要和我们修改的prev_size一致</p>
-</li>
-</ul>
-<h2 id="Unsafe-Unlink">Unsafe Unlink</h2>
-<p>利用Unlink实现overlap或指定地址写（确切地说是将target写成&amp;target-0x18）。但是这个POC中利用所需要的前置条件较多…需要同时修改被unlink的chunk的fd和bk以及下一chunk的prevsize和PREV_INUSE位，要求太高了。</p>
-<h1>glibc 2.27</h1>
-<blockquote>
-<p>这个版本首次引入了tcache<br>
-下面会着重涉及tcache相关的攻击，同时大部分上面的攻击技巧都要和tcache打交道，比如先填满7个。</p>
-</blockquote>
-<h2 id="Fastbin">Fastbin</h2>
-<p>同上，只是每次要先填满对应大小的7个tcache</p>
-<h2 id="tcache">tcache</h2>
-<p><a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/07/28/How2Heap-8-end-%E2%80%94%E2%80%94Tcache/">参考链接</a></p>
-<h3 id="Same-as-fastbin">Same as fastbin</h3>
-<p>和fastbin一样只不过更简单（没有了fastbin szie检查）。包括double free，house of spirit，tcache poison（对应fastbin attack）等。</p>
-<h3 id="tcache-stashing-unlink-attack">tcache stashing unlink attack</h3>
-<p>在有tcache的情况下替代unsorted bin attack实现任意地址写一个libc地址。同时还能构造fake chunk（任意地址chunk分配）。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>tcache空两个，拿到两个small bin和一个small bin的UAF，fake_chunk的bk写入target</p>
-</li>
-<li class="lvl-2">
-<p>修改后释放的smallbin块的bk为fake_chunk地址，<strong>calloc触发</strong>写入攻击，target被改同时tcache头部会链入fake_chunk</p>
-</li>
-<li class="lvl-2">
-<p>下次malloc会返回fake_chunk</p>
-</li>
-</ul>
-<h3 id="House-of-botcake">House of botcake</h3>
-<p>double free实现任意堆块分配。</p>
-<ul class="lvl-0">
-<li class="lvl-2">
-<p>用0x110的堆块填满tcache，然后再释放两个相邻的0x110堆块（先a后b）放入unsorted bin并导致合并</p>
-</li>
-<li class="lvl-2">
-<p>取出一个0x110的chunk（从tcache），然后再次释放上一步中的a块，a块此时被放入tcache，这里形成了一个重叠</p>
-</li>
-<li class="lvl-2">
-<p>分配一个0x130的堆块，这会从unsorted bin中合并好的块切割，而这时候我们取得的这个chunk可以拿来修改tcache头部的a块</p>
-</li>
-<li class="lvl-2">
-<p>修改fd后malloc两次即可</p>
-</li>
-</ul>
-<h1>glibc 2.34+</h1>
-<h2 id="Glibc-2-31-House-of-Pig">Glibc 2.31 House of Pig</h2>
-<h2 id="House-of-Kiwi">House of Kiwi</h2>
-<h2 id="House-of-Apple">House of Apple</h2>
-<p>一种思想。在glibc 2.34+的版本中已经没有了malloc_hook这种函数让我们一次就能getshell。堆利用的思想更多的集中到了FSOP上。</p>
-<h3 id="v1">v1</h3>
-<h3 id="v2">v2</h3>
-<p>参考<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>的板子用一次largebin attack将io_list_all劫持，然后将vtable换成wide版本来让内核从wvtable找函数调用从而规避检查，*（wdata+0xe0）+0x68就是能劫持控制流的地方。</p>
-<p>值得注意的是，在我们劫持的时候，rdi中存放的是fp的地址（也就是我们劫持到的堆地址，借助一些gadget以及setcontext这种我们能够控制几乎所有的寄存器，只要堆上布局合理。<br>
-在setcontext最后会将[rdx+0xa8]的内容push到栈上然后ret，这也是我们ROP链路的开始。</p>
-<h3 id="v3">v3</h3>
-<h2 id="House-of-Banana">House of Banana</h2>
-<p>攻击_rtld_global的一种方法。劫持rtld_global到可写堆块后通过伪造程序基地址或者finiarray的办法，让程序在调用exit()退出的时候执行我们想要执行的函数。<br>
-rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap还是篡改本来的，再或者改掉程序基地址，我们最终是要让</p>
-<h2 id="House-of-Emma">House of Emma</h2>
-<h2 id="tlor-list">tlor_list</h2>
-<h2 id="Libc-GOT">Libc_GOT</h2>
-<h2 id="io-obstack">io_obstack</h2>
-<h2 id="House-of-Cat">House of Cat</h2>
-
-    </article>
-    <!-- license -->
+                <main class="main index-page">
     
-    <!-- paginator -->
-    <ul class="post-paginator">
-        <li class="next">
+        
+        
+        
+        
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/" title="How2Heap(7)——Large Bin Attack">
-                    <div class="nextTitle">How2Heap(7)——Large Bin Attack</div>
-                </a>
             
-        </li>
-        <li class="previous">
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">
+                
+                <span class="abstract-title-text">虚拟机初探</span>
+            </a>
+            <div class="abstract-content">
+                以ciscn2024 magic_vm为例，简单看看虚拟机的逆向与分析。
+            </div>
+            <!-- read more -->
             
-                <div class="prevSlogan">Previous Post</div>
-                <a href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/" title="How2Heap实战(1)——CISCN2024orange_cat_diary">
-                    <div class="prevTitle">How2Heap实战(1)——CISCN2024orange_cat_diary</div>
-                </a>
-            
-        </li>
-    </ul>
-    <!-- comment -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/10/21">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/09/03</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
     
-        <div class="post-comment">
-            <!-- 来必力 City 版安装代码 -->
-
-
-            
-
-            
-
-            
-
-            <!-- utteranc评论 -->
-
-
-            <!-- partial('_partial/comment/changyan') -->
-            <!--PC版-->
-
-
-            
-            
-
-            
-
-        </div>
     
-    <!-- timeliness note -->
-    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
-    <!-- Mathjax -->
+        <a class="post-tag" href="javascript:void(0);" data-tags="wp">wp</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="vm">vm</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+    <!-- paginator  -->
+    
+        <nav class="page-nav">
+            <a class="extend prev" rel="prev" href="/archives/2024/09/">&lt; PREV</a><a class="page-number" href="/archives/2024/09/">1</a><span class="page-number current">2</span>
+        </nav>
     
 </main>
 
@@ -937,23 +554,6 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
 
         </div>
         <!-- toc -->
-        
-            <div class="toc-wrapper toc-wrapper-loding" style=
-
-
-
-
-
-
-
-    top:50vh;
-
->
-                <div class="toc-catalog">
-                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
-                </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Basic：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#UAF"><span class="toc-number">1.1.</span> <span class="toc-text">UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overflow"><span class="toc-number">1.2.</span> <span class="toc-text">Overflow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Off-By-One"><span class="toc-number">1.3.</span> <span class="toc-text">Off By One</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Double-Free"><span class="toc-number">1.4.</span> <span class="toc-text">Double Free</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overlap"><span class="toc-number">1.5.</span> <span class="toc-text">Overlap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Leak"><span class="toc-number">1.6.</span> <span class="toc-text">Leak</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin-Leak"><span class="toc-number">1.6.1.</span> <span class="toc-text">Unsorted Bin Leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-leak"><span class="toc-number">1.6.2.</span> <span class="toc-text">tcache leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">1.6.3.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%AF%86%EF%BC%9A"><span class="toc-number">1.7.</span> <span class="toc-text">一些常识：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Glibc 2.23</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arena-attack%EF%BC%88House-of-Mind-House-of-Gods%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">arena attack（House of Mind &amp; House of Gods）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-mind"><span class="toc-number">2.1.1.</span> <span class="toc-text">House of mind</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Gods"><span class="toc-number">2.1.2.</span> <span class="toc-text">House of Gods</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Top-chunk-related-attack%EF%BC%88House-of-Force-House-of-Orange%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">Top chunk related attack（House of Force &amp; House of Orange）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Force"><span class="toc-number">2.2.1.</span> <span class="toc-text">House of Force</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Orange"><span class="toc-number">2.2.2.</span> <span class="toc-text">House of Orange</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin%EF%BC%88normal-house-of-spirit-House-of-Rabbit%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">Fastbin（normal, house of spirit, House of Rabbit）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Normal-fast-bin-attack%EF%BC%9A"><span class="toc-number">2.3.1.</span> <span class="toc-text">Normal fast bin attack：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Spirit"><span class="toc-number">2.3.2.</span> <span class="toc-text">House of Spirit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Rabbit"><span class="toc-number">2.3.3.</span> <span class="toc-text">House of Rabbit</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsorted-Bin-Attack"><span class="toc-number">2.4.</span> <span class="toc-text">Unsorted Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Lore%EF%BC%88Small-bin-attack%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">House of Lore（Small bin attack）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Large-Bin-Attack"><span class="toc-number">2.6.</span> <span class="toc-text">Large Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#COMBO-FISTS-%EF%BC%88House-of-Roman-House-of-Storm%EF%BC%89"><span class="toc-number">2.7.</span> <span class="toc-text">COMBO FISTS （House of Roman, House of Storm）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Roman%EF%BC%88%E7%BB%84%E5%90%88%E6%8B%B3%EF%BC%8Cgetshell%E6%80%9D%E8%B7%AF%E5%BE%88%E5%B8%B8%E7%94%A8%E8%80%8C%E4%B8%94%E5%85%81%E8%AE%B8%E7%88%86%E7%A0%B4-Fastbin-atk-Unsorted-bin-atk%EF%BC%89"><span class="toc-number">2.7.1.</span> <span class="toc-text">House of Roman（组合拳，getshell思路很常用而且允许爆破, Fastbin atk + Unsorted bin atk）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Storm-unsorted-bin-atk-largebin-atk"><span class="toc-number">2.7.2.</span> <span class="toc-text">House of Storm (unsorted bin atk + largebin atk)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Einhejar%E2%80%94%E2%80%94off-by-null"><span class="toc-number">2.8.</span> <span class="toc-text">House of Einhejar——off by null</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsafe-Unlink"><span class="toc-number">2.9.</span> <span class="toc-text">Unsafe Unlink</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">glibc 2.27</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin"><span class="toc-number">3.1.</span> <span class="toc-text">Fastbin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache"><span class="toc-number">3.2.</span> <span class="toc-text">tcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Same-as-fastbin"><span class="toc-number">3.2.1.</span> <span class="toc-text">Same as fastbin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-stashing-unlink-attack"><span class="toc-number">3.2.2.</span> <span class="toc-text">tcache stashing unlink attack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-botcake"><span class="toc-number">3.2.3.</span> <span class="toc-text">House of botcake</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">glibc 2.34+</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Glibc-2-31-House-of-Pig"><span class="toc-number">4.1.</span> <span class="toc-text">Glibc 2.31 House of Pig</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Kiwi"><span class="toc-number">4.2.</span> <span class="toc-text">House of Kiwi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Apple"><span class="toc-number">4.3.</span> <span class="toc-text">House of Apple</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#v1"><span class="toc-number">4.3.1.</span> <span class="toc-text">v1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v2"><span class="toc-number">4.3.2.</span> <span class="toc-text">v2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v3"><span class="toc-number">4.3.3.</span> <span class="toc-text">v3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Banana"><span class="toc-number">4.4.</span> <span class="toc-text">House of Banana</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Emma"><span class="toc-number">4.5.</span> <span class="toc-text">House of Emma</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tlor-list"><span class="toc-number">4.6.</span> <span class="toc-text">tlor_list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Libc-GOT"><span class="toc-number">4.7.</span> <span class="toc-text">Libc_GOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io-obstack"><span class="toc-number">4.8.</span> <span class="toc-text">io_obstack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Cat"><span class="toc-number">4.9.</span> <span class="toc-text">House of Cat</span></a></li></ol></li></ol>
-            </div>
         
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -2305,8 +1905,6 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         <!-- CNZZ -->
         
         <!-- async load share.js -->
-        
-            <script src="/scripts/share.js?v=20211217" async></script>
         
         <!-- mermaid -->
         

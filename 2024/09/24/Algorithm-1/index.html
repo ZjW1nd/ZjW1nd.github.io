@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
     
     <meta name="description" content="">
-    <meta name="description" content="写在前面（关于做题的经验）  判断是不是用简单的算法思想就能解决（不需要更多数据结构），分治？贪心？ 如果是贪心，核心是确定好cmp函数 如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3 剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间 反向思考，a要能  高精度计算 本质上是字符串处理。参考oi wiki的高精乘和加模板 1mov a, b  �">
+    <meta name="description" content="写在前面（关于做题的经验）  判断是不是用简单的算法思想就能解决（不需要更多数据结构），分治？贪心？ 如果是贪心，核心是确定好cmp函数 如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3 剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间 反向思考，a要能到b，b到a？ 常见数据结构和算法的模板  高精度计算 本质上是字符串处理。参考oi wiki的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Algorithm（1）">
-<meta property="og:url" content="http://example.com/2024/09/24/Algorithm%EF%BC%881%EF%BC%89/index.html">
+<meta property="og:title" content="Algorithm(1)">
+<meta property="og:url" content="http://example.com/2024/09/24/Algorithm-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="写在前面（关于做题的经验）  判断是不是用简单的算法思想就能解决（不需要更多数据结构），分治？贪心？ 如果是贪心，核心是确定好cmp函数 如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3 剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间 反向思考，a要能  高精度计算 本质上是字符串处理。参考oi wiki的高精乘和加模板 1mov a, b  �">
+<meta property="og:description" content="写在前面（关于做题的经验）  判断是不是用简单的算法思想就能解决（不需要更多数据结构），分治？贪心？ 如果是贪心，核心是确定好cmp函数 如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3 剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间 反向思考，a要能到b，b到a？ 常见数据结构和算法的模板  高精度计算 本质上是字符串处理。参考oi wiki的">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-24T04:35:46.000Z">
-<meta property="article:modified_time" content="2024-11-22T03:58:08.879Z">
+<meta property="article:modified_time" content="2024-11-28T15:34:50.752Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="算法">
 <meta name="twitter:card" content="summary">
@@ -35,7 +35,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
     
-    <title>Algorithm（1） · Zj_W1nd&#39;s BLOG</title>
+    <title>Algorithm(1) · Zj_W1nd&#39;s BLOG</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -261,7 +261,7 @@
                 <a href="/">Zj_W1nd&#39;s BLOG</a>
             </div>
             <div class="post-title header-element">
-                <a href="#" class="post-name">Algorithm（1）</a>
+                <a href="#" class="post-name">Algorithm(1)</a>
             </div>
         </div>
     
@@ -307,7 +307,7 @@
         <h1 class="intro-title">
             <!-- 主页  -->
             
-                Algorithm（1）
+                Algorithm(1)
             <!-- 404 -->
             
         </h1>
@@ -498,29 +498,33 @@
 <li class="lvl-2">如果是贪心，核心是确定好cmp函数</li>
 <li class="lvl-2">如果是分治，确定递归函数的内容，全局数组+左边界（参数1）+右边界（参数2）+参数3</li>
 <li class="lvl-2">剪枝：搜索过程中利用某些额外的条件判断提前返回从而优化搜索时间</li>
-<li class="lvl-2">反向思考，a要能</li>
+<li class="lvl-2">反向思考，a要能到b，b到a？</li>
+<li class="lvl-2">常见数据结构和算法的模板</li>
 </ul>
 <h1>高精度计算</h1>
 <p>本质上是字符串处理。参考oi wiki的高精乘和加模板</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov a, b</span><br></pre></td></tr></table></figure>
-<div class="warning">
-<p>👨 🐱</p>
-</div>
-<ul class="lvl-0">
-<li class="lvl-2"><input type="checkbox" id="checkbox0"><label for="checkbox0">？</label></li>
-<li class="lvl-2"><input type="checkbox" id="checkbox1" checked="true"><label for="checkbox1">√</label><br>
-<mark>check</mark><br>
-下标[^1]</li>
-</ul>
-<details open>
-<summary><span class="pre-summary">&nbsp;</span>折叠</summary><p>wow</p>
-</details>
+<blockquote>
+<p>高精加：</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">add</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> b[], <span class="type">int</span> c[])</span> </span>&#123;</span><br><span class="line">  <span class="built_in">clear</span>(c);</span><br><span class="line">  <span class="comment">// 高精度实现中，一般令数组的最大长度 LEN 比可能的输入大一些</span></span><br><span class="line">  <span class="comment">// 然后略去末尾的几次循环，这样一来可以省去不少边界情况的处理</span></span><br><span class="line">  <span class="comment">// 因为实际输入不会超过 1000 位，故在此循环到 LEN - 1 = 1003 已经足够</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; LEN - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">    <span class="comment">// 将相应位上的数码相加</span></span><br><span class="line">    c[i] += a[i] + b[i];</span><br><span class="line">    <span class="keyword">if</span> (c[i] &gt;= <span class="number">10</span>) &#123;</span><br><span class="line">      <span class="comment">// 进位</span></span><br><span class="line">      c[i + <span class="number">1</span>] += <span class="number">1</span>;</span><br><span class="line">      c[i] -= <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>高精*低精：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">mul_short</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> b, <span class="type">int</span> c[])</span> </span>&#123;</span><br><span class="line">  <span class="built_in">clear</span>(c);</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; LEN - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">    <span class="comment">// 直接把 a 的第 i 位数码乘以乘数，加入结果</span></span><br><span class="line">    c[i] += a[i] * b;</span><br><span class="line">    <span class="keyword">if</span> (c[i] &gt;= <span class="number">10</span>) &#123;</span><br><span class="line">      <span class="comment">// 处理进位</span></span><br><span class="line">      <span class="comment">// c[i] / 10 即除法的商数成为进位的增量值</span></span><br><span class="line">      c[i + <span class="number">1</span>] += c[i] / <span class="number">10</span>;</span><br><span class="line">      <span class="comment">// 而 c[i] % 10 即除法的余数成为在当前位留下的值</span></span><br><span class="line">      c[i] %= <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>进位单独抽出来也行：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">result_1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">memset</span>(sav,<span class="number">0</span>,<span class="built_in">sizeof</span>(sav));</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">register</span> <span class="type">int</span> i=<span class="number">1</span>;i&lt;=<span class="number">500</span>;i+=<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">register</span> <span class="type">int</span> j=<span class="number">1</span>;j&lt;=<span class="number">500</span>;j+=<span class="number">1</span>)</span><br><span class="line">            sav[i+j<span class="number">-1</span>]+=res[i]*f[j];<span class="comment">//先计算每一位上的值（不进位）</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">register</span> <span class="type">int</span> i=<span class="number">1</span>;i&lt;=<span class="number">500</span>;i+=<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sav[i+<span class="number">1</span>]+=sav[i]/<span class="number">10</span>;<span class="comment">//单独处理进位问题，不容易出错</span></span><br><span class="line">        sav[i]%=<span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">memcpy</span>(res,sav,<span class="built_in">sizeof</span>(res));<span class="comment">//cstring库里的赋值函数，把sav的值赋给res</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>高精*高精：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">mul</span><span class="params">(<span class="type">int</span> a[], <span class="type">int</span> b[], <span class="type">int</span> c[])</span> </span>&#123;</span><br><span class="line">  <span class="built_in">clear</span>(c);</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; LEN - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">    <span class="comment">// 这里直接计算结果中的从低到高第 i 位，且一并处理了进位</span></span><br><span class="line">    <span class="comment">// 第 i 次循环为 c[i] 加上了所有满足 p + q = i 的 a[p] 与 b[q] 的乘积之和</span></span><br><span class="line">    <span class="comment">// 这样做的效果和直接进行上图的运算最后求和是一样的，只是更加简短的一种实现方式</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt;= i; ++j) c[i] += a[j] * b[i - j];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (c[i] &gt;= <span class="number">10</span>) &#123;</span><br><span class="line">      c[i + <span class="number">1</span>] += c[i] / <span class="number">10</span>;</span><br><span class="line">      c[i] %= <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>高精度输入输出：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">clear</span><span class="params">(<span class="type">int</span> a[])</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; LEN; ++i) a[i] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read</span><span class="params">(<span class="type">int</span> a[])</span> </span>&#123;</span><br><span class="line">  <span class="type">static</span> <span class="type">char</span> s[LEN + <span class="number">1</span>];</span><br><span class="line">  <span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span>, s);</span><br><span class="line">  <span class="built_in">clear</span>(a);</span><br><span class="line">  <span class="type">int</span> len = <span class="built_in">strlen</span>(s);</span><br><span class="line">  <span class="comment">// 如上所述，反转</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; len; ++i) a[len - i - <span class="number">1</span>] = s[i] - <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">  <span class="comment">// s[i] - &#x27;0&#x27; 就是 s[i] 所表示的数码</span></span><br><span class="line">  <span class="comment">// 有些同学可能更习惯用 ord(s[i]) - ord(&#x27;0&#x27;) 的方式理解</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">(<span class="type">int</span> a[])</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="keyword">for</span> (i = LEN - <span class="number">1</span>; i &gt;= <span class="number">1</span>; --i)</span><br><span class="line">    <span class="keyword">if</span> (a[i] != <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">for</span> (; i &gt;= <span class="number">0</span>; --i) <span class="built_in">putchar</span>(a[i] + <span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">  <span class="built_in">putchar</span>(<span class="string">&#x27;\n&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>快速模幂的代码实现</h1>
+<p>原理课上学过，拆成2进制后复用自乘减少次数，优化复杂度到$Ologn$</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">quickPower</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span><span class="comment">//是求a的b次方</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="type">int</span> ans = <span class="number">1</span>, base = a;<span class="comment">//ans为答案，base为a^(2^n)</span></span><br><span class="line">	<span class="keyword">while</span>(b &gt; <span class="number">0</span>)<span class="comment">//b是一个变化的二进制数，如果还没有用完</span></span><br><span class="line">    &#123;</span><br><span class="line">		<span class="keyword">if</span>(b &amp; <span class="number">1</span>)<span class="comment">//&amp;是位运算，b&amp;1表示b在二进制下最后一位是不是1，如果是：</span></span><br><span class="line">			ans *= base;<span class="comment">//把ans乘上对应的a^(2^n)</span></span><br><span class="line">		</span><br><span class="line">        base *= base;<span class="comment">//base自乘，模乘这里要取模</span></span><br><span class="line">		b &gt;&gt;= <span class="number">1</span>;<span class="comment">// 模乘这里要取模</span></span><br><span class="line">        <span class="comment">//位运算，b右移一位，如101变成10（把最右边的1移掉了），10010变成1001。现在b在二进制下最后一位是刚刚的倒数第二位。结合上面b &amp; 1食用更佳</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">// 模乘这里要处理b为0情况</span></span><br><span class="line">    <span class="comment">// ans%=p</span></span><br><span class="line">	<span class="keyword">return</span> ans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>模乘的话，就在每一个乘法后面都添加一个模，<strong>注意边界情况</strong>。</p>
 <h1>素性检测</h1>
 <p>$n^2$遍历</p>
 <h1>最大流</h1>
 <p><strong>最大流最小割定理</strong>：最大流的值等于最小割的容量。（强对偶）</p>
 <p>Ford-Fulkerson $O(mnC)$</p>
-<h1>并查集</h1>
+<h1>KMP算法</h1>
 
     </article>
     <!-- license -->
@@ -530,8 +534,8 @@
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/" title="ByteCTF2024——ezheap">
-                    <div class="nextTitle">ByteCTF2024——ezheap</div>
+                <a href="/2024/09/24/Algorithm-2/" title="Algorithm(1)">
+                    <div class="nextTitle">Algorithm(1)</div>
                 </a>
             
         </li>
@@ -574,6 +578,21 @@
     <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
     
     <!-- Mathjax -->
+    
+        
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
     
 </main>
 
@@ -676,7 +695,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面（关于做题的经验）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">高精度计算</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">素性检测</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">最大流</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">并查集</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面（关于做题的经验）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">高精度计算</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">快速模幂的代码实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">素性检测</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">最大流</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">KMP算法</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -955,7 +974,22 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1440,7 +1474,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 53
+        Total : 54
         </div>
         <!-- search  -->
         
@@ -1487,7 +1521,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">10/28</span>
-            <a class="archive-post-title" href="/2024/10/28/Algorithm(0)/">Algorithm(0)</a>
+            <a class="archive-post-title" href="/2024/10/28/Algorithm-0/">Algorithm(0)</a>
         </li>
     
         
@@ -1529,7 +1563,13 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/24</span>
-            <a class="archive-post-title" href="/2024/09/24/Algorithm%EF%BC%881%EF%BC%89/">Algorithm（1）</a>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
         </li>
     
         
