@@ -22,7 +22,7 @@
     <meta name="description" content="题目分析 这个题目给了相当多的check：  沙箱ban了open，openat和execve，glibc 2.35, 释放有UAF, chunk只能分配0x500-0x5FF大小，其余大小都会变成0x500，最多5个，只有一次edit一次show。 程序开始会把IO_wfile_jumps向后的page全写0 同时允许一个经过check的地址写16字节，check不允许写stdin到stdin向">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap实战——强网杯2024babyheap">
-<meta property="og:url" content="http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="题目分析 这个题目给了相当多的check：  沙箱ban了open，openat和execve，glibc 2.35, 释放有UAF, chunk只能分配0x500-0x5FF大小，其余大小都会变成0x500，最多5个，只有一次edit一次show。 程序开始会把IO_wfile_jumps向后的page全写0 同时允许一个经过check的地址写16字节，check不允许写stdin到stdin向">
 <meta property="og:locale" content="en_US">
@@ -2075,7 +2075,7 @@ House of Apple-v2是一系列利用高版本libc下不对IO_file_complete中处�
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

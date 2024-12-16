@@ -22,7 +22,7 @@
     <meta name="description" content="先看看pwntools的shellcraft.amd64.sh()为我们提供了怎样的一段代码 12345678910111213141516171819202122&#x2F;* execve(path&#x3D;&amp;#x27;&#x2F;bin&#x2F;&#x2F;&#x2F;sh&amp;#x27;, argv&#x3D;[&amp;#x27;sh&amp;#x27;], envp&#x3D;0) *&#x2F;&#x2F;* push b&amp;#x27;&#x2F;bin&#x2F;&#x2F;&#x2F;sh\x00&amp;#x27; *&#x2F;push 0x68m">
 <meta property="og:type" content="article">
 <meta property="og:title" content="pwntools的shellcode逻辑详解">
-<meta property="og:url" content="http://example.com/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="先看看pwntools的shellcraft.amd64.sh()为我们提供了怎样的一段代码 12345678910111213141516171819202122&#x2F;* execve(path&#x3D;&amp;#x27;&#x2F;bin&#x2F;&#x2F;&#x2F;sh&amp;#x27;, argv&#x3D;[&amp;#x27;sh&amp;#x27;], envp&#x3D;0) *&#x2F;&#x2F;* push b&amp;#x27;&#x2F;bin&#x2F;&#x2F;&#x2F;sh\x00&amp;#x27; *&#x2F;push 0x68m">
 <meta property="og:locale" content="en_US">
@@ -2041,7 +2041,7 @@ x86传参，网上看到的教程似乎都是__fastcall调用方式,最终两个
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

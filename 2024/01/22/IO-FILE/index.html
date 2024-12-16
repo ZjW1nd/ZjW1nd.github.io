@@ -22,7 +22,7 @@
     <meta name="description" content="FILE结构体与glibc封装后的IO  “一切皆文件”  IO_FILE 首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IO_FILE——File Stream Oriented Programming (1)">
-<meta property="og:url" content="http://example.com/2024/01/22/IO-FILE/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/01/22/IO-FILE/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="FILE结构体与glibc封装后的IO  “一切皆文件”  IO_FILE 首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">
 <meta property="og:locale" content="en_US">
@@ -2143,7 +2143,7 @@ fclose同理，只是反着来一遍。先从链表中unlink出来，然后调�
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

@@ -22,7 +22,7 @@
     <meta name="description" content="介绍 malloc中对large bin范围内的chunk有一套额外的分支和处理办法。利用这里面的代码可以对large bin进行攻击。参考how2heap，主要是下面这两块链表读写，有两次写的机会。 第一处,针对bk_nextsize的： 12345678910[...]          else          &amp;#123;              victim-&gt;fd_nexts">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap(7)——Large Bin Attack">
-<meta property="og:url" content="http://example.com/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="介绍 malloc中对large bin范围内的chunk有一套额外的分支和处理办法。利用这里面的代码可以对large bin进行攻击。参考how2heap，主要是下面这两块链表读写，有两次写的机会。 第一处,针对bk_nextsize的： 12345678910[...]          else          &amp;#123;              victim-&gt;fd_nexts">
 <meta property="og:locale" content="en_US">
@@ -2088,7 +2088,7 @@
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

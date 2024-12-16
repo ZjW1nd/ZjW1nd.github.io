@@ -22,7 +22,7 @@
     <meta name="description" content="题目分析 Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码 这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 12345">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap实战——网鼎杯database wp">
-<meta property="og:url" content="http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="题目分析 Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码 这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 12345">
 <meta property="og:locale" content="en_US">
@@ -2100,7 +2100,7 @@ free_hook(rdi=chunk2_addr)<br>
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

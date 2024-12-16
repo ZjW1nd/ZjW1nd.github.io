@@ -22,7 +22,7 @@
     <meta name="description" content="Unsorted Bin Attack：非常常用，用来绕过aslr 首先，Unsorted bin是FIFO的。后放入的会插在队头（离main arena最近的一端，一定要区分这个），取chunk的时候会从尾部（离main arena较远的一端）取出；但unsorted bin是一个双向循环链表，严格来说没有头尾之分，这里按下面这张图的格式方便记忆。 !(unsorted_bin)[&#x2F;images">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap(5)——Unsorted bin attack &amp; House of Lore">
-<meta property="og:url" content="http://example.com/2024/01/25/How2Heap-5/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/01/25/How2Heap-5/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="Unsorted Bin Attack：非常常用，用来绕过aslr 首先，Unsorted bin是FIFO的。后放入的会插在队头（离main arena最近的一端，一定要区分这个），取chunk的时候会从尾部（离main arena较远的一端）取出；但unsorted bin是一个双向循环链表，严格来说没有头尾之分，这里按下面这张图的格式方便记忆。 !(unsorted_bin)[&#x2F;images">
 <meta property="og:locale" content="en_US">
@@ -499,7 +499,7 @@
         <h1>Unsorted Bin Attack：非常常用，用来绕过aslr</h1>
 <p>首先，Unsorted bin是FIFO的。后放入的会插在队头（<strong>离main arena最近的一端，一定要区分这个</strong>），取chunk的时候会从尾部（<strong>离main arena较远的一端</strong>）取出；但unsorted bin是一个<strong>双向循环</strong>链表，严格来说没有头尾之分，这里按下面这张图的格式方便记忆。<br>
 !(unsorted_bin)[/images/unsorted_bin.jpg]</p>
-<p>所谓的main arena指的其实是<code>struct malloc_state main_arena.bins[0,1]</code>（见<a target="_blank" rel="noopener" href="https://zjw1nd.github.io/2023/12/17/How2Heap-3/#/House-of-Gods">How2Heap-3</a>），64位系统下应该是指向main_arena+96。通过这个攻击我们能将这个数写在我们想要的地址，常用来篡改某些关键字段的数据（如top chunk的size）。而且这个数和libc基址的偏移是固定的，泄露这个数可以用来绕过aslr，因此这个手法很常用。</p>
+<p>所谓的main arena指的其实是<code>struct malloc_state main_arena.bins[0,1]</code>（见<a href="https://zjw1nd.github.io/2023/12/17/How2Heap-3/#/House-of-Gods">How2Heap-3</a>），64位系统下应该是指向main_arena+96。通过这个攻击我们能将这个数写在我们想要的地址，常用来篡改某些关键字段的数据（如top chunk的size）。而且这个数和libc基址的偏移是固定的，泄露这个数可以用来绕过aslr，因此这个手法很常用。</p>
 <h2 id="Unsorted-Bin-Leak">Unsorted Bin Leak</h2>
 <p>这里没有什么特定的技巧，用UAF将已经放在Unsorted Bin中的chunk内容打印泄露其fd即可，同时如果unsorted bin中只有一个chunk，fd和bk都会指向main_arena+96。</p>
 <p>打出这个值之后获取和libc基址的偏移，参考ctf wiki有两种获取libc基址的方法，一是通过IDA分析libc文件，找到<code>malloc_trim</code>函数，里面会有访问main_arena的位置，可以直接获取。</p>
@@ -2039,7 +2039,7 @@
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

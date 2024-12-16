@@ -22,7 +22,7 @@
     <meta name="description" content="这道题目比赛的时候思路卡住了，有两个其实很简单的点都没想到，不然初赛战队就能第三名拿钱了。 题目分析 GLIBC2.27，符号表都没去，就是add，edit，show，delete，exit。malloc返回的指针存在数组里。漏洞明显的不能再明显了，add申请一个size，edit没检查，任意溢出。然后show就是printf %s的泄露，exit调用了libc中的exit函数。 但是这个free">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ByteCTF2024——ezheap">
-<meta property="og:url" content="http://example.com/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="这道题目比赛的时候思路卡住了，有两个其实很简单的点都没想到，不然初赛战队就能第三名拿钱了。 题目分析 GLIBC2.27，符号表都没去，就是add，edit，show，delete，exit。malloc返回的指针存在数组里。漏洞明显的不能再明显了，add申请一个size，edit没检查，任意溢出。然后show就是printf %s的泄露，exit调用了libc中的exit函数。 但是这个free">
 <meta property="og:locale" content="en_US">
@@ -2053,7 +2053,7 @@
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

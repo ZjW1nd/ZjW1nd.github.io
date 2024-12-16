@@ -3,11 +3,11 @@
   <title>Hexo</title>
   
   
-  <link href="http://example.com/atom.xml" rel="self"/>
+  <link href="https://zjw1nd.github.io/atom.xml" rel="self"/>
   
-  <link href="http://example.com/"/>
+  <link href="https://zjw1nd.github.io/"/>
   <updated>2024-12-13T08:05:13.635Z</updated>
-  <id>http://example.com/</id>
+  <id>https://zjw1nd.github.io/</id>
   
   <author>
     <name>John Doe</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>How2Heap总集篇导演剪辑剧场版</title>
-    <link href="http://example.com/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/"/>
-    <id>http://example.com/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/</id>
+    <link href="https://zjw1nd.github.io/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/"/>
+    <id>https://zjw1nd.github.io/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/</id>
     <published>2024-12-13T04:00:00.000Z</published>
     <updated>2024-12-13T08:05:13.635Z</updated>
     
@@ -33,19 +33,19 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="heap" scheme="http://example.com/tags/heap/"/>
+    <category term="heap" scheme="https://zjw1nd.github.io/tags/heap/"/>
     
   </entry>
   
   <entry>
     <title>How2Heap-rust——qwb2024_chat-with-me</title>
-    <link href="http://example.com/2024/12/12/rust-pwn-qwb2024-chat-with-me/"/>
-    <id>http://example.com/2024/12/12/rust-pwn-qwb2024-chat-with-me/</id>
+    <link href="https://zjw1nd.github.io/2024/12/12/rust-pwn-qwb2024-chat-with-me/"/>
+    <id>https://zjw1nd.github.io/2024/12/12/rust-pwn-qwb2024-chat-with-me/</id>
     <published>2024-12-12T08:14:22.000Z</published>
     <updated>2024-12-13T07:52:08.087Z</updated>
     
@@ -63,23 +63,23 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="逆向" scheme="http://example.com/tags/%E9%80%86%E5%90%91/"/>
+    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="heap" scheme="http://example.com/tags/heap/"/>
+    <category term="heap" scheme="https://zjw1nd.github.io/tags/heap/"/>
     
-    <category term="rust" scheme="http://example.com/tags/rust/"/>
+    <category term="rust" scheme="https://zjw1nd.github.io/tags/rust/"/>
     
   </entry>
   
   <entry>
     <title>常见的加密算法逆向识别</title>
-    <link href="http://example.com/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/"/>
-    <id>http://example.com/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/</id>
+    <link href="https://zjw1nd.github.io/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/"/>
+    <id>https://zjw1nd.github.io/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/</id>
     <published>2024-11-11T02:49:48.000Z</published>
     <updated>2024-11-11T02:49:48.628Z</updated>
     
@@ -91,8 +91,8 @@
   
   <entry>
     <title>How2Heap实战——强网杯2024babyheap</title>
-    <link href="http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/"/>
-    <id>http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/</id>
+    <link href="https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/"/>
+    <id>https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/</id>
     <published>2024-11-10T15:55:14.000Z</published>
     <updated>2024-11-15T09:44:47.966Z</updated>
     
@@ -109,21 +109,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="wp" scheme="http://example.com/tags/wp/"/>
+    <category term="wp" scheme="https://zjw1nd.github.io/tags/wp/"/>
     
-    <category term="heap" scheme="http://example.com/tags/heap/"/>
+    <category term="heap" scheme="https://zjw1nd.github.io/tags/heap/"/>
     
   </entry>
   
   <entry>
     <title>How2Heap实战——网鼎杯database wp</title>
-    <link href="http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/"/>
-    <id>http://example.com/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/</id>
+    <link href="https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/"/>
+    <id>https://zjw1nd.github.io/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/</id>
     <published>2024-11-10T15:29:18.000Z</published>
     <updated>2024-11-14T11:57:33.270Z</updated>
     
@@ -140,21 +140,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="wp" scheme="http://example.com/tags/wp/"/>
+    <category term="wp" scheme="https://zjw1nd.github.io/tags/wp/"/>
     
-    <category term="heap" scheme="http://example.com/tags/heap/"/>
+    <category term="heap" scheme="https://zjw1nd.github.io/tags/heap/"/>
     
   </entry>
   
   <entry>
     <title>CHOP——强网杯2024expect_number wp</title>
-    <link href="http://example.com/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/"/>
-    <id>http://example.com/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/</id>
+    <link href="https://zjw1nd.github.io/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/"/>
+    <id>https://zjw1nd.github.io/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/</id>
     <published>2024-11-10T15:27:20.000Z</published>
     <updated>2024-11-20T12:42:03.374Z</updated>
     
@@ -169,21 +169,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="wp" scheme="http://example.com/tags/wp/"/>
+    <category term="wp" scheme="https://zjw1nd.github.io/tags/wp/"/>
     
-    <category term="chop" scheme="http://example.com/tags/chop/"/>
+    <category term="chop" scheme="https://zjw1nd.github.io/tags/chop/"/>
     
   </entry>
   
   <entry>
     <title>页表之上——Linux内核的内存管理</title>
-    <link href="http://example.com/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
-    <id>http://example.com/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</id>
+    <link href="https://zjw1nd.github.io/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"/>
+    <id>https://zjw1nd.github.io/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</id>
     <published>2024-10-30T11:08:20.000Z</published>
     <updated>2024-11-18T06:43:09.933Z</updated>
     
@@ -199,19 +199,19 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="kernel" scheme="http://example.com/tags/kernel/"/>
+    <category term="kernel" scheme="https://zjw1nd.github.io/tags/kernel/"/>
     
   </entry>
   
   <entry>
     <title>Algorithm(0)</title>
-    <link href="http://example.com/2024/10/28/Algorithm-0/"/>
-    <id>http://example.com/2024/10/28/Algorithm-0/</id>
+    <link href="https://zjw1nd.github.io/2024/10/28/Algorithm-0/"/>
+    <id>https://zjw1nd.github.io/2024/10/28/Algorithm-0/</id>
     <published>2024-10-28T08:20:57.000Z</published>
     <updated>2024-12-02T09:16:28.851Z</updated>
     
@@ -230,14 +230,14 @@
     
     
     
-    <category term="算法" scheme="http://example.com/tags/%E7%AE%97%E6%B3%95/"/>
+    <category term="算法" scheme="https://zjw1nd.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
   <entry>
     <title>记录一次护网行动</title>
-    <link href="http://example.com/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/"/>
-    <id>http://example.com/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/</id>
+    <link href="https://zjw1nd.github.io/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/"/>
+    <id>https://zjw1nd.github.io/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/</id>
     <published>2024-10-18T11:17:47.000Z</published>
     <updated>2024-10-19T03:32:36.416Z</updated>
     
@@ -252,19 +252,19 @@
     
     
     
-    <category term="Web" scheme="http://example.com/categories/Web/"/>
+    <category term="Web" scheme="https://zjw1nd.github.io/categories/Web/"/>
     
     
-    <category term="web" scheme="http://example.com/tags/web/"/>
+    <category term="web" scheme="https://zjw1nd.github.io/tags/web/"/>
     
-    <category term="hvv" scheme="http://example.com/tags/hvv/"/>
+    <category term="hvv" scheme="https://zjw1nd.github.io/tags/hvv/"/>
     
   </entry>
   
   <entry>
     <title>Android逆向入门之2015-AliCrackme</title>
-    <link href="http://example.com/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/"/>
-    <id>http://example.com/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/</id>
+    <link href="https://zjw1nd.github.io/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/"/>
+    <id>https://zjw1nd.github.io/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/</id>
     <published>2024-10-14T11:18:51.000Z</published>
     <updated>2024-11-20T06:31:44.034Z</updated>
     
@@ -281,16 +281,16 @@
     
     
     
-    <category term="Android" scheme="http://example.com/tags/Android/"/>
+    <category term="Android" scheme="https://zjw1nd.github.io/tags/Android/"/>
     
-    <category term="逆向" scheme="http://example.com/tags/%E9%80%86%E5%90%91/"/>
+    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
   </entry>
   
   <entry>
     <title>Kernel Pwn从入门到入土-2</title>
-    <link href="http://example.com/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/"/>
-    <id>http://example.com/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/</id>
+    <link href="https://zjw1nd.github.io/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/"/>
+    <id>https://zjw1nd.github.io/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/</id>
     <published>2024-10-11T08:28:17.000Z</published>
     <updated>2024-11-20T07:46:49.673Z</updated>
     
@@ -307,19 +307,19 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="kernel" scheme="http://example.com/tags/kernel/"/>
+    <category term="kernel" scheme="https://zjw1nd.github.io/tags/kernel/"/>
     
   </entry>
   
   <entry>
     <title>CVE-2024-26229青春版_WindowsKernelPWN</title>
-    <link href="http://example.com/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/"/>
-    <id>http://example.com/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/</id>
+    <link href="https://zjw1nd.github.io/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/"/>
+    <id>https://zjw1nd.github.io/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/</id>
     <published>2024-10-08T09:25:07.000Z</published>
     <updated>2024-10-18T05:14:13.151Z</updated>
     
@@ -335,21 +335,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="Windows" scheme="http://example.com/tags/Windows/"/>
+    <category term="Windows" scheme="https://zjw1nd.github.io/tags/Windows/"/>
     
-    <category term="CVE" scheme="http://example.com/tags/CVE/"/>
+    <category term="CVE" scheme="https://zjw1nd.github.io/tags/CVE/"/>
     
   </entry>
   
   <entry>
     <title>现代内核安全机制——以Windows 11的kernel pwn为例</title>
-    <link href="http://example.com/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/"/>
-    <id>http://example.com/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/</id>
+    <link href="https://zjw1nd.github.io/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/"/>
+    <id>https://zjw1nd.github.io/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/</id>
     <published>2024-10-06T08:31:08.000Z</published>
     <updated>2024-10-09T13:04:18.758Z</updated>
     
@@ -364,21 +364,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="Windows" scheme="http://example.com/tags/Windows/"/>
+    <category term="Windows" scheme="https://zjw1nd.github.io/tags/Windows/"/>
     
-    <category term="kernel" scheme="http://example.com/tags/kernel/"/>
+    <category term="kernel" scheme="https://zjw1nd.github.io/tags/kernel/"/>
     
   </entry>
   
   <entry>
     <title>ByteCTF2024——ezheap</title>
-    <link href="http://example.com/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/"/>
-    <id>http://example.com/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/</id>
+    <link href="https://zjw1nd.github.io/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/"/>
+    <id>https://zjw1nd.github.io/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/</id>
     <published>2024-09-24T16:57:28.000Z</published>
     <updated>2024-09-26T01:21:29.160Z</updated>
     
@@ -394,21 +394,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="wp" scheme="http://example.com/tags/wp/"/>
+    <category term="wp" scheme="https://zjw1nd.github.io/tags/wp/"/>
     
-    <category term="heap" scheme="http://example.com/tags/heap/"/>
+    <category term="heap" scheme="https://zjw1nd.github.io/tags/heap/"/>
     
   </entry>
   
   <entry>
     <title>Algorithm(2)</title>
-    <link href="http://example.com/2024/09/24/Algorithm-2/"/>
-    <id>http://example.com/2024/09/24/Algorithm-2/</id>
+    <link href="https://zjw1nd.github.io/2024/09/24/Algorithm-2/"/>
+    <id>https://zjw1nd.github.io/2024/09/24/Algorithm-2/</id>
     <published>2024-09-24T04:35:46.000Z</published>
     <updated>2024-12-02T09:16:21.588Z</updated>
     
@@ -428,14 +428,14 @@
     
     
     
-    <category term="算法" scheme="http://example.com/tags/%E7%AE%97%E6%B3%95/"/>
+    <category term="算法" scheme="https://zjw1nd.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
   <entry>
     <title>Algorithm(1)</title>
-    <link href="http://example.com/2024/09/24/Algorithm-1/"/>
-    <id>http://example.com/2024/09/24/Algorithm-1/</id>
+    <link href="https://zjw1nd.github.io/2024/09/24/Algorithm-1/"/>
+    <id>https://zjw1nd.github.io/2024/09/24/Algorithm-1/</id>
     <published>2024-09-24T04:35:46.000Z</published>
     <updated>2024-11-28T15:34:50.752Z</updated>
     
@@ -453,14 +453,14 @@
     
     
     
-    <category term="算法" scheme="http://example.com/tags/%E7%AE%97%E6%B3%95/"/>
+    <category term="算法" scheme="https://zjw1nd.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
   </entry>
   
   <entry>
     <title>Windows函数隐藏——逆向工程实验2022WP</title>
-    <link href="http://example.com/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/"/>
-    <id>http://example.com/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/</id>
+    <link href="https://zjw1nd.github.io/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/"/>
+    <id>https://zjw1nd.github.io/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/</id>
     <published>2024-09-19T04:59:57.000Z</published>
     <updated>2024-10-25T10:12:28.327Z</updated>
     
@@ -475,19 +475,19 @@
     
     
     
-    <category term="Reverse" scheme="http://example.com/categories/Reverse/"/>
+    <category term="Reverse" scheme="https://zjw1nd.github.io/categories/Reverse/"/>
     
     
-    <category term="逆向" scheme="http://example.com/tags/%E9%80%86%E5%90%91/"/>
+    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
-    <category term="Windows" scheme="http://example.com/tags/Windows/"/>
+    <category term="Windows" scheme="https://zjw1nd.github.io/tags/Windows/"/>
     
   </entry>
   
   <entry>
     <title>STL容器逆向——逆向工程实验STLWP</title>
-    <link href="http://example.com/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/"/>
-    <id>http://example.com/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/</id>
+    <link href="https://zjw1nd.github.io/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/"/>
+    <id>https://zjw1nd.github.io/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/</id>
     <published>2024-09-19T04:57:35.000Z</published>
     <updated>2024-09-23T01:18:05.661Z</updated>
     
@@ -503,17 +503,17 @@
     
     
     
-    <category term="Reverse" scheme="http://example.com/categories/Reverse/"/>
+    <category term="Reverse" scheme="https://zjw1nd.github.io/categories/Reverse/"/>
     
     
-    <category term="逆向" scheme="http://example.com/tags/%E9%80%86%E5%90%91/"/>
+    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
   </entry>
   
   <entry>
     <title>WMCTF2023evm非预期</title>
-    <link href="http://example.com/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/"/>
-    <id>http://example.com/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/</id>
+    <link href="https://zjw1nd.github.io/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/"/>
+    <id>https://zjw1nd.github.io/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/</id>
     <published>2024-09-16T03:44:31.000Z</published>
     <updated>2024-09-16T08:09:01.850Z</updated>
     
@@ -529,21 +529,21 @@
     
     
     
-    <category term="pwn" scheme="http://example.com/categories/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/categories/pwn/"/>
     
     
-    <category term="pwn" scheme="http://example.com/tags/pwn/"/>
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
     
-    <category term="wp" scheme="http://example.com/tags/wp/"/>
+    <category term="wp" scheme="https://zjw1nd.github.io/tags/wp/"/>
     
-    <category term="vm" scheme="http://example.com/tags/vm/"/>
+    <category term="vm" scheme="https://zjw1nd.github.io/tags/vm/"/>
     
   </entry>
   
   <entry>
     <title>Windows下的简单逆向分析入门——从PE开始</title>
-    <link href="http://example.com/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/"/>
-    <id>http://example.com/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/</id>
+    <link href="https://zjw1nd.github.io/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/"/>
+    <id>https://zjw1nd.github.io/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/</id>
     <published>2024-09-11T01:06:47.000Z</published>
     <updated>2024-09-20T01:05:06.776Z</updated>
     
@@ -559,9 +559,9 @@
     
     
     
-    <category term="逆向" scheme="http://example.com/tags/%E9%80%86%E5%90%91/"/>
+    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
-    <category term="Windows" scheme="http://example.com/tags/Windows/"/>
+    <category term="Windows" scheme="https://zjw1nd.github.io/tags/Windows/"/>
     
   </entry>
   

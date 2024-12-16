@@ -22,21 +22,21 @@
     <meta name="description" content="PE 文件格式简析 相比于ELF，PE文件中包含了相当多的可读性非常强（更加直观）的信息。包括预设的程序加载基址0x400000, 导入导出表等等都是直接写明文字符串而且独立于section之外单独存储的。用010editor结合一个exe程序简单分析一下。这里记得分清FOA和RVA的转换与记录区别，windows下的PE文件不区分内存和文件视图，而是用两种不同的地址来进行标识。和linux还是有">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Windows下的简单逆向分析入门——从PE开始">
-<meta property="og:url" content="http://example.com/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="PE 文件格式简析 相比于ELF，PE文件中包含了相当多的可读性非常强（更加直观）的信息。包括预设的程序加载基址0x400000, 导入导出表等等都是直接写明文字符串而且独立于section之外单独存储的。用010editor结合一个exe程序简单分析一下。这里记得分清FOA和RVA的转换与记录区别，windows下的PE文件不区分内存和文件视图，而是用两种不同的地址来进行标识。和linux还是有">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/images/FileHeader.png">
-<meta property="og:image" content="http://example.com/images/OptionalHeader.png">
-<meta property="og:image" content="http://example.com/images/ImportTable.png">
-<meta property="og:image" content="http://example.com/images/DelayLoad.png">
+<meta property="og:image" content="https://zjw1nd.github.io/images/FileHeader.png">
+<meta property="og:image" content="https://zjw1nd.github.io/images/OptionalHeader.png">
+<meta property="og:image" content="https://zjw1nd.github.io/images/ImportTable.png">
+<meta property="og:image" content="https://zjw1nd.github.io/images/DelayLoad.png">
 <meta property="article:published_time" content="2024-09-11T01:06:47.000Z">
 <meta property="article:modified_time" content="2024-09-20T01:05:06.776Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="逆向">
 <meta property="article:tag" content="Windows">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/FileHeader.png">
+<meta name="twitter:image" content="https://zjw1nd.github.io/images/FileHeader.png">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/assets/favicon.ico">
@@ -2153,7 +2153,7 @@ linux的地址在链接过程中就已经将符号全部重定位好了，而且
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }

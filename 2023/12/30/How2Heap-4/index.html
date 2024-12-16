@@ -22,7 +22,7 @@
     <meta name="description" content="House of Orange 这是一个简单而强大的漏洞.下面的poc直接实现了getshell的操作.根据CTFWiki的解释，这个漏洞的本质是在没有free的条件下创造一个free的堆块（unsorted bin of course.）。和House of Force恰好相反，这次我们要篡改top chunk的size域为一个较小的值进行利用。 参考：关于house of orange（uns">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap(4)——House of Orange &amp; House of Einhejar">
-<meta property="og:url" content="http://example.com/2023/12/30/How2Heap-4/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2023/12/30/How2Heap-4/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="House of Orange 这是一个简单而强大的漏洞.下面的poc直接实现了getshell的操作.根据CTFWiki的解释，这个漏洞的本质是在没有free的条件下创造一个free的堆块（unsorted bin of course.）。和House of Force恰好相反，这次我们要篡改top chunk的size域为一个较小的值进行利用。 参考：关于house of orange（uns">
 <meta property="og:locale" content="en_US">
@@ -2065,7 +2065,7 @@ CTFWiki上对于off by one的利用中提到这样的内容：</p>
         siteMetaRoot = '/'
     }
     var siteMeta = {
-        url: "http://example.com",
+        url: "https://zjw1nd.github.io",
         root: siteMetaRoot,
         author: "John Doe"
     }
