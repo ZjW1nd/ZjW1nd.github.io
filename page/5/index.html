@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
     
     <meta name="description" content="">
     <meta property="og:type" content="website">
@@ -208,7 +208,8 @@
     <!-- Google tag (gtag.js) -->
     
 
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script type="text/javascript">
@@ -436,6 +437,44 @@
             <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
             <div class="container container-unloaded">
                 <main class="main index-page">
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
+            <a class="abstract-title" href="/2024/01/25/How2Heap-5/">
+                
+                <span class="abstract-title-text">How2Heap(5)——Unsorted bin attack &amp; House of Lore</span>
+            </a>
+            <div class="abstract-content">
+                堆漏洞利用之unsorted bin attack & House of Lore。Unsorted bin attack可以将一个任意地址写成一个大数（unsorted bin链头的地址，main arena+88或main arena+96）。House of Lore则可以借助small bin实现任意地址的chunk分配。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2024/07/28">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/01/25</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
     
         
         
@@ -769,44 +808,6 @@
         </article>
         <div class="index-post-divider"></div>
     
-        
-        
-        
-        
-            
-            
-        
-        <article class="index-post">
-            <a class="abstract-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">
-                
-                <span class="abstract-title-text">逆向杂谈（持续更新）</span>
-            </a>
-            <div class="abstract-content">
-                最近更新：KeyPatch插件小实践
-            </div>
-            <!-- read more -->
-            
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2024/09/18">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/11/25</span>
-                </div>
-                <!-- tags -->
-                
-                    <div class= abstract-tags >
-    
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="逆向">逆向</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="IDA">IDA</a>
-    
-</div>
-
-                
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-    
     <!-- paginator  -->
     
         <nav class="page-nav">
@@ -880,6 +881,10 @@
         
     
         
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
     
 
 
@@ -949,6 +954,10 @@
     
         
     
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
         
     
 
@@ -1256,7 +1265,24 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1751,7 +1777,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 54
+        Total : 55
         </div>
         <!-- search  -->
         
@@ -1765,6 +1791,18 @@
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/12</span>
+            <a class="archive-post-title" href="/2024/12/12/rust-pwn-qwb2024-chat-with-me/">How2Heap-rust——qwb2024_chat-with-me</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/11</span>
@@ -1931,12 +1969,6 @@
         <li class="archive-post-item">
             <span class="archive-post-date">07/26</span>
             <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">07/22</span>
-            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
         </li>
     
         
@@ -2232,6 +2264,16 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="go">
+                <span class="iconfont-archer">&#xe606;</span>
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
             </span>
         
     </div>

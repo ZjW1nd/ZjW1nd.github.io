@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
     
     <meta name="description" content="">
     <meta name="description" content="首先是pwncollege的学习笔记： 介绍 内核分为三种，linux内核属于宏内核，即内核本质是一个大的二进制文件加载在内存中来处理各种的系统调用。没有内核代码运行在用户态（windows就是一个混合内核，既有一个大的ring 0文件，也有部分代码运行在用户态）。有些汇编代码和寄存器只能在Ring 0被使用。内核永远加载在最高地址处，syscall并不改变内存的映射，只是最高地址的虚拟地址映射的">
@@ -214,7 +214,8 @@
     <!-- Google tag (gtag.js) -->
     
 
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script type="text/javascript">
@@ -725,6 +726,10 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
         
     
         
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
     
 
 
@@ -1048,7 +1053,24 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1543,7 +1565,7 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 54
+        Total : 55
         </div>
         <!-- search  -->
         
@@ -1557,6 +1579,18 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/12</span>
+            <a class="archive-post-title" href="/2024/12/12/rust-pwn-qwb2024-chat-with-me/">How2Heap-rust——qwb2024_chat-with-me</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/11</span>
@@ -1723,12 +1757,6 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
         <li class="archive-post-item">
             <span class="archive-post-date">07/26</span>
             <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">07/22</span>
-            <a class="archive-post-title" href="/2024/07/22/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
         </li>
     
         
@@ -2024,6 +2052,16 @@ busybox在linux内核6.8及以上编译不了，我的arch目前是6.9，麻了�
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="go">
+                <span class="iconfont-archer">&#xe606;</span>
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
             </span>
         
     </div>
