@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
     
     <meta name="description" content="">
     <meta name="description" content="内容 题目给了一个libcseccomp.so.2，用seccomptools检查发现程序开了seccomp沙盒，只允许orw和mprotect的系统调用。那就意味着要orw读取flag同时还很可能涉及到内存权限修改。 看下字符串发现给的libc是2.35，大部分的常用攻击可能都不好使了 检查程序，保护全开，即使没有full relro也没用因为有沙箱。很简单，就是一个orw+mprotect的沙">

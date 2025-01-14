@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
     
     <meta name="description" content="">
     <meta name="description" content="题目分析 Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码 这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 12345">

@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
     
     <meta name="description" content="">
     <meta name="description" content="FILE结构体与glibc封装后的IO  “一切皆文件”  IO_FILE 首先，在用fopen打开文件的时候，为什么会给我们返回一个整数的文件描述符？这是因为在内核对每个进程维护了一个文件表，这个整数可以用下标去访问里面的指针，然后指针会指向内核维护的全部打开的文件，里面会维护文件的offset和另一个inode指针，然后最后再指向真正磁盘操作的结构。而glibc的所谓的这些IO_FILE定义，">

@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
     
     <meta name="description" content="">
     <meta name="description" content="mmap_overlapping 本质上也是劫持size或者prevsize，只是mmap比较特殊，直接走内核进行分配，释放也是直接用munmap。分配的chunk地址也会比较抽象元数据也不一样，看这个poc就都理解了，只是可能会在允许我们分配特别特别大的chunk的时候能用到。不过好处是只要内核mmap和munmap不改，这个overlap是全版本通用的。 1234567891011121314">
