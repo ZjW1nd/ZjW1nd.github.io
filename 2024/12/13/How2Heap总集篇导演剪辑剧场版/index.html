@@ -19,15 +19,15 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
     
     <meta name="description" content="">
-    <meta name="description" content="摆了，可以参考https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 Basic： UAF free后指针不置空可以再次使用。 Overflow 溢出，这个一般用于篡改size或prevsize域比较多，能溢出fd和bk也行。 Off By One 只能溢出1字节。可以篡改下一个chunk的PREV_INUSE位造成合并等。 Double">
+    <meta name="description" content="~~摆了，~~可以参考：  https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 高版本的思路，包括libcgot表，_rtld_global的攻击等：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;LynneHuan&#x2F;p&#x2F;17822172.html#:~:text&#x3D;可以在 Bi 上文的总结对于细节更丰富也更好用，我自己也会参考。我自己">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How2Heap总集篇导演剪辑剧场版">
 <meta property="og:url" content="https://zjw1nd.github.io/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="摆了，可以参考https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 Basic： UAF free后指针不置空可以再次使用。 Overflow 溢出，这个一般用于篡改size或prevsize域比较多，能溢出fd和bk也行。 Off By One 只能溢出1字节。可以篡改下一个chunk的PREV_INUSE位造成合并等。 Double">
+<meta property="og:description" content="~~摆了，~~可以参考：  https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 高版本的思路，包括libcgot表，_rtld_global的攻击等：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;LynneHuan&#x2F;p&#x2F;17822172.html#:~:text&#x3D;可以在 Bi 上文的总结对于细节更丰富也更好用，我自己也会参考。我自己">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-12-13T04:00:00.000Z">
-<meta property="article:modified_time" content="2024-12-13T08:05:13.635Z">
+<meta property="article:modified_time" content="2025-01-18T12:11:15.681Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="heap">
@@ -496,7 +496,12 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <p>摆了，可以参考<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a></p>
+        <p>~~摆了，~~可以参考：</p>
+<ul class="lvl-0">
+<li class="lvl-2"><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31">https://bbs.kanxue.com/thread-272098.htm#msg_header_h3_31</a></li>
+<li class="lvl-2">高版本的思路，包括libcgot表，_rtld_global的攻击等：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/LynneHuan/p/17822172.html#:~:text=%E5%8F%AF%E4%BB%A5%E5%9C%A8%20Bi">https://www.cnblogs.com/LynneHuan/p/17822172.html#:~:text=可以在 Bi</a><br>
+上文的总结对于细节更丰富也更好用，我自己也会参考。我自己写的导演剪辑版实在献丑。</li>
+</ul>
 <h1>Basic：</h1>
 <h2 id="UAF">UAF</h2>
 <p>free后指针不置空可以再次使用。</p>
@@ -530,7 +535,8 @@ house of Rabbit也是差不多</p>
 </li>
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.text:<span class="number">00000000000846</span>C0 ; __unwind &#123;</span><br><span class="line">.text:<span class="number">00000000000846</span>C0                 push    r15             ; Alternative name is <span class="string">&#x27;__libc_realloc&#x27;</span></span><br><span class="line">.text:<span class="number">00000000000846</span>C2                 push    r14</span><br><span class="line">.text:<span class="number">00000000000846</span>C4                 push    r13</span><br><span class="line">.text:<span class="number">00000000000846</span>C6                 push    r12</span><br><span class="line">.text:<span class="number">00000000000846</span>C8                 mov     r13, rsi</span><br><span class="line">.text:<span class="number">00000000000846</span>CB                 push    rbp</span><br><span class="line">.text:<span class="number">00000000000846</span>CC                 push    rbx</span><br><span class="line">.text:<span class="number">00000000000846</span>CD                 mov     rbx, rdi</span><br><span class="line">.text:<span class="number">00000000000846</span>D0                 sub     rsp, <span class="number">38</span>h</span><br><span class="line">.text:<span class="number">00000000000846</span>D4                 mov     rax, cs:__realloc_hook_ptr</span><br><span class="line">.text:<span class="number">00000000000846</span>DB                 mov     rax, [rax]</span><br><span class="line">                 test    rax, rax</span><br><span class="line">                 jnz     loc_848E8 ;这里call rax</span><br></pre></td></tr></table></figure>
-<p>realloc调整栈帧og触发，或者利用其他环境触发malloc包括doublefree异常–strdup</p>
+<p>realloc调整栈帧og触发，或者利用其他环境触发malloc包括doublefree异常–strdup等</p>
+<p>realloc的意思是，我们在malloc_hook处填上realloc的地址，而在realloc_hook处填上one_gadget的地址，利用realloc调用前的这段push参数对栈帧进行微调。</p>
 <h2 id="一些常识：">一些常识：</h2>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> NBINS             128</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NSMALLBINS         64</span></span><br></pre></td></tr></table></figure>
 <p>tcache最多64个，每个最大连接7个chunk。下标就是按malloc_align分，以64位为例，0-24大小的对应idx0，25-40对应idx1，41-56对应idx2依次类推每个+16。然后32位就是0-12，13-20这样。</p>
@@ -810,6 +816,7 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
 <h2 id="Libc-GOT">Libc_GOT</h2>
 <h2 id="io-obstack">io_obstack</h2>
 <h2 id="House-of-Cat">House of Cat</h2>
+<h2 id="House-of-Water-glibc-2-39-newest">House of Water(glibc 2.39 newest)</h2>
 
     </article>
     <!-- license -->
@@ -969,7 +976,7 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Basic：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#UAF"><span class="toc-number">1.1.</span> <span class="toc-text">UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overflow"><span class="toc-number">1.2.</span> <span class="toc-text">Overflow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Off-By-One"><span class="toc-number">1.3.</span> <span class="toc-text">Off By One</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Double-Free"><span class="toc-number">1.4.</span> <span class="toc-text">Double Free</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overlap"><span class="toc-number">1.5.</span> <span class="toc-text">Overlap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Leak"><span class="toc-number">1.6.</span> <span class="toc-text">Leak</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin-Leak"><span class="toc-number">1.6.1.</span> <span class="toc-text">Unsorted Bin Leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-leak"><span class="toc-number">1.6.2.</span> <span class="toc-text">tcache leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">1.6.3.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hook"><span class="toc-number">1.7.</span> <span class="toc-text">hook</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%AF%86%EF%BC%9A"><span class="toc-number">1.8.</span> <span class="toc-text">一些常识：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Glibc 2.23</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arena-attack%EF%BC%88House-of-Mind-House-of-Gods%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">arena attack（House of Mind &amp; House of Gods）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-mind"><span class="toc-number">2.1.1.</span> <span class="toc-text">House of mind</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Gods"><span class="toc-number">2.1.2.</span> <span class="toc-text">House of Gods</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Top-chunk-related-attack%EF%BC%88House-of-Force-House-of-Orange%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">Top chunk related attack（House of Force &amp; House of Orange）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Force"><span class="toc-number">2.2.1.</span> <span class="toc-text">House of Force</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Orange"><span class="toc-number">2.2.2.</span> <span class="toc-text">House of Orange</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin%EF%BC%88normal-house-of-spirit-House-of-Rabbit%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">Fastbin（normal, house of spirit, House of Rabbit）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Normal-fast-bin-attack%EF%BC%9A"><span class="toc-number">2.3.1.</span> <span class="toc-text">Normal fast bin attack：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Spirit"><span class="toc-number">2.3.2.</span> <span class="toc-text">House of Spirit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Rabbit"><span class="toc-number">2.3.3.</span> <span class="toc-text">House of Rabbit</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsorted-Bin-Attack"><span class="toc-number">2.4.</span> <span class="toc-text">Unsorted Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Lore%EF%BC%88Small-bin-attack%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">House of Lore（Small bin attack）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Large-Bin-Attack"><span class="toc-number">2.6.</span> <span class="toc-text">Large Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#COMBO-FISTS-%EF%BC%88House-of-Roman-House-of-Storm%EF%BC%89"><span class="toc-number">2.7.</span> <span class="toc-text">COMBO FISTS （House of Roman, House of Storm）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Roman%EF%BC%88%E7%BB%84%E5%90%88%E6%8B%B3%EF%BC%8Cgetshell%E6%80%9D%E8%B7%AF%E5%BE%88%E5%B8%B8%E7%94%A8%E8%80%8C%E4%B8%94%E5%85%81%E8%AE%B8%E7%88%86%E7%A0%B4-Fastbin-atk-Unsorted-bin-atk%EF%BC%89"><span class="toc-number">2.7.1.</span> <span class="toc-text">House of Roman（组合拳，getshell思路很常用而且允许爆破, Fastbin atk + Unsorted bin atk）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Storm-unsorted-bin-atk-largebin-atk"><span class="toc-number">2.7.2.</span> <span class="toc-text">House of Storm (unsorted bin atk + largebin atk)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Einhejar%E2%80%94%E2%80%94off-by-null"><span class="toc-number">2.8.</span> <span class="toc-text">House of Einhejar——off by null</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsafe-Unlink"><span class="toc-number">2.9.</span> <span class="toc-text">Unsafe Unlink</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">glibc 2.27</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin"><span class="toc-number">3.1.</span> <span class="toc-text">Fastbin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache"><span class="toc-number">3.2.</span> <span class="toc-text">tcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Same-as-fastbin"><span class="toc-number">3.2.1.</span> <span class="toc-text">Same as fastbin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-stashing-unlink-attack"><span class="toc-number">3.2.2.</span> <span class="toc-text">tcache stashing unlink attack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-botcake"><span class="toc-number">3.2.3.</span> <span class="toc-text">House of botcake</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">glibc 2.34+</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Glibc-2-31-House-of-Pig"><span class="toc-number">4.1.</span> <span class="toc-text">Glibc 2.31 House of Pig</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Kiwi"><span class="toc-number">4.2.</span> <span class="toc-text">House of Kiwi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Apple"><span class="toc-number">4.3.</span> <span class="toc-text">House of Apple</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#v1"><span class="toc-number">4.3.1.</span> <span class="toc-text">v1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v2"><span class="toc-number">4.3.2.</span> <span class="toc-text">v2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v3"><span class="toc-number">4.3.3.</span> <span class="toc-text">v3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Banana"><span class="toc-number">4.4.</span> <span class="toc-text">House of Banana</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Emma"><span class="toc-number">4.5.</span> <span class="toc-text">House of Emma</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tlor-list"><span class="toc-number">4.6.</span> <span class="toc-text">tlor_list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Libc-GOT"><span class="toc-number">4.7.</span> <span class="toc-text">Libc_GOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io-obstack"><span class="toc-number">4.8.</span> <span class="toc-text">io_obstack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Cat"><span class="toc-number">4.9.</span> <span class="toc-text">House of Cat</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Basic：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#UAF"><span class="toc-number">1.1.</span> <span class="toc-text">UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overflow"><span class="toc-number">1.2.</span> <span class="toc-text">Overflow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Off-By-One"><span class="toc-number">1.3.</span> <span class="toc-text">Off By One</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Double-Free"><span class="toc-number">1.4.</span> <span class="toc-text">Double Free</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overlap"><span class="toc-number">1.5.</span> <span class="toc-text">Overlap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Leak"><span class="toc-number">1.6.</span> <span class="toc-text">Leak</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsorted-Bin-Leak"><span class="toc-number">1.6.1.</span> <span class="toc-text">Unsorted Bin Leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-leak"><span class="toc-number">1.6.2.</span> <span class="toc-text">tcache leak</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">1.6.3.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hook"><span class="toc-number">1.7.</span> <span class="toc-text">hook</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E5%B8%B8%E8%AF%86%EF%BC%9A"><span class="toc-number">1.8.</span> <span class="toc-text">一些常识：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Glibc 2.23</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arena-attack%EF%BC%88House-of-Mind-House-of-Gods%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">arena attack（House of Mind &amp; House of Gods）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-mind"><span class="toc-number">2.1.1.</span> <span class="toc-text">House of mind</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Gods"><span class="toc-number">2.1.2.</span> <span class="toc-text">House of Gods</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Top-chunk-related-attack%EF%BC%88House-of-Force-House-of-Orange%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">Top chunk related attack（House of Force &amp; House of Orange）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Force"><span class="toc-number">2.2.1.</span> <span class="toc-text">House of Force</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Orange"><span class="toc-number">2.2.2.</span> <span class="toc-text">House of Orange</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin%EF%BC%88normal-house-of-spirit-House-of-Rabbit%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">Fastbin（normal, house of spirit, House of Rabbit）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Normal-fast-bin-attack%EF%BC%9A"><span class="toc-number">2.3.1.</span> <span class="toc-text">Normal fast bin attack：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Spirit"><span class="toc-number">2.3.2.</span> <span class="toc-text">House of Spirit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Rabbit"><span class="toc-number">2.3.3.</span> <span class="toc-text">House of Rabbit</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsorted-Bin-Attack"><span class="toc-number">2.4.</span> <span class="toc-text">Unsorted Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Lore%EF%BC%88Small-bin-attack%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">House of Lore（Small bin attack）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Large-Bin-Attack"><span class="toc-number">2.6.</span> <span class="toc-text">Large Bin Attack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#COMBO-FISTS-%EF%BC%88House-of-Roman-House-of-Storm%EF%BC%89"><span class="toc-number">2.7.</span> <span class="toc-text">COMBO FISTS （House of Roman, House of Storm）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Roman%EF%BC%88%E7%BB%84%E5%90%88%E6%8B%B3%EF%BC%8Cgetshell%E6%80%9D%E8%B7%AF%E5%BE%88%E5%B8%B8%E7%94%A8%E8%80%8C%E4%B8%94%E5%85%81%E8%AE%B8%E7%88%86%E7%A0%B4-Fastbin-atk-Unsorted-bin-atk%EF%BC%89"><span class="toc-number">2.7.1.</span> <span class="toc-text">House of Roman（组合拳，getshell思路很常用而且允许爆破, Fastbin atk + Unsorted bin atk）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-Storm-unsorted-bin-atk-largebin-atk"><span class="toc-number">2.7.2.</span> <span class="toc-text">House of Storm (unsorted bin atk + largebin atk)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Einhejar%E2%80%94%E2%80%94off-by-null"><span class="toc-number">2.8.</span> <span class="toc-text">House of Einhejar——off by null</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Unsafe-Unlink"><span class="toc-number">2.9.</span> <span class="toc-text">Unsafe Unlink</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">glibc 2.27</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fastbin"><span class="toc-number">3.1.</span> <span class="toc-text">Fastbin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache"><span class="toc-number">3.2.</span> <span class="toc-text">tcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Same-as-fastbin"><span class="toc-number">3.2.1.</span> <span class="toc-text">Same as fastbin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-stashing-unlink-attack"><span class="toc-number">3.2.2.</span> <span class="toc-text">tcache stashing unlink attack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#House-of-botcake"><span class="toc-number">3.2.3.</span> <span class="toc-text">House of botcake</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">glibc 2.34+</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Glibc-2-31-House-of-Pig"><span class="toc-number">4.1.</span> <span class="toc-text">Glibc 2.31 House of Pig</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Kiwi"><span class="toc-number">4.2.</span> <span class="toc-text">House of Kiwi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Apple"><span class="toc-number">4.3.</span> <span class="toc-text">House of Apple</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#v1"><span class="toc-number">4.3.1.</span> <span class="toc-text">v1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v2"><span class="toc-number">4.3.2.</span> <span class="toc-text">v2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#v3"><span class="toc-number">4.3.3.</span> <span class="toc-text">v3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Banana"><span class="toc-number">4.4.</span> <span class="toc-text">House of Banana</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Emma"><span class="toc-number">4.5.</span> <span class="toc-text">House of Emma</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tlor-list"><span class="toc-number">4.6.</span> <span class="toc-text">tlor_list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Libc-GOT"><span class="toc-number">4.7.</span> <span class="toc-text">Libc_GOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io-obstack"><span class="toc-number">4.8.</span> <span class="toc-text">io_obstack</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Cat"><span class="toc-number">4.9.</span> <span class="toc-text">House of Cat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#House-of-Water-glibc-2-39-newest"><span class="toc-number">4.10.</span> <span class="toc-text">House of Water(glibc 2.39 newest)</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1263,7 +1270,29 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1782,7 +1811,7 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 56
+        Total : 58
         </div>
         <!-- search  -->
         
@@ -1792,6 +1821,27 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
     
         
             
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/IDA-Better-printk%E6%8E%A8%E5%B9%BF/">IDA-Better_printk推广</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/ciscn-ccb2025%E5%88%9D%E8%B5%9B-avm%E9%87%8D%E5%81%9Awp/">ciscn_ccb2025初赛-avm重做wp</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
             
             <div class="archive-year"> 2024 </div>
             <ul class="year-list">
@@ -1901,13 +1951,13 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/19</span>
-            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/19</span>
-            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
         </li>
     
         
@@ -2192,6 +2242,11 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
                 Lab
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="Windows">
                 <span class="iconfont-archer">&#xe606;</span>
                 Windows
@@ -2202,9 +2257,14 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
                 CVE
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Develop">
+            <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
-                Develop
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2232,14 +2292,14 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
                 Rust
             </span>
         
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="vm">
                 <span class="iconfont-archer">&#xe606;</span>
                 vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -2250,6 +2310,11 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
             <span class="sidebar-tag-name" data-tags="Others">
                 <span class="iconfont-archer">&#xe606;</span>
                 Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="前端">
+                <span class="iconfont-archer">&#xe606;</span>
+                前端
             </span>
         
             <span class="sidebar-tag-name" data-tags="IDA">
@@ -2275,21 +2340,6 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="go">
-                <span class="iconfont-archer">&#xe606;</span>
-                go
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="rust">
-                <span class="iconfont-archer">&#xe606;</span>
-                rust
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="前端">
-                <span class="iconfont-archer">&#xe606;</span>
-                前端
             </span>
         
     </div>
