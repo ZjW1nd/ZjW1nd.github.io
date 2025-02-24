@@ -22,12 +22,12 @@
     <meta name="description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？ 参考菜鸟教程的内容。简单谈点理解。 “文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux杂谈（持续更新）">
-<meta property="og:url" content="https://zjw1nd.github.io/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/index.html">
+<meta property="og:url" content="https://zjw1nd.github.io/2025/02/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="这篇文章可能都是什么也不懂的时候记录一些了解到的知识，kernel pwn也会放在linux这个类下，可能以后学了内核pwn会有不同的感受吧。 2023.11.26 linux文件系统根目录下那些都是干什么的？ 参考菜鸟教程的内容。简单谈点理解。 “文件是对字节流的抽象。”而linux也是一个有着“一切皆文件”思想的系统。而无论是什么样的linux发行版，基本根目录下都是那几个文件夹。简单了解下这">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-11-25T15:38:16.000Z">
-<meta property="article:modified_time" content="2024-08-13T12:42:01.658Z">
+<meta property="article:published_time" content="2025-02-24T08:26:14.000Z">
+<meta property="article:modified_time" content="2025-02-24T08:32:26.881Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="linux">
 <meta name="twitter:card" content="summary">
@@ -338,7 +338,7 @@
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
                     <span class="iconfont-archer post-intro-calander">&#xe676;</span>
-                    <span class="post-intro-time">2023/11/25</span>
+                    <span class="post-intro-time">2025/02/24</span>
                     <!-- busuanzi -->
                     
                         <span id="busuanzi_container_page_pv" class="busuanzi-pv">
@@ -514,6 +514,10 @@
 外接屏幕不好用，显卡切换的问题，英伟达对wayland不支持…太史了。还是决定以后用这个系统就integrated模式算了，流畅度什么的也很高用着很舒服。还需要把安装的软件优化一下精简一下体积。毕竟都用arch了多少还是得洁癖一下。</p>
 <p>彻底放弃英伟达，nouveau模块命名黑名单了没装，按照各种办法包括不从图形界面启动也调了但是没用，英伟达驱动开不了，应该是pacman的那个版本可能没法自动装载驱动，导致n卡默认驱动一直是nouveau但是我又禁用了它就一直没法输出。懒得搞了</p>
 <p>2024.8不死心又搞了一次，mkinitcpio做内核镜像直接将nvidia挂载上，驱动是装上了显卡也能用（在xorg下）但是外接屏幕还是没用，运行一下nvidia-xconfig直接将图形化干没了，试了网上的解决方法都不行，最后直接删了xorg.conf然后配置sddm wayland启动 滚吧</p>
+<h2 id="2025-2">2025.2</h2>
+<p>最近课程设计比较轻松，重新搞这个arch，闲鱼花了20远程装了下，最后发现是nvidia的闭源驱动和内核版本强绑定，长时间没滚就寄了，装的时候还说我这依赖也烂。。。问题一堆但总算装上了，然而我自己折腾双显卡的时候，用了envycontrol，切换到集显一开机直接花屏了，livecd试着修了下也没办法，考虑到装的时候的那一堆问题，干脆推倒重来算了。</p>
+<p>重装arch反而是最简单的，装好之后用btrfs文件系统回滚不要太爽，ext4吃屎去吧。重装之后直接pacman nvidia，有了前面踩坑的经验二周目速通了，配置内核参数似乎都不用就能开？</p>
+<p>总之optimus manager也是搞上了，装好之后电源策略bbswitch一错直接回滚或者重装懒得bb。整理一个新的总集篇好吧</p>
 <h2 id="shell脚本学习">shell脚本学习</h2>
 <p>shell声明 <code>#! /bin/bash</code></p>
 
@@ -525,16 +529,16 @@
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href="/2023/12/03/How2Heap-2/" title="How2Heap(2)-Overlapping">
-                    <div class="nextTitle">How2Heap(2)-Overlapping</div>
+                <a href="/2025/02/24/Arch%E5%AE%89%E8%A3%85%E5%A4%87%E5%BF%98%E6%89%8B%E5%86%8C/" title="Arch安装备忘手册">
+                    <div class="nextTitle">Arch安装备忘手册</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/" title="逆向杂谈（持续更新）">
-                    <div class="prevTitle">逆向杂谈（持续更新）</div>
+                <a href="/2025/02/20/IDA-Better-printk%E6%8E%A8%E5%B9%BF/" title="IDA-Better_printk推广">
+                    <div class="prevTitle">IDA-Better_printk推广</div>
                 </a>
             
         </li>
@@ -675,7 +679,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-26-linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E9%82%A3%E4%BA%9B%E9%83%BD%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">2023.11.26 linux文件系统根目录下那些都是干什么的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-3-%E5%85%B3%E4%BA%8Elinux%E5%AE%89%E8%A3%85%E3%80%81%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E3%80%81%E6%98%BE%E5%8D%A1%E9%A9%B1%E5%8A%A8%E3%80%81%E5%86%85%E6%A0%B8%E7%AD%BE%E5%90%8D%E7%AD%89%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-6-2-Arch%E5%90%AF%E5%8A%A8"><span class="toc-number">3.</span> <span class="toc-text">2024.6.2 Arch启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shell%E8%84%9A%E6%9C%AC%E5%AD%A6%E4%B9%A0"><span class="toc-number">4.</span> <span class="toc-text">shell脚本学习</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2023-11-26-linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E9%82%A3%E4%BA%9B%E9%83%BD%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">2023.11.26 linux文件系统根目录下那些都是干什么的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-3-%E5%85%B3%E4%BA%8Elinux%E5%AE%89%E8%A3%85%E3%80%81%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E3%80%81%E6%98%BE%E5%8D%A1%E9%A9%B1%E5%8A%A8%E3%80%81%E5%86%85%E6%A0%B8%E7%AD%BE%E5%90%8D%E7%AD%89%E5%B0%8F%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">2024.3 关于linux安装、内核升级、显卡驱动、内核签名等小总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2024-6-2-Arch%E5%90%AF%E5%8A%A8"><span class="toc-number">3.</span> <span class="toc-text">2024.6.2 Arch启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2025-2"><span class="toc-number">4.</span> <span class="toc-text">2025.2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shell%E8%84%9A%E6%9C%AC%E5%AD%A6%E4%B9%A0"><span class="toc-number">5.</span> <span class="toc-text">shell脚本学习</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -979,7 +983,22 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1510,7 +1529,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 58
+        Total : 59
         </div>
         <!-- search  -->
         
@@ -1524,6 +1543,18 @@
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/Arch%E5%AE%89%E8%A3%85%E5%A4%87%E5%BF%98%E6%89%8B%E5%86%8C/">Arch安装备忘手册</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/20</span>
@@ -1578,13 +1609,13 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
         </li>
     
         
@@ -1638,13 +1669,13 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/24</span>
-            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(2)</a>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">09/24</span>
-            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(2)</a>
         </li>
     
         
@@ -1857,12 +1888,6 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/25</span>
-            <a class="archive-post-title" href="/2023/11/25/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">11/25</span>
             <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
         </li>
     
@@ -1926,9 +1951,9 @@
                 heap
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
+            <span class="sidebar-tag-name" data-tags="linux">
                 <span class="iconfont-archer">&#xe606;</span>
-                chop
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -1939,6 +1964,11 @@
             <span class="sidebar-tag-name" data-tags="Lab">
                 <span class="iconfont-archer">&#xe606;</span>
                 Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="Develop">
@@ -1971,19 +2001,9 @@
                 protobuf
             </span>
         
-            <span class="sidebar-tag-name" data-tags="FSOP">
-                <span class="iconfont-archer">&#xe606;</span>
-                FSOP
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="kernel">
                 <span class="iconfont-archer">&#xe606;</span>
                 kernel
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="llvm">
-                <span class="iconfont-archer">&#xe606;</span>
-                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="Rust">
@@ -1991,19 +2011,19 @@
                 Rust
             </span>
         
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="vm">
                 <span class="iconfont-archer">&#xe606;</span>
                 vm
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="shellcode">
-                <span class="iconfont-archer">&#xe606;</span>
-                shellcode
             </span>
         
             <span class="sidebar-tag-name" data-tags="Others">
@@ -2011,19 +2031,14 @@
                 Others
             </span>
         
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="IDA">
-                <span class="iconfont-archer">&#xe606;</span>
-                IDA
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="编译">
-                <span class="iconfont-archer">&#xe606;</span>
-                编译
             </span>
         
             <span class="sidebar-tag-name" data-tags="ROP">
@@ -2039,6 +2054,16 @@
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
             </span>
         
     </div>
@@ -2057,6 +2082,11 @@
             pwn
         </span>
     
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
         <span class="sidebar-category-name" data-categories="CSAPP">
             <span class="iconfont-archer">&#xe60a;</span>
             CSAPP
@@ -2070,11 +2100,6 @@
         <span class="sidebar-category-name" data-categories="Develop">
             <span class="iconfont-archer">&#xe60a;</span>
             Develop
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="linux">
-            <span class="iconfont-archer">&#xe60a;</span>
-            linux
         </span>
     
         <span class="sidebar-category-name" data-categories="pwn">
