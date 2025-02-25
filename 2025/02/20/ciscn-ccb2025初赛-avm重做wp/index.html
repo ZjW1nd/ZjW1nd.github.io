@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux">
     
     <meta name="description" content="">
     <meta name="description" content="题目分析 逆向虚拟机结构 这道题目的虚拟机还算规整，从main函数开始看，从对虚拟机初始化的函数入手并结合代码执行的函数可以看出，整体的vm结构放在了bss，包括32个通用寄存器，rip，代码指针和代码大小。 12345678910111213141516struct vm *__fastcall initvm(struct vm *mem, __int64 code, unsigned __in">

@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux">
     
     <meta name="description" content="">
     <meta name="description" content="题目分析 虚拟机，一拖史。逆向上来走了歪路，见识太少没有识别出32个寄存器的RISC架构，反而修错了一个结构体，后面看的很费劲。 主函数看不懂，居然还有时间戳，找到了解析指令的函数但是太过混乱（吃了不懂risc的亏），后续官方wp说是魔改risc才回来重新看的。 虚拟机vm在主函数栈上声明，是一个__int64数组，大小37，前4个用于存放初始化的内存地址，后面32个是通用寄存器，结合指令推进函数">
