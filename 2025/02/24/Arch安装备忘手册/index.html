@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
     
     <meta name="description" content="">
     <meta name="description" content="首先的首先，最重要的参考来自于archlinux简明指南。 写在前面 这篇文章的目的是整齐，简明地归纳笔者自己日常linux所接触到的一些经验，免得在搜索引擎屎里淘金。但是作者本人的记性很不好，所以可能有所缺疏。特别地，本文尤其针对的是ArchLinux这一发行版。 你是否需要从0开始安装一个基本系统？ 直接参考archlinux简明指南，正如指南中强调的，不要试图更改一些指南中提供的设置，除非你">
@@ -27,7 +27,7 @@
 <meta property="og:description" content="首先的首先，最重要的参考来自于archlinux简明指南。 写在前面 这篇文章的目的是整齐，简明地归纳笔者自己日常linux所接触到的一些经验，免得在搜索引擎屎里淘金。但是作者本人的记性很不好，所以可能有所缺疏。特别地，本文尤其针对的是ArchLinux这一发行版。 你是否需要从0开始安装一个基本系统？ 直接参考archlinux简明指南，正如指南中强调的，不要试图更改一些指南中提供的设置，除非你">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-02-24T08:30:11.000Z">
-<meta property="article:modified_time" content="2025-02-25T02:25:11.187Z">
+<meta property="article:modified_time" content="2025-03-11T12:44:09.964Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="linux">
 <meta name="twitter:card" content="summary">
@@ -643,6 +643,7 @@
 <p>对于电源策略，请参考optimus-manager的<a target="_blank" rel="noopener" href="https://github.com/Askannz/optimus-manager/wiki/A-guide--to-power-management-options">官方文档</a>，并且一定要<strong>看完</strong>。我采用的策略就是第一条，首先将optimus-manager的电源策略设置为custom,然后找到它的配置文件<code>/etc/optimus-manager/optimus-manager.conf</code>，将nvidia下的参数设置这一条<code>dynamic_power_management=fine</code>即可。这时，n卡自带的电源策略会根据其参数设置（fine: 短时间没有进程向gpu提交作业后进入低功耗；coarse: 没有应用使用n卡驱动后进入低功耗，参考<a target="_blank" rel="noopener" href="https://github.com/Askannz/optimus-manager/blob/master/optimus-manager.conf">默认配置的注释</a>）降低自己的功耗，这时可以一直开hybrid模式。注意，这一功能需要n卡支持，请通过:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/driver/nvidia/gpus/0000:01:00.0/power</span><br><span class="line"># Runtime D3 status: xxx会显示是否支持</span><br></pre></td></tr></table></figure>
 <p>来查看是否支持。</p>
+<p>这一方案自己的实测，nvidia-smi会显示显卡off，功率大概会降低到20w左右，没有完全关闭。不过配合TLP，基本上上课一个半小时跑linux基本不掉电，很无敌，薄纱windows。</p>
 <p><font color=red>⚠️注意，电源策略是非常“个性化”的，需要尝试，请确保更改前做备份，或是保留了重装的livecd，我就是在bbswitch黑屏了重装的</font></p>
 <h1>安全启动</h1>
 <p>可以结合<a href="https://zjw1nd.github.io/2025/2/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">这篇</a>一起看</p>
@@ -669,6 +670,11 @@
 自定义相关：/usr/share<br>
 systemctl 命令<br>
 mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况，fdisk -l查看磁盘情况</p>
+<h1>通用排错</h1>
+<h2 id="journalctl">journalctl</h2>
+<p>journalctl命令可以输出systemd的日志，参考帮助参数，其可以输出很多东西，包括启动过程中的日志。</p>
+<h2 id="Arch-LiveCD">Arch LiveCD</h2>
+<p>用你的安装盘，其自带一个mini的arch系统，和我们安装时候做的一样，将主系统挂载到/mnt之后，可以在你的主系统翻车之后用其修复。我在尝试替换运行库的时候将一个低版本的libm.so.6放入了系统lib库（改名）结果全烂了，命令用不了加系统关机无法启动，直接插上liveCD改名后挂载改回来就行了。</p>
 
     </article>
     <!-- license -->
@@ -676,6 +682,11 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/" title="Awdp-PWN准备技巧">
+                    <div class="nextTitle">Awdp-PWN准备技巧</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -823,7 +834,7 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">你是否需要从0开始安装一个基本系统？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#btrfs"><span class="toc-number">2.1.</span> <span class="toc-text">btrfs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E9%83%A8%E5%88%86%E7%9A%84%E5%BF%AB%E9%80%9F%E5%91%BD%E4%BB%A4%E6%8C%87%E5%8D%97%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">这一部分的快速命令指南：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E6%97%B6%E9%97%B4%EF%BC%8C%E8%81%94%E7%BD%91%EF%BC%8C%E6%8D%A2%E6%BA%90"><span class="toc-number">2.2.1.</span> <span class="toc-text">同步时间，联网，换源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="toc-number">2.2.2.</span> <span class="toc-text">分区和格式化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.3.</span> <span class="toc-text">安装系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grub%E5%BC%95%E5%AF%BC"><span class="toc-number">2.2.4.</span> <span class="toc-text">grub引导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%90%AF%E5%90%8E"><span class="toc-number">2.2.5.</span> <span class="toc-text">重启后</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">更细节的设置命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E6%A1%8C%E9%9D%A2%E5%92%8C%E5%BF%85%E5%A4%87%E5%85%B6%E4%BB%96%E7%BB%84%E4%BB%B6"><span class="toc-number">3.1.</span> <span class="toc-text">安装桌面和必备其他组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">输入法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#timeshift"><span class="toc-number">3.3.</span> <span class="toc-text">timeshift</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#blackArch"><span class="toc-number">3.4.</span> <span class="toc-text">blackArch</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">显卡驱动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A6%96%E5%85%88%EF%BC%8C%E5%AE%89%E8%A3%85%E6%A0%B8%E6%98%BE%E5%92%8Cn%E5%8D%A1%E7%9A%84%E9%A9%B1%E5%8A%A8"><span class="toc-number">4.1.</span> <span class="toc-text">首先，安装核显和n卡的驱动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E6%98%BE%E5%8D%A1%E9%85%8D%E7%BD%AE"><span class="toc-number">4.2.</span> <span class="toc-text">双显卡配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">安全启动</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">一些关键的配置：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#grub"><span class="toc-number">6.1.</span> <span class="toc-text">grub</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sddm"><span class="toc-number">6.2.</span> <span class="toc-text">sddm</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pacman"><span class="toc-number">6.3.</span> <span class="toc-text">pacman</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#zsh-bash"><span class="toc-number">6.4.</span> <span class="toc-text">zsh&#x2F;bash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">6.5.</span> <span class="toc-text">其他</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">你是否需要从0开始安装一个基本系统？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#btrfs"><span class="toc-number">2.1.</span> <span class="toc-text">btrfs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%99%E4%B8%80%E9%83%A8%E5%88%86%E7%9A%84%E5%BF%AB%E9%80%9F%E5%91%BD%E4%BB%A4%E6%8C%87%E5%8D%97%EF%BC%9A"><span class="toc-number">2.2.</span> <span class="toc-text">这一部分的快速命令指南：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E6%97%B6%E9%97%B4%EF%BC%8C%E8%81%94%E7%BD%91%EF%BC%8C%E6%8D%A2%E6%BA%90"><span class="toc-number">2.2.1.</span> <span class="toc-text">同步时间，联网，换源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E5%92%8C%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="toc-number">2.2.2.</span> <span class="toc-text">分区和格式化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.3.</span> <span class="toc-text">安装系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grub%E5%BC%95%E5%AF%BC"><span class="toc-number">2.2.4.</span> <span class="toc-text">grub引导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%90%AF%E5%90%8E"><span class="toc-number">2.2.5.</span> <span class="toc-text">重启后</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">更细节的设置命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E6%A1%8C%E9%9D%A2%E5%92%8C%E5%BF%85%E5%A4%87%E5%85%B6%E4%BB%96%E7%BB%84%E4%BB%B6"><span class="toc-number">3.1.</span> <span class="toc-text">安装桌面和必备其他组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%93%E5%85%A5%E6%B3%95"><span class="toc-number">3.2.</span> <span class="toc-text">输入法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#timeshift"><span class="toc-number">3.3.</span> <span class="toc-text">timeshift</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#blackArch"><span class="toc-number">3.4.</span> <span class="toc-text">blackArch</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">显卡驱动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A6%96%E5%85%88%EF%BC%8C%E5%AE%89%E8%A3%85%E6%A0%B8%E6%98%BE%E5%92%8Cn%E5%8D%A1%E7%9A%84%E9%A9%B1%E5%8A%A8"><span class="toc-number">4.1.</span> <span class="toc-text">首先，安装核显和n卡的驱动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E6%98%BE%E5%8D%A1%E9%85%8D%E7%BD%AE"><span class="toc-number">4.2.</span> <span class="toc-text">双显卡配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">安全启动</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">一些关键的配置：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#grub"><span class="toc-number">6.1.</span> <span class="toc-text">grub</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sddm"><span class="toc-number">6.2.</span> <span class="toc-text">sddm</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pacman"><span class="toc-number">6.3.</span> <span class="toc-text">pacman</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#zsh-bash"><span class="toc-number">6.4.</span> <span class="toc-text">zsh&#x2F;bash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-number">6.5.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">通用排错</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#journalctl"><span class="toc-number">7.1.</span> <span class="toc-text">journalctl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Arch-LiveCD"><span class="toc-number">7.2.</span> <span class="toc-text">Arch LiveCD</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1132,7 +1143,75 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1673,7 +1752,7 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 63
         </div>
         <!-- search  -->
         
@@ -1687,6 +1766,30 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/%E6%96%B0%E6%89%8B%E6%B8%97%E9%80%8F%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">新手渗透准备技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span>
+            <a class="archive-post-title" href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">Awdp-PWN准备技巧</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/24</span>
@@ -2208,6 +2311,16 @@ mount命令用-o指定挂载参数，-t指定分区，用df -h查看挂载情况
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awdp">
+                <span class="iconfont-archer">&#xe606;</span>
+                awdp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
             </span>
         
     </div>

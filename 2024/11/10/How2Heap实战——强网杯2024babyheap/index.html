@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
     
     <meta name="description" content="">
     <meta name="description" content="题目分析 这个题目给了相当多的check：  沙箱ban了open，openat和execve，glibc 2.35, 释放有UAF, chunk只能分配0x500-0x5FF大小，其余大小都会变成0x500，最多5个，只有一次edit一次show。 程序开始会把IO_wfile_jumps向后的page全写0 同时允许一个经过check的地址写16字节，check不允许写stdin到stdin向">
@@ -1023,7 +1023,75 @@ House of Apple-v2是一系列利用高版本libc下不对IO_file_complete中处�
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1564,7 +1632,7 @@ House of Apple-v2是一系列利用高版本libc下不对IO_file_complete中处�
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 63
         </div>
         <!-- search  -->
         
@@ -1578,6 +1646,30 @@ House of Apple-v2是一系列利用高版本libc下不对IO_file_complete中处�
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/%E6%96%B0%E6%89%8B%E6%B8%97%E9%80%8F%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">新手渗透准备技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span>
+            <a class="archive-post-title" href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">Awdp-PWN准备技巧</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">02/24</span>
@@ -2099,6 +2191,16 @@ House of Apple-v2是一系列利用高版本libc下不对IO_file_complete中处�
             <span class="sidebar-tag-name" data-tags="编译">
                 <span class="iconfont-archer">&#xe606;</span>
                 编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awdp">
+                <span class="iconfont-archer">&#xe606;</span>
+                awdp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
             </span>
         
     </div>
