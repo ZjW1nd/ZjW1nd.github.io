@@ -19,17 +19,18 @@
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
     
     <meta name="description" content="">
-    <meta name="description" content="来源于互联网而非自己手动调试，供参考，是否真实一试便知，仅供备忘。 输入 gets(buf)   是否能溢出：不检查长度，任意溢出   截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。   其他处理：结尾自动添加\x00   read(0,buf,cnt) 作为一个系统调用，和其他的输入函数确实有本质区别。   是否能溢出：参数3有长度限制，不合理时可能">
+    <meta name="description" content="来源于互联网而非自己手动调试，供参考，是否真实一试便知，仅供备忘。 输入 gets(buf)  是否能溢出：不检查长度，任意溢出 截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。 其他处理：结尾自动添加\x00  read(0,buf,cnt) 作为一个系统调用，和其他的输入函数确实有本质区别。   是否能溢出：参数3有长度限制，不合理时可能导致溢出。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="简短的IO函数特性整理——受scanf启发">
 <meta property="og:url" content="https://zjw1nd.github.io/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="来源于互联网而非自己手动调试，供参考，是否真实一试便知，仅供备忘。 输入 gets(buf)   是否能溢出：不检查长度，任意溢出   截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。   其他处理：结尾自动添加\x00   read(0,buf,cnt) 作为一个系统调用，和其他的输入函数确实有本质区别。   是否能溢出：参数3有长度限制，不合理时可能">
+<meta property="og:description" content="来源于互联网而非自己手动调试，供参考，是否真实一试便知，仅供备忘。 输入 gets(buf)  是否能溢出：不检查长度，任意溢出 截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。 其他处理：结尾自动添加\x00  read(0,buf,cnt) 作为一个系统调用，和其他的输入函数确实有本质区别。   是否能溢出：参数3有长度限制，不合理时可能导致溢出。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-03-11T12:50:37.000Z">
-<meta property="article:modified_time" content="2025-03-11T13:21:16.305Z">
+<meta property="article:modified_time" content="2025-03-17T14:28:27.890Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
+<meta property="article:tag" content="basic">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -330,6 +331,8 @@
     
         <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
     
+        <a class="post-tag" href="javascript:void(0);" data-tags="basic">basic</a>
+    
 </div>
 
                 
@@ -497,15 +500,9 @@
 <h1>输入</h1>
 <h1>gets(buf)</h1>
 <ul class="lvl-0">
-<li class="lvl-2">
-<p>是否能溢出：不检查长度，任意溢出</p>
-</li>
-<li class="lvl-2">
-<p>截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。</p>
-</li>
-<li class="lvl-2">
-<p>其他处理：结尾自动添加\x00</p>
-</li>
+<li class="lvl-2">是否能溢出：不检查长度，任意溢出</li>
+<li class="lvl-2">截断要求：换行截断(\n,\x0a)和EOF截断。换行符会被丢弃。其他空白字符均会原本输入。</li>
+<li class="lvl-2">其他处理：结尾自动添加\x00</li>
 </ul>
 <h1>read(0,buf,cnt)</h1>
 <p>作为一个系统调用，和其他的输入函数确实有本质区别。</p>
@@ -514,9 +511,10 @@
 <p>是否能溢出：参数3有长度限制，不合理时可能导致溢出。</p>
 </li>
 <li class="lvl-2">
-<p>截断要求：没有截断字符，读够缓冲区数据或cnt字节后立刻返回。其中终端默认规范下回车会导致提交，结果中会包含有\n存在。默认情况下read在没有可用数据时会阻塞。可以说是最通用的，直接在pwntools中调用send就可以无损发送数据。</p>
+<p>截断要求：没有截断字符，读够缓冲区数据或cnt字节后立刻返回。其中终端默认规范下回车会导致提交，结果中会包含有\n存在。默认情况下read在没有可用数据时会阻塞。</p>
 </li>
 </ul>
+<p>可以说是最通用的，直接在pwntools中调用send就可以无损发送数据。</p>
 <h1>scanf</h1>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_54218833/article/details/121308367">参考文章</a><br>
 scanf的输入方式取决于其格式化占位符。我们下面重点关注存在溢出的%s</p>
@@ -525,17 +523,32 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
 <p>是否能溢出：取决于格式化字符串。其中’%s’并不检查输入长度，数字</p>
 </li>
 <li class="lvl-2">
-<p>截断要求：注意，scanf由空格区分不同的格式化参数，即scanf(‘%s’)是空格(\x20)截断的。另外反直觉的是，scanf(‘%s’)没有0截断。</p>
-</li>
-<li class="lvl-2">
+<p>截断要求：注意，scanf由空格区分不同的格式化参数，**即scanf(‘%s’)是空格(\x20)截断的。**另外反直觉的是，scanf(‘%s’)没有0截断。</p>
 </li>
 </ul>
 <h1>puts</h1>
-<p>自动添加换行</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>末尾自动额外添加换行’\n’</p>
+</li>
+<li class="lvl-2">
+<p>0截断</p>
+</li>
+</ul>
 <h1>printf</h1>
-<p>字符串形式输出，0截断</p>
+<p>和scanf类似，输出方式取决于格式化字符串fmt参数的设置。我们这里不谈格式化字符串的漏洞</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>%s就是输出字符串</p>
+</li>
+</ul>
 <h1>write</h1>
-<p>打印到标准输出，无截断</p>
+<p>写入文件描述符，我们重点关注write(1,buf,cnt)</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>没有任何截断或换行，单纯打印到标准输出流。</p>
+</li>
+</ul>
 
     </article>
     <!-- license -->
@@ -543,6 +556,11 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
     <!-- paginator -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/" title="常见的加密编码算法逆向识别">
+                    <div class="nextTitle">常见的加密编码算法逆向识别</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -1602,6 +1620,8 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
         
         
         
+        
+        
     
     
     
@@ -1624,6 +1644,18 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span>
+            <a class="archive-post-title" href="/2025/03/17/2025ciscnccb%E5%A4%8D%E7%9B%98%E5%B0%8F%E8%AE%B0/">2025ciscnccb复盘小记</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span>
+            <a class="archive-post-title" href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密编码算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">03/11</span>
             <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
         </li>
@@ -1632,12 +1664,6 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
         <li class="archive-post-item">
             <span class="archive-post-date">03/10</span>
             <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">03/10</span>
-            <a class="archive-post-title" href="/2025/03/10/%E6%96%B0%E6%89%8B%E6%B8%97%E9%80%8F%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">新手渗透准备技巧</a>
         </li>
     
         
@@ -1699,12 +1725,6 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
     
         
         <li class="archive-post-item">
-            <span class="archive-post-date">11/11</span>
-            <a class="archive-post-title" href="/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密算法逆向识别</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
             <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
         </li>
@@ -1712,13 +1732,13 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
         </li>
     
         
@@ -2024,19 +2044,9 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
         
-            <span class="sidebar-tag-name" data-tags="算法">
+            <span class="sidebar-tag-name" data-tags="awdp">
                 <span class="iconfont-archer">&#xe606;</span>
-                算法
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
+                awdp
             </span>
         
             <span class="sidebar-tag-name" data-tags="pwn">
@@ -2049,14 +2059,44 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
                 wp
             </span>
         
-            <span class="sidebar-tag-name" data-tags="heap">
+            <span class="sidebar-tag-name" data-tags="算法">
                 <span class="iconfont-archer">&#xe606;</span>
-                heap
+                算法
             </span>
         
             <span class="sidebar-tag-name" data-tags="linux">
                 <span class="iconfont-archer">&#xe606;</span>
                 linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="php">
+                <span class="iconfont-archer">&#xe606;</span>
+                php
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -2069,24 +2109,9 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Develop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Develop
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="go">
@@ -2099,24 +2124,24 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
                 rust
             </span>
         
+            <span class="sidebar-tag-name" data-tags="basic">
+                <span class="iconfont-archer">&#xe606;</span>
+                basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Rust">
-                <span class="iconfont-archer">&#xe606;</span>
-                Rust
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="llvm">
-                <span class="iconfont-archer">&#xe606;</span>
-                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -2124,14 +2149,24 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
                 FSOP
             </span>
         
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="vm">
                 <span class="iconfont-archer">&#xe606;</span>
                 vm
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Others">
-                <span class="iconfont-archer">&#xe606;</span>
-                Others
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -2139,9 +2174,29 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
                 shellcode
             </span>
         
+            <span class="sidebar-tag-name" data-tags="sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                sandbox
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
             </span>
         
             <span class="sidebar-tag-name" data-tags="ROP">
@@ -2157,26 +2212,6 @@ scanf的输入方式取决于其格式化占位符。我们下面重点关注存
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="IDA">
-                <span class="iconfont-archer">&#xe606;</span>
-                IDA
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="编译">
-                <span class="iconfont-archer">&#xe606;</span>
-                编译
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="awdp">
-                <span class="iconfont-archer">&#xe606;</span>
-                awdp
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="awd">
-                <span class="iconfont-archer">&#xe606;</span>
-                awd
             </span>
         
     </div>

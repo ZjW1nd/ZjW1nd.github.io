@@ -27,11 +27,12 @@
 <meta property="og:description" content="环境问题 首先，我有两套环境。一个windows一个arch，都是物理机。 其中，windows上拥有kali-wsl和win_penetration_toolkit-vmware，平常的pwn题是采用   wsl-kali执行python脚本&#x2F;gdb调试，patchelf+glibc-all-in-one，windows主机ida分析   缺点是，windows上没有docker。做不了内核题。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-02-25T11:40:53.000Z">
-<meta property="article:modified_time" content="2025-03-11T12:43:08.336Z">
+<meta property="article:modified_time" content="2025-03-17T14:14:23.956Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="pwn">
 <meta property="article:tag" content="awdp">
+<meta property="article:tag" content="pwn">
 <meta property="article:tag" content="awd">
+<meta property="article:tag" content="php">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -330,11 +331,13 @@
                     <div class= post-intro-tags >
     
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="awdp">awdp</a>
     
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
         <a class="post-tag" href="javascript:void(0);" data-tags="awd">awd</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="php">php</a>
     
 </div>
 
@@ -515,7 +518,7 @@
 <p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/13321?time__1311=eqUxuDcDBGe7qRxBqDwjDAh%2BO3phwBbD&amp;u_atoken=9d921b0c0075e2df58d83b37a58c5b31&amp;u_asig=0a47315217404858836656288e003d">文章2(包括流量转发，批量攻击脚本)</a></p>
 <h1>准备</h1>
 <p>手动patch，使用ida keypatch即可。打包命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tar -cvf archive.tar file1 file2 directory</span><br><span class="line">tar -czvf archive.tar.gz directory</span><br><span class="line">tar -rvf archive.tar newfile</span><br><span class="line"></span><br><span class="line">tar -xvf archive.tar</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar -cvf archive.tar file1 file2 directory</span><br><span class="line">tar -czvf archive.tar.gz directory</span><br><span class="line">tar -rvf archive.tar newfile</span><br><span class="line"></span><br><span class="line">tar -xvf archive.tar</span><br><span class="line">tar -zcvf update.tar.gz update.sh pwn_fix</span><br></pre></td></tr></table></figure>
 <h1>常见漏洞的patch方法</h1>
 <h2 id="格式化字符串漏洞">格式化字符串漏洞</h2>
 <ol>
@@ -547,12 +550,46 @@ x64就直接patch寄存器赋值即可。</p>
 <p>给程序加沙箱直接无脑关闭execve调用，但是通防可能被检测，自行斟酌<br>
 <a target="_blank" rel="noopener" href="https://github.com/TTY-flag/evilPatcher">https://github.com/TTY-flag/evilPatcher</a></p>
 <p>测试下来，二进制文件大小没有变化，线下试试吧。</p>
+<p>或者还有一招，如果程序设置了alarm(xx)的话（一般会有alarm(60)）这种限制时间的，测试下之后把它改的很小让exp利用不完，也能行。</p>
 <h2 id="非预期？">非预期？</h2>
 <p>程序如果exit退出，打io的话尝试nop掉exit或者改成_exit？</p>
 <h1>检查漏洞</h1>
 <p>敏感功能函数，strlen获取长度限制能不能塞满溢出，scanf%s的输入</p>
 <h1>docker命令</h1>
+<p>pwn调试</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">docker run -it -d -v host_path:container_path -p host_port:container_port --cap-add=SYS_PTRACE IMAGE_ID # auto update 自动执行update.sh脚本</span><br><span class="line"></span><br><span class="line">docker run -it -d -v host_path:container_path -p host_port:container_port --cap-add=SYS_PTRACE IMAGE_ID /bin/sh # do not update 不会自动更新</span><br><span class="line"></span><br><span class="line">docker run -it -d -v host_path:container_path -p host_port:container_port --privileged IMAGE_ID # privileged enabled and auto update 给特权标志和自动更新</span><br><span class="line"></span><br><span class="line">docker run -it -d -v host_path:container_path -p host_port:container_port --privileged IMAGE_ID /bin/sh # privileged enabled and auto update 给特权标志和自动更新</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">docker run -it -d -v $PWD:/home/ctf/hacker</span><br><span class="line"></span><br><span class="line">docker exec -it CONTAINER_ID /bin/sh</span><br><span class="line">docker exec -it -u root CONTAINER_ID /bin/sh</span><br><span class="line"></span><br><span class="line">/bin/test-this-container.sh</span><br></pre></td></tr></table></figure>
+<p>用官方镜像启动本地环境：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker load -i xxx.tar</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a --no-trunc 输出所有命令</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1>PHP PWN???</h1>
+<blockquote>
+<p>2025.3.17: 事实上根本就没工夫看这题…</p>
+</blockquote>
+<p>赛前发的附件名字叫php-master怀疑要出php-pwn了，搜了下结果还挺常见的但是都没做过，麻。先速通一下fix？</p>
+<p>PHP pwn的核心是一个C编写的扩展动态库，为php提供一些可用的函数。</p>
+<h2 id="环境搭建">环境搭建</h2>
+<p>php的版本也比较多，准备8.1-8.3的docker和本机的8.4.4，以及7.4备用</p>
+<p>实际操作时，去对应docker下将/usr/src的源码解压。找到源码目录的ext，ext_skel.php，这个脚本可以自动生成一套扩展用的基础文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">创建容器: docker run -itd --name php -p 80:80 -v /Users/xiaosheng/docker:/var/www/html -v /Users/xiaosheng/docker/etc:/usr/local/etc -v /Users/xiaosheng/docker/conf:/etc/apache2/sites-enabled php:apache-buster</span><br><span class="line">命令详解:</span><br><span class="line">--name php: php 表示创建出来的镜像名称</span><br><span class="line">-p 80:80: 表示本机的 80 端口映射到容器内的 80 端口, 其中第一个 80 是本机的</span><br><span class="line">-v /Users/xiaosheng/docker:/var/www/html: 数据卷挂载, 将本机的代码文件夹映射到容器内的代码文件夹, 冒号前面的是本机的文件夹地址</span><br><span class="line">-v /Users/xiaosheng/docker/etc:/usr/local/etc: 将容器内 PHP 的配置文件映射到本机, 这样方便修改配置文件, 冒号前面的是本地的文件夹地址</span><br><span class="line">-v /Users/xiaosheng/docker/conf:/etc/apache2/sites-enabled: 将容器内 Apache 站点的配置文件映射到本地, 方便添加和修改站点配置文件, 冒号前面的是本地的文件夹地址</span><br><span class="line">php:apache-buster: 表示的是使用哪个镜像来创建容器, 即 镜像名称:tag名称、</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">容器中 PHP 没有 MySQL 的扩展, 所以需要自己手动下载, 下载步骤可以参考该链接 https://www.yoyoask.com/?p=122</span><br><span class="line">docker-php-source : 在 /usr/src 目录下创建出来 php 文件夹</span><br><span class="line">进入 /usr/src/php/ext 文件夹, 使用 docker-php-ext-install 安装所需要的扩展, 如安装 pdo-mysql 扩展, 可以使用 docker-php-ext-install pdo_mysql 来安装</span><br><span class="line">修改 PHP 的配置文件</span><br><span class="line">去掉 ;extension=pdo_mysql 前面的 ;</span><br><span class="line">使用 docker restart 容器ID 来重启容器</span><br></pre></td></tr></table></figure>
+<p>php的核心配置文件在php.ini 执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php --ini</span><br></pre></td></tr></table></figure>
+<p>命令来输出所有的配置文件位置</p>
+<h2 id="思路">思路</h2>
+<p>首先，直接读/proc/self/map来拿地址，不多bb</p>
+<p>然后php堆类似于linux内核的slab，没有复杂的metadata，而是通通用bucket管理，空闲链表也是类似tcache直接fd连接有UAF的话随便改。</p>
+<p>fix的话可以考虑nop掉efree</p>
+<h2 id="逆向结构体">逆向结构体</h2>
+<p>module_entry:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">struct  _zend_module_entry &#123;</span><br><span class="line">                        unsigned short size;</span><br><span class="line">	unsigned int zend_api;</span><br><span class="line">	unsigned char zend_debug;</span><br><span class="line">	unsigned char zts;</span><br><span class="line">	void *ini_entry;</span><br><span class="line">	void *deps;</span><br><span class="line">	const char *name;</span><br><span class="line">	void* functions;</span><br><span class="line">	void* module_start_up_func</span><br><span class="line">	void* module_shutdown_func;</span><br><span class="line">	void* request_startup_func;</span><br><span class="line">	void* request_shutdown_func;</span><br><span class="line">	void *info_func;</span><br><span class="line">	const char *version;</span><br><span class="line">	size_t globals_size;</span><br><span class="line">	void* globals_id_ptr;</span><br><span class="line">	void* globals_ptr;</span><br><span class="line">	void* globals_ctor;</span><br><span class="line">	void* globals_dtor;</span><br><span class="line">	void* post_deactivate_func;</span><br><span class="line">	int module_started;</span><br><span class="line">	unsigned char type;</span><br><span class="line">	void* handle;</span><br><span class="line">	int module_number;</span><br><span class="line">	const char *build_id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>6:str<br>
+7:arr<br>
+4:int?</p>
+<h2 id="patch">patch</h2>
+<p>off by null(D^3CTF 2024 pwnshell)</p>
+<h2 id="非预期">非预期</h2>
+<p>cve-2024-2961，借助libc的溢出从文件包含提升至命令执行。现成exp环境配好了，搜到的去年决赛pwn的awdp中php可以用这个一键打通，万一呢</p>
+
     </article>
     <!-- license -->
     
@@ -561,8 +598,8 @@ x64就直接patch寄存器赋值即可。</p>
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href="/2025/03/10/%E6%96%B0%E6%89%8B%E6%B8%97%E9%80%8F%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/" title="新手渗透准备技巧">
-                    <div class="nextTitle">新手渗透准备技巧</div>
+                <a href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/" title="2023ciscn决赛awdp复现思路">
+                    <div class="nextTitle">2023ciscn决赛awdp复现思路</div>
                 </a>
             
         </li>
@@ -711,7 +748,7 @@ x64就直接patch寄存器赋值即可。</p>
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">环境问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pwn%E9%A2%98%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.</span> <span class="toc-text">pwn题配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">常见漏洞的patch方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E"><span class="toc-number">3.1.</span> <span class="toc-text">格式化字符串漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UAF"><span class="toc-number">3.2.</span> <span class="toc-text">UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E6%BA%A2%E5%87%BA"><span class="toc-number">3.3.</span> <span class="toc-text">整数溢出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA"><span class="toc-number">3.4.</span> <span class="toc-text">缓冲区溢出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VM"><span class="toc-number">3.5.</span> <span class="toc-text">VM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E"><span class="toc-number">3.6.</span> <span class="toc-text">逻辑漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E9%98%B2"><span class="toc-number">3.7.</span> <span class="toc-text">通防</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%A2%84%E6%9C%9F%EF%BC%9F"><span class="toc-number">3.8.</span> <span class="toc-text">非预期？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">检查漏洞</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">docker命令</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">环境问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pwn%E9%A2%98%E9%85%8D%E7%BD%AE"><span class="toc-number">1.1.</span> <span class="toc-text">pwn题配置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">常见漏洞的patch方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E"><span class="toc-number">3.1.</span> <span class="toc-text">格式化字符串漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UAF"><span class="toc-number">3.2.</span> <span class="toc-text">UAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E6%BA%A2%E5%87%BA"><span class="toc-number">3.3.</span> <span class="toc-text">整数溢出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA"><span class="toc-number">3.4.</span> <span class="toc-text">缓冲区溢出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#VM"><span class="toc-number">3.5.</span> <span class="toc-text">VM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E"><span class="toc-number">3.6.</span> <span class="toc-text">逻辑漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E9%98%B2"><span class="toc-number">3.7.</span> <span class="toc-text">通防</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%A2%84%E6%9C%9F%EF%BC%9F"><span class="toc-number">3.8.</span> <span class="toc-text">非预期？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">检查漏洞</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">docker命令</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">PHP PWN???</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">6.1.</span> <span class="toc-text">环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF"><span class="toc-number">6.2.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%86%E5%90%91%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-number">6.3.</span> <span class="toc-text">逆向结构体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patch"><span class="toc-number">6.4.</span> <span class="toc-text">patch</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%9E%E9%A2%84%E6%9C%9F"><span class="toc-number">6.5.</span> <span class="toc-text">非预期</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1623,6 +1660,8 @@ x64就直接patch寄存器赋值即可。</p>
         
         
         
+        
+        
     
     
     
@@ -1645,6 +1684,18 @@ x64就直接patch寄存器赋值即可。</p>
             
         
         <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span>
+            <a class="archive-post-title" href="/2025/03/17/2025ciscnccb%E5%A4%8D%E7%9B%98%E5%B0%8F%E8%AE%B0/">2025ciscnccb复盘小记</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span>
+            <a class="archive-post-title" href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密编码算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
             <span class="archive-post-date">03/11</span>
             <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
         </li>
@@ -1653,12 +1704,6 @@ x64就直接patch寄存器赋值即可。</p>
         <li class="archive-post-item">
             <span class="archive-post-date">03/10</span>
             <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">03/10</span>
-            <a class="archive-post-title" href="/2025/03/10/%E6%96%B0%E6%89%8B%E6%B8%97%E9%80%8F%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">新手渗透准备技巧</a>
         </li>
     
         
@@ -1720,12 +1765,6 @@ x64就直接patch寄存器赋值即可。</p>
     
         
         <li class="archive-post-item">
-            <span class="archive-post-date">11/11</span>
-            <a class="archive-post-title" href="/2024/11/11/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密算法逆向识别</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
             <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
         </li>
@@ -1733,13 +1772,13 @@ x64就直接patch寄存器赋值即可。</p>
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
         </li>
     
         
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
-            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
         </li>
     
         
@@ -2045,19 +2084,9 @@ x64就直接patch寄存器赋值即可。</p>
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
         
-            <span class="sidebar-tag-name" data-tags="算法">
+            <span class="sidebar-tag-name" data-tags="awdp">
                 <span class="iconfont-archer">&#xe606;</span>
-                算法
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Android">
-                <span class="iconfont-archer">&#xe606;</span>
-                Android
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="逆向">
-                <span class="iconfont-archer">&#xe606;</span>
-                逆向
+                awdp
             </span>
         
             <span class="sidebar-tag-name" data-tags="pwn">
@@ -2070,14 +2099,44 @@ x64就直接patch寄存器赋值即可。</p>
                 wp
             </span>
         
-            <span class="sidebar-tag-name" data-tags="heap">
+            <span class="sidebar-tag-name" data-tags="算法">
                 <span class="iconfont-archer">&#xe606;</span>
-                heap
+                算法
             </span>
         
             <span class="sidebar-tag-name" data-tags="linux">
                 <span class="iconfont-archer">&#xe606;</span>
                 linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="php">
+                <span class="iconfont-archer">&#xe606;</span>
+                php
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -2090,24 +2149,9 @@ x64就直接patch寄存器赋值即可。</p>
                 Lab
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Develop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Develop
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="go">
@@ -2120,24 +2164,24 @@ x64就直接patch寄存器赋值即可。</p>
                 rust
             </span>
         
+            <span class="sidebar-tag-name" data-tags="basic">
+                <span class="iconfont-archer">&#xe606;</span>
+                basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="protobuf">
                 <span class="iconfont-archer">&#xe606;</span>
                 protobuf
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kernel">
-                <span class="iconfont-archer">&#xe606;</span>
-                kernel
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Rust">
-                <span class="iconfont-archer">&#xe606;</span>
-                Rust
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="llvm">
-                <span class="iconfont-archer">&#xe606;</span>
-                llvm
             </span>
         
             <span class="sidebar-tag-name" data-tags="FSOP">
@@ -2145,14 +2189,24 @@ x64就直接patch寄存器赋值即可。</p>
                 FSOP
             </span>
         
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="vm">
                 <span class="iconfont-archer">&#xe606;</span>
                 vm
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Others">
-                <span class="iconfont-archer">&#xe606;</span>
-                Others
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -2160,9 +2214,29 @@ x64就直接patch寄存器赋值即可。</p>
                 shellcode
             </span>
         
+            <span class="sidebar-tag-name" data-tags="sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                sandbox
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
             </span>
         
             <span class="sidebar-tag-name" data-tags="ROP">
@@ -2178,26 +2252,6 @@ x64就直接patch寄存器赋值即可。</p>
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="IDA">
-                <span class="iconfont-archer">&#xe606;</span>
-                IDA
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="编译">
-                <span class="iconfont-archer">&#xe606;</span>
-                编译
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="awdp">
-                <span class="iconfont-archer">&#xe606;</span>
-                awdp
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="awd">
-                <span class="iconfont-archer">&#xe606;</span>
-                awd
             </span>
         
     </div>
