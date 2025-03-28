@@ -6,7 +6,7 @@
   <link href="https://zjw1nd.github.io/atom.xml" rel="self"/>
   
   <link href="https://zjw1nd.github.io/"/>
-  <updated>2025-03-22T07:01:36.582Z</updated>
+  <updated>2025-03-28T09:27:59.053Z</updated>
   <id>https://zjw1nd.github.io/</id>
   
   <author>
@@ -15,6 +15,70 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>漏洞挖掘入门（持续更新）</title>
+    <link href="https://zjw1nd.github.io/2025/03/28/SRC%E4%B8%8E%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%85%A5%E9%97%A8%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/"/>
+    <id>https://zjw1nd.github.io/2025/03/28/SRC%E4%B8%8E%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%85%A5%E9%97%A8%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/</id>
+    <published>2025-03-28T09:10:24.000Z</published>
+    <updated>2025-03-28T09:27:59.053Z</updated>
+    
+    <content type="html"><![CDATA[<h1>Fuzz</h1><p>Syzkaller 各种内核fuzz<br>afl++<br>libfuzzer</p><h1>自动化（静态）</h1><p>Ghidra10.1.2 binabsinspector插件，科恩的</p><h1>Web漏扫</h1><p>msf</p><h1>代码审计</h1><p>Fortify<br>CodeQL</p><h1>数据库</h1><p>参考github star内容现场搜索</p><p>Squirrel C++数万行（）<br>sqlfuzz…</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1&gt;Fuzz&lt;/h1&gt;
+&lt;p&gt;Syzkaller 各种内核fuzz&lt;br&gt;
+afl++&lt;br&gt;
+libfuzzer&lt;/p&gt;
+&lt;h1&gt;自动化（静态）&lt;/h1&gt;
+&lt;p&gt;Ghidra10.1.2 binabsinspector插件，科恩的&lt;/p&gt;
+&lt;h1&gt;Web漏扫&lt;/h1&gt;
+&lt;p</summary>
+      
+    
+    
+    
+    <category term="Exploits" scheme="https://zjw1nd.github.io/categories/Exploits/"/>
+    
+    
+    <category term="pwn" scheme="https://zjw1nd.github.io/tags/pwn/"/>
+    
+    <category term="web" scheme="https://zjw1nd.github.io/tags/web/"/>
+    
+    <category term="fuzz" scheme="https://zjw1nd.github.io/tags/fuzz/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>内核fuzzing--Syzkaller初探</title>
+    <link href="https://zjw1nd.github.io/2025/03/24/%E5%86%85%E6%A0%B8fuzzing-Syzkaller%E5%88%9D%E6%8E%A2/"/>
+    <id>https://zjw1nd.github.io/2025/03/24/%E5%86%85%E6%A0%B8fuzzing-Syzkaller%E5%88%9D%E6%8E%A2/</id>
+    <published>2025-03-24T08:33:28.000Z</published>
+    <updated>2025-03-28T09:15:35.446Z</updated>
+    
+    <content type="html"><![CDATA[<h1>环境配置</h1><h2 id="内核编译">内核编译</h2><p>内核需要开启的选项：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_KCOV=y</span><br><span class="line">CONFIG_DEBUG_INFO=y # 其他的debug信息可以自行选择</span><br><span class="line">CONFIG_KASAN=y</span><br><span class="line">CONFIG_KASAN_INLINE=y</span><br><span class="line"># 不开下面的这俩qemu中systemd会报错挂不上文件系统</span><br><span class="line">CONFIG_CONFIGFS_FS=y</span><br><span class="line">CONFIG_SECURITYFS=y</span><br><span class="line"># 内置cmdline解决没网卡/无法联网的问题，也可以在syz-manager的cfg文件里配置</span><br><span class="line">CONFIG_CMDLINE_BOOL=y</span><br><span class="line">CONFIG_CMDLINE=&quot;net.ifnames=0&quot;</span><br></pre></td></tr></table></figure><h2 id="fuzz跑不动">fuzz跑不动</h2><p>连不上机器，查看日志说是fuzz执行syz-executor的时候segfault，gdb调了以下看了眼backtrace，pie的问题？这玩意不是静态编译的吗？遂上网搜索</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[  451.736541] syz-executor[249]: segfault at 7f6b8b5df3f8 ip 00007f6b8bb6b090 sp 00007ffde599aaa0 error 4 in syz-executor[7f6b8b9e7000+1]</span><br><span class="line">[  451.738294] Code: 08 66 0f d4 c1 4c 8b 51 08 66 49 0f 7e c0 4b 8d 0c 2a 4c 0f 45 d1 48 39 d8 73 3b 66 66 2e 0f 1f 84 00 00 00 00 00 0fb</span><br><span class="line">Segmentation fault</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">──────────────────────────[ DISASM / x86-64 / set emulate on ]───────────────────────────</span><br><span class="line"> ► 0x7ffff71cc090 &lt;_dl_relocate_static_pie+1040&gt;    mov    rcx, qword ptr [rax]         &lt;Cannot dereference [0x7ffff6c403f8]&gt;</span><br><span class="line">   0x7ffff71cc093 &lt;_dl_relocate_static_pie+1043&gt;    mov    edx, dword ptr [rax + 8]</span><br><span class="line">   0x7ffff71cc096 &lt;_dl_relocate_static_pie+1046&gt;    add    rcx, r13</span><br><span class="line">   0x7ffff71cc099 &lt;_dl_relocate_static_pie+1049&gt;    cmp    rdx, 0x26</span><br><span class="line">   0x7ffff71cc09d &lt;_dl_relocate_static_pie+1053&gt;    je     _dl_relocate_static_pie+1065 &lt;_dl_relocate_static_pie+1065&gt;</span><br><span class="line"> </span><br><span class="line">   0x7ffff71cc09f &lt;_dl_relocate_static_pie+1055&gt;    cmp    rdx, 8</span><br><span class="line">   0x7ffff71cc0a3 &lt;_dl_relocate_static_pie+1059&gt;    jne    _dl_relocate_static_pie.cold+62 &lt;_dl_relocate_static_pie.cold+62&gt;</span><br><span class="line"> </span><br><span class="line">   0x7ffff71cc0a9 &lt;_dl_relocate_static_pie+1065&gt;    mov    rdx, qword ptr [rax + 0x10]</span><br><span class="line">   0x7ffff71cc0ad &lt;_dl_relocate_static_pie+1069&gt;    add    rax, 0x18</span><br><span class="line">   0x7ffff71cc0b1 &lt;_dl_relocate_static_pie+1073&gt;    add    rdx, r13</span><br><span class="line">   0x7ffff71cc0b4 &lt;_dl_relocate_static_pie+1076&gt;    mov    qword ptr [rcx], rdx</span><br><span class="line">────────────────────────────────────────[ STACK ]────────────────────────────────────────</span><br><span class="line">00:0000│ rsp 0x7fffffffde30 ◂— 0x40 /* &#x27;@&#x27; */</span><br><span class="line">01:0008│-0a8 0x7fffffffde38 ◂— 0xa /* &#x27;\n&#x27; */</span><br><span class="line">02:0010│-0a0 0x7fffffffde40 ◂— 0xffffffffffffffff</span><br><span class="line">03:0018│-098 0x7fffffffde48 ◂— 0x100</span><br><span class="line">04:0020│-090 0x7fffffffde50 ◂— 0x800</span><br><span class="line">05:0028│-088 0x7fffffffde58 ◂— 0x1940000</span><br><span class="line">06:0030│-080 0x7fffffffde60 —▸ 0x7fffffffdeb0 ◂— 0</span><br><span class="line">07:0038│-078 0x7fffffffde68 —▸ 0x7fffffffde98 ◂— 0</span><br><span class="line">──────────────────────────────────────[ BACKTRACE ]──────────────────────────────────────</span><br><span class="line"> ► 0   0x7ffff71cc090 _dl_relocate_static_pie+1040</span><br><span class="line">   1   0x7ffff7146cb6 __libc_start_main_impl+102</span><br><span class="line">   2   0x7ffff7050885 _start+37</span><br><span class="line"></span><br></pre></td></tr></table></figure><p>结果还真让我搜到了：<br><a href="https://sourceware.org/bugzilla/show_bug.cgi?id=32761">https://sourceware.org/bugzilla/show_bug.cgi?id=32761</a></p><p><a href="https://www.mail-archive.com/bug-binutils@gnu.org/msg49517.html">https://www.mail-archive.com/bug-binutils@gnu.org/msg49517.html</a></p><p>glibc2.41的问题，那就用我们经典的解决方案，换到docker里挂载之后重新编译syzkaller就能解决。</p><h1>用法</h1><p>用cfg文件指定我们的目标，启动syzkaller之后用web前端观察结果。</p><p>可以fuzz驱动</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1&gt;环境配置&lt;/h1&gt;
+&lt;h2 id=&quot;内核编译&quot;&gt;内核编译&lt;/h2&gt;
+&lt;p&gt;内核需要开启的选项：&lt;/p&gt;
+&lt;figure class=&quot;highlight plaintext&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;</summary>
+      
+    
+    
+    
+    <category term="Exploit" scheme="https://zjw1nd.github.io/categories/Exploit/"/>
+    
+    
+    <category term="kernel" scheme="https://zjw1nd.github.io/tags/kernel/"/>
+    
+    <category term="fuzzing" scheme="https://zjw1nd.github.io/tags/fuzzing/"/>
+    
+  </entry>
   
   <entry>
     <title>基于qemu和ubuntu-base的kdump分析环境</title>
@@ -527,59 +591,6 @@
     
     
     <category term="算法" scheme="https://zjw1nd.github.io/tags/%E7%AE%97%E6%B3%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>记录一次护网行动</title>
-    <link href="https://zjw1nd.github.io/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/"/>
-    <id>https://zjw1nd.github.io/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/</id>
-    <published>2024-10-18T11:17:47.000Z</published>
-    <updated>2024-10-19T03:32:36.416Z</updated>
-    
-    <content type="html"><![CDATA[<h1>写在前面</h1><p>首先这次的体验就两个字：<strong>坐牢</strong>。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶心完了。</p><h1>Web渗透大概记录一下</h1><blockquote><p>“内网渗透的本质是信息搜集”</p></blockquote><p>首先感谢xzj师傅的工具。Web方向的工具也太多了，甚至还有集成好的虚拟机环境，各个GUI做的都牛逼的不行（Yakit），一键扫描一键搜集一键测poc，感叹web吃的也太好了。</p><h2 id="工具">工具</h2><p>最后搞了半天就bp最熟，另一个用的最多的就是轻量化的dudesuite，fofa和重放就够了。信息搜集密探似乎最好用可惜后期才发现。awvs看起来也牛逼但是没用到。</p><h2 id="代理池">代理池</h2><p>第一天没什么进展，中医院的OA指纹识别后测POC发两次就被ban ip，不懂还以为是玩不起，后来问学长和裁判才了解到应该是物理的小盒WAF。不走域名的话测poc被ban一般就要么配代理池要么换目标了。</p><p>代理池又折腾了几天，开始说要一个vps来，要来了也没啥用，CentOS上面什么也没有自己还得配环境，手动编译python装一年装好了还不能用一拖史。整个攻击的网络都是内网，出口ip一样，没有ipv6网段，v4的公网ip自己就不能乱写了。第三天大部分时间在折腾这个，终于放弃了，从网上买新用户白嫖的来发包测poc（到中期都没有能直连访问的了，要么开自己梯子要么代理池）。</p><h2 id="成果">成果</h2><p>第二天从学长了解到上次中医院挖了小程序的越权。这次也试试，主要目标都防护太厉害了。然后学了一手小程序抓包（Proxifier代理有点厉害，进程指定），然后开始人工审计流量（上次也是这么干的）。没想到还真让我审到了，各个接口一个个乱试的时候发现，查地址的时候就算把Token字段全删掉也返回200，测试了一下果然，只认GET里的UserId手机号，token是假的…遂喊人注册验证，果然平行越权随便查。各个接口测一遍下来，只有关联的就诊人这个最敏感的（身份证）有验证，地址和就诊记录都不看Token，太抽象了。<br><img src="/images/hvv/poc1.png" alt="poc1.png"></p><p><img src="/images/hvv/poc2.png" alt="poc2.png"></p><p>交涉3天后拿到1500分，按200w+的数据算了，最后也比武大高，小win</p><p>最后绝大部分还是先弱口令/社工/钓鱼的内网突破，就算没有这些也大部分都是弱口令拿分。我们一个都没找到，发现的都像是蜜罐。</p><h1>anyway</h1><p>不熟悉任何的常见框架，webfuzz，漏洞挖掘，代码审计。人工审小程序硬是拿了1500也算不错了。主要还是不熟悉真实的渗透流程和体系化的那种操作。密探里有一张备忘图就很好。信息搜集该干什么，网站拿到了根据注册框、敏感信息等等我们能做什么攻击测试，有漏洞之后怎么利用最后进入内网等等。前期的准备和信息搜集太少了基本是无头苍蝇，在没用的地方浪费了很多时间。还得是快速找弱口令突破口，另外教程得找同样的护网记录给思路。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1&gt;写在前面&lt;/h1&gt;
-&lt;p&gt;首先这次的体验就两个字：&lt;strong&gt;坐牢&lt;/strong&gt;。先不说会不会能不能打，整个承办体验极差。收手机（为此还前一天收了一部，起了大作用了）。除了收手机以外，还不让用自己的电脑，给的电脑配置很差，空间也就装一个虚拟机。还要梯子，反正就是恶</summary>
-      
-    
-    
-    
-    <category term="Web" scheme="https://zjw1nd.github.io/categories/Web/"/>
-    
-    
-    <category term="web" scheme="https://zjw1nd.github.io/tags/web/"/>
-    
-    <category term="hvv" scheme="https://zjw1nd.github.io/tags/hvv/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Android逆向入门之2015-AliCrackme</title>
-    <link href="https://zjw1nd.github.io/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/"/>
-    <id>https://zjw1nd.github.io/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/</id>
-    <published>2024-10-14T11:18:51.000Z</published>
-    <updated>2024-11-20T06:31:44.034Z</updated>
-    
-    <content type="html"><![CDATA[<h1>参考实验报告</h1><p>简单的分析，内存dump或者反调试patch。多用dd直接dump内存</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1&gt;参考实验报告&lt;/h1&gt;
-&lt;p&gt;简单的分析，内存dump或者反调试patch。多用dd直接dump内存&lt;/p&gt;
-</summary>
-      
-    
-    
-    
-    
-    <category term="Android" scheme="https://zjw1nd.github.io/tags/Android/"/>
-    
-    <category term="逆向" scheme="https://zjw1nd.github.io/tags/%E9%80%86%E5%90%91/"/>
     
   </entry>
   
