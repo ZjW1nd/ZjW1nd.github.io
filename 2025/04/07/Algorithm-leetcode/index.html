@@ -27,7 +27,7 @@
 <meta property="og:description" content="lc的输入传引用，并且无需自己设计输入输出格式，只需要实现核心函数即可  考虑在每个方向上都做1-2道题。 数组操作 1-3：数组操作，双指针为主，C++上学期考完csp已经手生了，不会用vec了。需要利用有序信息。保留连续两个重复元素，有序数组，不额外开空间： 双指针一个用于遍历搜索，另一个用于标记修改位置，通用思路 1234567891011121314151617class Solutio">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-04-07T07:18:55.000Z">
-<meta property="article:modified_time" content="2025-04-18T03:10:16.171Z">
+<meta property="article:modified_time" content="2025-04-27T03:25:39.555Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="算法">
 <meta name="twitter:card" content="summary">
@@ -529,7 +529,36 @@
 </li>
 </ul>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    unordered_map &lt;<span class="type">char</span>, <span class="type">int</span>&gt; ori, cnt;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">check</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span> &amp;p: ori) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cnt[p.first] &lt; p.second) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">string <span class="title">minWindow</span><span class="params">(string s, string t)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">const</span> <span class="keyword">auto</span> &amp;c: t) &#123;</span><br><span class="line">            ++ori[c];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> l = <span class="number">0</span>, r = <span class="number">-1</span>;</span><br><span class="line">        <span class="type">int</span> len = INT_MAX, ansL = <span class="number">-1</span>, ansR = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (r &lt; <span class="built_in">int</span>(s.<span class="built_in">size</span>())) &#123;</span><br><span class="line">            <span class="keyword">if</span> (ori.<span class="built_in">find</span>(s[++r]) != ori.<span class="built_in">end</span>()) &#123;</span><br><span class="line">                ++cnt[s[r]];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (<span class="built_in">check</span>() &amp;&amp; l &lt;= r) &#123;</span><br><span class="line">                <span class="keyword">if</span> (r - l + <span class="number">1</span> &lt; len) &#123;</span><br><span class="line">                    len = r - l + <span class="number">1</span>;</span><br><span class="line">                    ansL = l;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (ori.<span class="built_in">find</span>(s[l]) != ori.<span class="built_in">end</span>()) &#123;</span><br><span class="line">                    --cnt[s[l]];</span><br><span class="line">                &#125;</span><br><span class="line">                ++l;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ansL == <span class="number">-1</span> ? <span class="built_in">string</span>() : s.<span class="built_in">substr</span>(ansL, len);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h1></h1>
+<h1>矩阵</h1>
+<p>不要担心空间，只管加就行了，遍历一遍信息全记下来</p>
+<p>数独判断，行列和3*3。</p>
+<p>自己的方法写一半觉得太烂了，是暴力遍历，check3次遍历三次。而且小范围3<em>3还写的很烂。看别人的算法应该是函数传入左上角位置然后循环卡在3</em>3里面就行。</p>
+<p>遍历一遍的方法是</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">isValidSudoku</span><span class="params">(vector&lt;vector&lt;<span class="type">char</span>&gt;&gt;&amp; board)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//使用位运算加速</span></span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">rows</span><span class="params">(<span class="number">9</span>)</span></span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">cols</span><span class="params">(<span class="number">9</span>)</span></span>;</span><br><span class="line">        <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">block</span><span class="params">(<span class="number">9</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;<span class="number">9</span>;++i)&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> j=<span class="number">0</span>;j&lt;<span class="number">9</span>;++j)&#123;</span><br><span class="line">                <span class="keyword">if</span>(board[i][j]==<span class="string">&#x27;.&#x27;</span>)<span class="keyword">continue</span>;</span><br><span class="line">                <span class="type">int</span> x = board[i][j]-<span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">                <span class="keyword">if</span>(rows[i]&gt;&gt;x&amp;<span class="number">1</span> || cols[j]&gt;&gt;x&amp;<span class="number">1</span> || block[(i/<span class="number">3</span>)*<span class="number">3</span>+j/<span class="number">3</span>]&gt;&gt;x&amp;<span class="number">1</span>)&#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">//加入</span></span><br><span class="line">                rows[i] |= <span class="number">1</span>&lt;&lt;x;</span><br><span class="line">                cols[j] |= <span class="number">1</span>&lt;&lt;x;</span><br><span class="line">                block[(i/<span class="number">3</span>)*<span class="number">3</span>+j/<span class="number">3</span>] |= <span class="number">1</span>&lt;&lt;x; <span class="comment">//(i,j)位于第(i/3)*3+j/3个九宫格</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>本质是二维数组，这里为了加速优化成了bitmap的感觉，每一位标记对应数字是否出现过。</p>
+<h1>哈希表</h1>
+<p>统计异位词，及字母一致顺序不同的单词，重新输出链表。先看标答1。标答主要是确定用哈希表之后，考虑用什么做哈希表的键。</p>
+<p>或者说，标答开始就认为我们应当用某个特征去归类顺序不同但字母一致的单词，然后用哈希表处理，用统一化的特征作为key，按照这个统一过的key直接塞进哈希表</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    vector&lt;vector&lt;string&gt;&gt; <span class="built_in">groupAnagrams</span>(vector&lt;string&gt;&amp; strs) &#123;</span><br><span class="line">        unordered_map&lt;string, vector&lt;string&gt;&gt; mp;</span><br><span class="line">        <span class="keyword">for</span> (string&amp; str: strs) &#123;</span><br><span class="line">            string key = str;</span><br><span class="line">            <span class="built_in">sort</span>(key.<span class="built_in">begin</span>(), key.<span class="built_in">end</span>());</span><br><span class="line">            mp[key].<span class="built_in">emplace_back</span>(str);</span><br><span class="line">        &#125;</span><br><span class="line">        vector&lt;vector&lt;string&gt;&gt; ans;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> it = mp.<span class="built_in">begin</span>(); it != mp.<span class="built_in">end</span>(); ++it) &#123;</span><br><span class="line">            ans.<span class="built_in">emplace_back</span>(it-&gt;second);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>我也有个思路，不过是自己实现的更快的哈希表。用bitmap统计字母出现与否，也就是整数+位运算记录是否存在。但是测例过不了，发现是需要统计字母数量，同样的字母组合数量不同bitmap没法表示，还是排序或者用26项数组来做。</p>
+<h1>区间</h1>
+<p>合并区间。自己的不对的算法。右端点排序不能保证可合并区间相邻，对于每一个区间都需要考察剩下的所有区间，所以是O(n^2)算法。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">bool</span> <span class="title">cmp</span><span class="params">(<span class="type">const</span> vector&lt;<span class="type">int</span>&gt;&amp; a,<span class="type">const</span> vector&lt;<span class="type">int</span>&gt;&amp; b)</span></span>&#123;</span><br><span class="line">        <span class="comment">// 算法课讲过的贪心？先要对区间排序然后遍历吧？</span></span><br><span class="line">        <span class="keyword">return</span> a[<span class="number">1</span>]&lt;b[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">merge</span>(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; intervals) &#123;</span><br><span class="line">        <span class="comment">// 对于任意的A,B两个区间，有如下规则：</span></span><br><span class="line">        <span class="comment">// 如果A的右端点属于B区间，那么就将二者合并为[min(lefta,leftb),rightb]</span></span><br><span class="line">        <span class="type">int</span> n=intervals.<span class="built_in">size</span>();</span><br><span class="line">        <span class="function">vector&lt;<span class="type">bool</span>&gt; <span class="title">if_combine</span><span class="params">(n,<span class="literal">false</span>)</span></span>;</span><br><span class="line">        <span class="comment">// 优先排序 Ologn</span></span><br><span class="line">        <span class="built_in">sort</span>(intervals.<span class="built_in">begin</span>(),intervals.<span class="built_in">end</span>(),cmp);</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; result;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> k=<span class="number">0</span>;k&lt;n;k++)&#123;</span><br><span class="line">            <span class="function">vector&lt;<span class="type">int</span>&gt; <span class="title">tmp</span><span class="params">(<span class="number">2</span>)</span></span>;</span><br><span class="line">            tmp=intervals[k];</span><br><span class="line">            <span class="keyword">for</span>(<span class="type">int</span> i=k+<span class="number">1</span>;i&lt;n;i++)&#123;</span><br><span class="line">                <span class="keyword">if</span>(i==n) i--;</span><br><span class="line">                <span class="keyword">if</span>(if_combine[i]) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">if</span>(tmp[<span class="number">1</span>]&gt;=intervals[i][<span class="number">0</span>])&#123;</span><br><span class="line">                    tmp[<span class="number">0</span>]=<span class="built_in">min</span>(tmp[<span class="number">0</span>],intervals[i][<span class="number">0</span>]);</span><br><span class="line">                    tmp[<span class="number">1</span>]=intervals[i][<span class="number">1</span>];</span><br><span class="line">                    <span class="comment">// 该区间已经被我们合并</span></span><br><span class="line">                    if_combine[i]=<span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(!if_combine[k]) result.<span class="built_in">push_back</span>(tmp);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>贪心对了，不过左端点排序的性质更好：可合并区间必定连续</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">merge</span>(vector&lt;vector&lt;<span class="type">int</span>&gt;&gt;&amp; intervals) &#123;</span><br><span class="line">        <span class="keyword">if</span> (intervals.<span class="built_in">size</span>() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">sort</span>(intervals.<span class="built_in">begin</span>(), intervals.<span class="built_in">end</span>());</span><br><span class="line">        vector&lt;vector&lt;<span class="type">int</span>&gt;&gt; merged;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; intervals.<span class="built_in">size</span>(); ++i) &#123;</span><br><span class="line">            <span class="type">int</span> L = intervals[i][<span class="number">0</span>], R = intervals[i][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (!merged.<span class="built_in">size</span>() || merged.<span class="built_in">back</span>()[<span class="number">1</span>] &lt; L) &#123;</span><br><span class="line">                merged.<span class="built_in">push_back</span>(&#123;L, R&#125;);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                merged.<span class="built_in">back</span>()[<span class="number">1</span>] = <span class="built_in">max</span>(merged.<span class="built_in">back</span>()[<span class="number">1</span>], R);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> merged;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1>栈</h1>
+<p>加减法括号计算器。官解：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">calculate</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        stack&lt;<span class="type">int</span>&gt; ops;</span><br><span class="line">        ops.<span class="built_in">push</span>(<span class="number">1</span>);</span><br><span class="line">        <span class="type">int</span> sign = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> n = s.<span class="built_in">length</span>();</span><br><span class="line">        <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &lt; n) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s[i] == <span class="string">&#x27; &#x27;</span>) &#123;</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">&#x27;+&#x27;</span>) &#123;</span><br><span class="line">                sign = ops.<span class="built_in">top</span>();</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">&#x27;-&#x27;</span>) &#123;</span><br><span class="line">                sign = -ops.<span class="built_in">top</span>();</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                ops.<span class="built_in">push</span>(sign);</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s[i] == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                ops.<span class="built_in">pop</span>();</span><br><span class="line">                i++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="type">long</span> num = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">while</span> (i &lt; n &amp;&amp; s[i] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; s[i] &lt;= <span class="string">&#x27;9&#x27;</span>) &#123;</span><br><span class="line">                    num = num * <span class="number">10</span> + s[i] - <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">                    i++;</span><br><span class="line">                &#125;</span><br><span class="line">                ret += sign * num;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>我自己写的没法处理单目运算符负号，想的是LR规约那种感觉。单目运算符±的好的处理办法就是官解那种，无论如何最后都是加，符号栈里放的是一个符号位，读到就设置，并且每个括号重新push符号位。</p>
+<p>我自己写的在这个测试例子挂了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1-(   -2)</span><br></pre></td></tr></table></figure>
+<p>我的方法是在数字栈开始压入一个0后面的不动，但是对每个括号都压入0肯定会影响计算的。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">states</span>&#123;</span><br><span class="line">        NUMBER,</span><br><span class="line">        LEFT_PARENTHESE,</span><br><span class="line">        RIGHT_PARENTHESE,</span><br><span class="line">        OP</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">calculate</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 编译原理这一块, 符号栈+规约</span></span><br><span class="line">        <span class="type">int</span> p=<span class="number">0</span>,state=<span class="number">0</span>;</span><br><span class="line">        vector&lt;<span class="type">int</span>&gt; stack_nums;</span><br><span class="line">        stack_nums.<span class="built_in">push_back</span>(<span class="number">0</span>);</span><br><span class="line">        vector&lt;<span class="type">char</span>&gt; stack_ops;</span><br><span class="line">        <span class="type">int</span> result;</span><br><span class="line">        <span class="comment">// 自动机？</span></span><br><span class="line">        <span class="keyword">while</span>(p&lt;s.<span class="built_in">length</span>())&#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;reading: %c\n&quot;</span>,s[p]);</span><br><span class="line">            <span class="keyword">if</span>(<span class="built_in">isdigit</span>(s[p])) state=NUMBER;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(s[p]==<span class="string">&#x27;(&#x27;</span>) state=LEFT_PARENTHESE;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(s[p]==<span class="string">&#x27;)&#x27;</span>) state=RIGHT_PARENTHESE;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(s[p]==<span class="string">&#x27;+&#x27;</span> || s[p] == <span class="string">&#x27;-&#x27;</span>) state=OP;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;recognizing space\n&quot;</span>);</span><br><span class="line">                p++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">switch</span>(state)&#123;</span><br><span class="line">                <span class="keyword">case</span> NUMBER:&#123;</span><br><span class="line">                    <span class="comment">// 检查符号栈</span></span><br><span class="line">                    <span class="type">long</span> num=<span class="number">0</span>;</span><br><span class="line">                    <span class="keyword">while</span> (p &lt; s.<span class="built_in">length</span>() &amp;&amp; s[p] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; s[p] &lt;= <span class="string">&#x27;9&#x27;</span>) &#123;</span><br><span class="line">                        num = num * <span class="number">10</span> + s[p] - <span class="string">&#x27;0&#x27;</span>;</span><br><span class="line">                        p++;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">&quot;num: %ld\n&quot;</span>,num);</span><br><span class="line">                    <span class="keyword">if</span>(stack_ops.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(num);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">&quot;stack_nums.back():%d\n&quot;</span>,stack_nums.<span class="built_in">back</span>());</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">&quot;stack_ops.back(): %c\n&quot;</span>,stack_ops.<span class="built_in">back</span>());</span><br><span class="line">                    <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(x+num);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;-&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(x-num);</span><br><span class="line">                    &#125;                   </span><br><span class="line">                    <span class="keyword">else</span> stack_nums.<span class="built_in">push_back</span>(num);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">case</span> LEFT_PARENTHESE:</span><br><span class="line">                    stack_ops.<span class="built_in">push_back</span>(<span class="string">&#x27;(&#x27;</span>);</span><br><span class="line">                    p++;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> RIGHT_PARENTHESE:</span><br><span class="line">                    <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        <span class="type">int</span> y = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(x+y);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;-&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        <span class="type">int</span> y = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(y-x);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">&quot;now it shoud be (: %c\n&quot;</span>,stack_ops.<span class="built_in">back</span>());</span><br><span class="line">                    stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                    p++;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> OP:</span><br><span class="line">                    stack_ops.<span class="built_in">push_back</span>(s[p++]);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(!stack_ops.<span class="built_in">empty</span>())&#123;</span><br><span class="line">                    <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;+&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        <span class="type">int</span> y = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(x+y);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span>(stack_ops.<span class="built_in">back</span>()==<span class="string">&#x27;-&#x27;</span>)&#123;</span><br><span class="line">                        <span class="type">int</span> x = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        <span class="type">int</span> y = stack_nums.<span class="built_in">back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_ops.<span class="built_in">pop_back</span>();</span><br><span class="line">                        stack_nums.<span class="built_in">push_back</span>(y-x);</span><br><span class="line">                    &#125;                </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> stack_nums.<span class="built_in">back</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>题解中的类似思路的支持各种运算符的简单解和通解，解决我上面测例挂的思路也简单粗暴，就是对可能的情况做替换。另外，这个题解也不是规约，按照规约的话应该是数字入栈去做消除，它是在操作入栈的时候直接对栈做完全计算。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">replace</span><span class="params">(string&amp; s)</span></span>&#123;</span><br><span class="line">        <span class="type">int</span> pos = s.<span class="built_in">find</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        <span class="keyword">while</span> (pos != <span class="number">-1</span>) &#123;</span><br><span class="line">            s.<span class="built_in">replace</span>(pos, <span class="number">1</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">            pos = s.<span class="built_in">find</span>(<span class="string">&quot; &quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">calculate</span><span class="params">(string s)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 存放所有的数字</span></span><br><span class="line">        stack&lt;<span class="type">int</span>&gt; nums;</span><br><span class="line">        <span class="comment">// 为了防止第一个数为负数，先往 nums 加个 0</span></span><br><span class="line">        nums.<span class="built_in">push</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="comment">// 将所有的空格去掉</span></span><br><span class="line">        <span class="built_in">replace</span>(s);</span><br><span class="line">        <span class="comment">// 存放所有的操作，包括 +/-</span></span><br><span class="line">        stack&lt;<span class="type">char</span>&gt; ops;</span><br><span class="line">        <span class="type">int</span> n = s.<span class="built_in">size</span>();</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">char</span> c = s[i];</span><br><span class="line">            <span class="keyword">if</span>(c == <span class="string">&#x27;(&#x27;</span>)</span><br><span class="line">                ops.<span class="built_in">push</span>(c);</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(c == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                <span class="comment">// 计算到最近一个左括号为止</span></span><br><span class="line">                <span class="keyword">while</span>(!ops.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">                    <span class="type">char</span> op = ops.<span class="built_in">top</span>();</span><br><span class="line">                    <span class="keyword">if</span>(op != <span class="string">&#x27;(&#x27;</span>)</span><br><span class="line">                        <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">                    <span class="keyword">else</span> &#123;</span><br><span class="line">                        ops.<span class="built_in">pop</span>();</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span>(<span class="built_in">isdigit</span>(c)) &#123;</span><br><span class="line">                    <span class="type">int</span> cur_num = <span class="number">0</span>;</span><br><span class="line">                    <span class="type">int</span> j = i;</span><br><span class="line">                    <span class="comment">// 将从 i 位置开始后面的连续数字整体取出，加入 nums</span></span><br><span class="line">                    <span class="keyword">while</span>(j &lt;n &amp;&amp; <span class="built_in">isdigit</span>(s[j]))</span><br><span class="line">                        cur_num = cur_num*<span class="number">10</span> + (s[j++] - <span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">                    <span class="comment">// 注意上面的计算一定要有括号，否则有可能会溢出</span></span><br><span class="line">                    nums.<span class="built_in">push</span>(cur_num);</span><br><span class="line">                    i = j<span class="number">-1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; (s[i - <span class="number">1</span>] == <span class="string">&#x27;(&#x27;</span> || s[i - <span class="number">1</span>] == <span class="string">&#x27;+&#x27;</span> || s[i - <span class="number">1</span>] == <span class="string">&#x27;-&#x27;</span>)) &#123;</span><br><span class="line">                        nums.<span class="built_in">push</span>(<span class="number">0</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// 有一个新操作要入栈时，先把栈内可以算的都算了</span></span><br><span class="line">                    <span class="keyword">while</span>(!ops.<span class="built_in">empty</span>() &amp;&amp; ops.<span class="built_in">top</span>() != <span class="string">&#x27;(&#x27;</span>)</span><br><span class="line">                        <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">                    ops.<span class="built_in">push</span>(c);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span>(!ops.<span class="built_in">empty</span>())</span><br><span class="line">            <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">        <span class="keyword">return</span> nums.<span class="built_in">top</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">calc</span><span class="params">(stack&lt;<span class="type">int</span>&gt; &amp;nums, stack&lt;<span class="type">char</span>&gt; &amp;ops)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(nums.<span class="built_in">size</span>() &lt; <span class="number">2</span> || ops.<span class="built_in">empty</span>())</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> b = nums.<span class="built_in">top</span>(); nums.<span class="built_in">pop</span>();</span><br><span class="line">        <span class="type">int</span> a = nums.<span class="built_in">top</span>(); nums.<span class="built_in">pop</span>();</span><br><span class="line">        <span class="type">char</span> op = ops.<span class="built_in">top</span>(); ops.<span class="built_in">pop</span>();</span><br><span class="line">        nums.<span class="built_in">push</span>(op == <span class="string">&#x27;+&#x27;</span> ? a+b : a-b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    Map&lt;Character, Integer&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;()&#123;&#123;</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;-&#x27;</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;+&#x27;</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;*&#x27;</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;/&#x27;</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;%&#x27;</span>, <span class="number">2</span>);</span><br><span class="line">        <span class="built_in">put</span>(<span class="string">&#x27;^&#x27;</span>, <span class="number">3</span>);</span><br><span class="line">    &#125;&#125;;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="type">int</span> <span class="title">calculate</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        s = s.<span class="built_in">replaceAll</span>(<span class="string">&quot; &quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="type">char</span>[] cs = s.<span class="built_in">toCharArray</span>();</span><br><span class="line">        <span class="type">int</span> n = s.<span class="built_in">length</span>();</span><br><span class="line">        Deque&lt;Integer&gt; nums = <span class="keyword">new</span> ArrayDeque&lt;&gt;();</span><br><span class="line">        nums.<span class="built_in">addLast</span>(<span class="number">0</span>);</span><br><span class="line">        Deque&lt;Character&gt; ops = <span class="keyword">new</span> ArrayDeque&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">char</span> c = cs[i];</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                ops.<span class="built_in">addLast</span>(c);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (c == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">while</span> (!ops.<span class="built_in">isEmpty</span>()) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (ops.<span class="built_in">peekLast</span>() != <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                        <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        ops.<span class="built_in">pollLast</span>();</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">isNumber</span>(c)) &#123;</span><br><span class="line">                    <span class="type">int</span> u = <span class="number">0</span>;</span><br><span class="line">                    <span class="type">int</span> j = i;</span><br><span class="line">                    <span class="keyword">while</span> (j &lt; n &amp;&amp; <span class="built_in">isNumber</span>(cs[j])) u = u * <span class="number">10</span> + (cs[j++] - <span class="string">&#x27;0&#x27;</span>);</span><br><span class="line">                    nums.<span class="built_in">addLast</span>(u);</span><br><span class="line">                    i = j - <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; (cs[i - <span class="number">1</span>] == <span class="string">&#x27;(&#x27;</span> || cs[i - <span class="number">1</span>] == <span class="string">&#x27;+&#x27;</span> || cs[i - <span class="number">1</span>] == <span class="string">&#x27;-&#x27;</span>)) &#123;</span><br><span class="line">                        nums.<span class="built_in">addLast</span>(<span class="number">0</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">while</span> (!ops.<span class="built_in">isEmpty</span>() &amp;&amp; ops.<span class="built_in">peekLast</span>() != <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                        <span class="type">char</span> prev = ops.<span class="built_in">peekLast</span>();</span><br><span class="line">                        <span class="keyword">if</span> (map.<span class="built_in">get</span>(prev) &gt;= map.<span class="built_in">get</span>(c)) &#123;</span><br><span class="line">                            <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="keyword">break</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    ops.<span class="built_in">addLast</span>(c);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (!ops.<span class="built_in">isEmpty</span>() &amp;&amp; ops.<span class="built_in">peekLast</span>() != <span class="string">&#x27;(&#x27;</span>) <span class="built_in">calc</span>(nums, ops);</span><br><span class="line">        <span class="keyword">return</span> nums.<span class="built_in">peekLast</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">calc</span><span class="params">(Deque&lt;Integer&gt; nums, Deque&lt;Character&gt; ops)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (nums.<span class="built_in">isEmpty</span>() || nums.<span class="built_in">size</span>() &lt; <span class="number">2</span>) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (ops.<span class="built_in">isEmpty</span>()) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> b = nums.<span class="built_in">pollLast</span>(), a = nums.<span class="built_in">pollLast</span>();</span><br><span class="line">        <span class="type">char</span> op = ops.<span class="built_in">pollLast</span>();</span><br><span class="line">        <span class="type">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (op == <span class="string">&#x27;+&#x27;</span>) &#123;</span><br><span class="line">            ans = a + b;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">&#x27;-&#x27;</span>) &#123;</span><br><span class="line">            ans = a - b;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">&#x27;*&#x27;</span>) &#123;</span><br><span class="line">            ans = a * b;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">&#x27;/&#x27;</span>) &#123;</span><br><span class="line">            ans = a / b;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">&#x27;^&#x27;</span>) &#123;</span><br><span class="line">            ans = (<span class="type">int</span>)Math.<span class="built_in">pow</span>(a, b);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">&#x27;%&#x27;</span>) &#123;</span><br><span class="line">            ans = a % b;</span><br><span class="line">        &#125;</span><br><span class="line">        nums.<span class="built_in">addLast</span>(ans);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">boolean <span class="title">isNumber</span><span class="params">(<span class="type">char</span> c)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Character.<span class="built_in">isDigit</span>(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>链表</h1>
+<p>k个一组翻转链表</p>
 
     </article>
     <!-- license -->
@@ -572,7 +601,7 @@
             <!--PC版-->
 
 
-            
+            <!-- partial('_partial/comment/custom') -->
             
 
             
@@ -689,7 +718,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">数组操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%A4%9A%E6%95%B0%E5%85%83%E7%B4%A0-%E6%95%B0%E7%BB%84%E7%BB%9F%E8%AE%A1"><span class="toc-number">1.1.</span> <span class="toc-text">4 多数元素 数组统计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E8%BD%AE%E8%BD%AC%E6%95%B0%E7%BB%84"><span class="toc-number">1.2.</span> <span class="toc-text">5 轮转数组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E8%B4%AA%E5%BF%83"><span class="toc-number">1.3.</span> <span class="toc-text">简单的贪心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#135-%E5%88%86%E7%B3%96%E6%9E%9C"><span class="toc-number">1.4.</span> <span class="toc-text">135 分糖果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">滑动窗口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text"></span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">数组操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%A4%9A%E6%95%B0%E5%85%83%E7%B4%A0-%E6%95%B0%E7%BB%84%E7%BB%9F%E8%AE%A1"><span class="toc-number">1.1.</span> <span class="toc-text">4 多数元素 数组统计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E8%BD%AE%E8%BD%AC%E6%95%B0%E7%BB%84"><span class="toc-number">1.2.</span> <span class="toc-text">5 轮转数组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E8%B4%AA%E5%BF%83"><span class="toc-number">1.3.</span> <span class="toc-text">简单的贪心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#135-%E5%88%86%E7%B3%96%E6%9E%9C"><span class="toc-number">1.4.</span> <span class="toc-text">135 分糖果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">滑动窗口</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">矩阵</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">哈希表</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">区间</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">链表</span></a></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1048,7 +1077,69 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1713,7 +1804,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 69
+        Total : 73
         </div>
         <!-- search  -->
         
@@ -1729,8 +1820,32 @@
             
         
         <li class="archive-post-item">
-            <span class="archive-post-date">04/17</span>
-            <a class="archive-post-title" href="/2025/04/17/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
         </li>
     
         
@@ -2185,11 +2300,6 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Android">
                 <span class="iconfont-archer">&#xe606;</span>
                 Android
@@ -2198,6 +2308,11 @@
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="awd">
@@ -2210,14 +2325,14 @@
                 php
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="heap">
                 <span class="iconfont-archer">&#xe606;</span>
                 heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -2235,6 +2350,16 @@
                 Develop
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2248,16 +2373,6 @@
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2275,6 +2390,11 @@
                 kernel
             </span>
         
+            <span class="sidebar-tag-name" data-tags="exploits">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploits
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
@@ -2283,6 +2403,21 @@
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -2305,9 +2440,24 @@
                 Others
             </span>
         
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
             </span>
         
             <span class="sidebar-tag-name" data-tags="IDA">
@@ -2325,34 +2475,9 @@
                 ROP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="web">
-                <span class="iconfont-archer">&#xe606;</span>
-                web
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kdump">
-                <span class="iconfont-archer">&#xe606;</span>
-                kdump
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzz">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzz
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzzing">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzzing
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                develop
             </span>
         
     </div>
@@ -2391,9 +2516,19 @@
             Develop
         </span>
     
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
         </span>
     
         <span class="sidebar-category-name" data-categories="others">
@@ -2401,24 +2536,14 @@
             others
         </span>
     
-        <span class="sidebar-category-name" data-categories="Web">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Web
-        </span>
-    
         <span class="sidebar-category-name" data-categories="kernel">
             <span class="iconfont-archer">&#xe60a;</span>
             kernel
         </span>
     
-        <span class="sidebar-category-name" data-categories="Exploits">
+        <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
-            Exploits
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Exploit">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Exploit
+            Web
         </span>
     
     </div>

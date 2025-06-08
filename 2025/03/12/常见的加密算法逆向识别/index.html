@@ -27,7 +27,7 @@
 <meta property="og:description" content="参考自 https:&#x2F;&#x2F;www.cnblogs.com&#x2F;Moomin&#x2F;p&#x2F;15004170.html#aes  Base64 识别 一个索引串ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+&#x2F; IO 可能做魔改调整, 6位索引一个ascii码的索引换掉，此时我们用bytes.maketrans方法定义一个转换函数即可。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-03-12T02:07:48.000Z">
-<meta property="article:modified_time" content="2025-03-17T14:23:30.912Z">
+<meta property="article:modified_time" content="2025-04-25T08:55:33.548Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="逆向">
@@ -518,8 +518,19 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> ARC4</span><br><span class="line"><span class="keyword">from</span> Crypto.Random <span class="keyword">import</span> get_random_bytes</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成一个随机密钥</span></span><br><span class="line">key = get_random_bytes(<span class="number">16</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化RC4加密器</span></span><br><span class="line">cipher = ARC4.new(key)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密数据</span></span><br><span class="line">data = <span class="string">&quot;Hello, World!&quot;</span></span><br><span class="line">encrypted_data = cipher.encrypt(data.encode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted: <span class="subst">&#123;encrypted_data&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化RC4解密器</span></span><br><span class="line">cipher = ARC4.new(key)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解密数据</span></span><br><span class="line">decrypted_data = cipher.decrypt(encrypted_data).decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted: <span class="subst">&#123;decrypted_data&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
 <p>注意的是，rc4是一个流加密算法，每次初始化只能获得一个固定的加密器，即new一次之后，后续调用encrypt时会一直“继续”当前的加密，即假设几次需要加密的明文是连续的。如果题目中的rc4每次调用都走了一遍初始化流程，则io也需要对应的每次都new一个新的加密器——即使密钥没有发生变化。</p>
 <p>另外，rc4作为对称加密，加解密算法是一样的。</p>
-<h1>AES</h1>
+<h1>RC2/RC5/RC6</h1>
+<p>没有那么常用就放在一起</p>
 <h2 id="识别-3">识别</h2>
+<h3 id="RC2">RC2</h3>
+<p>64位分组加密，变长密钥，除了加解密还有密钥扩展算法。加密过程如下，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">rc2_encrypt</span><span class="params">(<span class="type">unsigned</span> <span class="type">short</span> xkey[<span class="number">64</span>], <span class="type">unsigned</span> <span class="type">char</span> *plain, <span class="type">unsigned</span> <span class="type">char</span> *cipher)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// xkey = K, plain = R</span></span><br><span class="line">    <span class="type">unsigned</span> x76, x54, x32, x10, i;</span><br><span class="line">    x76 = (plain[<span class="number">7</span>] &lt;&lt; <span class="number">8</span>) + plain[<span class="number">6</span>];</span><br><span class="line">    x54 = (plain[<span class="number">5</span>] &lt;&lt; <span class="number">8</span>) + plain[<span class="number">4</span>];</span><br><span class="line">    x32 = (plain[<span class="number">3</span>] &lt;&lt; <span class="number">8</span>) + plain[<span class="number">2</span>];</span><br><span class="line">    x10 = (plain[<span class="number">1</span>] &lt;&lt; <span class="number">8</span>) + plain[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">16</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// R[i] = R[i] + K[j] + (R[i-1] &amp; R[i-2]) + ((~R[i-1]) &amp; R[i-3]);</span></span><br><span class="line">        <span class="comment">// j = j + 1;</span></span><br><span class="line">        <span class="comment">// R[i] = R[i] rol s[i];</span></span><br><span class="line">        x10 += (x32 &amp; ~x76) + (x54 &amp; x76) + xkey[<span class="number">4</span> * i + <span class="number">0</span>];</span><br><span class="line">        x10 = (x10 &lt;&lt; <span class="number">1</span>) + (x10 &gt;&gt; <span class="number">15</span> &amp; <span class="number">1</span>);</span><br><span class="line">        x32 += (x54 &amp; ~x10) + (x76 &amp; x10) + xkey[<span class="number">4</span> * i + <span class="number">1</span>];</span><br><span class="line">        x32 = (x32 &lt;&lt; <span class="number">2</span>) + (x32 &gt;&gt; <span class="number">14</span> &amp; <span class="number">3</span>);</span><br><span class="line">        x54 += (x76 &amp; ~x32) + (x10 &amp; x32) + xkey[<span class="number">4</span> * i + <span class="number">2</span>];</span><br><span class="line">        x54 = (x54 &lt;&lt; <span class="number">3</span>) + (x54 &gt;&gt; <span class="number">13</span> &amp; <span class="number">7</span>);</span><br><span class="line">        x76 += (x10 &amp; ~x54) + (x32 &amp; x54) + xkey[<span class="number">4</span> * i + <span class="number">3</span>];</span><br><span class="line">        x76 = (x76 &lt;&lt; <span class="number">5</span>) + (x76 &gt;&gt; <span class="number">11</span> &amp; <span class="number">31</span>);</span><br><span class="line">        <span class="comment">// R[i] = R[i] + K[R[i-1] &amp; 63];</span></span><br><span class="line">        <span class="keyword">if</span> (i == <span class="number">4</span> || i == <span class="number">10</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            x10 += xkey[x76 &amp; <span class="number">63</span>];</span><br><span class="line">            x32 += xkey[x10 &amp; <span class="number">63</span>];</span><br><span class="line">            x54 += xkey[x32 &amp; <span class="number">63</span>];</span><br><span class="line">            x76 += xkey[x54 &amp; <span class="number">63</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cipher[<span class="number">0</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)x10;</span><br><span class="line">    cipher[<span class="number">1</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)(x10 &gt;&gt; <span class="number">8</span>);</span><br><span class="line">    cipher[<span class="number">2</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)x32;</span><br><span class="line">    cipher[<span class="number">3</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)(x32 &gt;&gt; <span class="number">8</span>);</span><br><span class="line">    cipher[<span class="number">4</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)x54;</span><br><span class="line">    cipher[<span class="number">5</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)(x54 &gt;&gt; <span class="number">8</span>);</span><br><span class="line">    cipher[<span class="number">6</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)x76;</span><br><span class="line">    cipher[<span class="number">7</span>] = (<span class="type">unsigned</span> <span class="type">char</span>)(x76 &gt;&gt; <span class="number">8</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="rc5">rc5</h3>
+<h3 id="rc6">rc6</h3>
+<h2 id="IO-3">IO</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> ARC2</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.Padding <span class="keyword">import</span> pad, unpad</span><br><span class="line"><span class="keyword">from</span> Crypto.Random <span class="keyword">import</span> get_random_bytes</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rc2_encrypt</span>(<span class="params">key, plaintext, iv=<span class="literal">None</span>, mode=ARC2.MODE_CBC</span>):</span><br><span class="line">    <span class="keyword">if</span> iv <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        iv = get_random_bytes(<span class="number">8</span>)  <span class="comment"># RC2的IV通常为8字节</span></span><br><span class="line">    cipher = ARC2.new(key, mode, iv)</span><br><span class="line">    ciphertext = cipher.encrypt(pad(plaintext, ARC2.block_size))</span><br><span class="line">    <span class="keyword">return</span> iv + ciphertext</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rc2_decrypt</span>(<span class="params">key, ciphertext, mode=ARC2.MODE_CBC</span>):</span><br><span class="line">    iv = ciphertext[:<span class="number">8</span>]</span><br><span class="line">    cipher = ARC2.new(key, mode, iv)</span><br><span class="line">    plaintext = unpad(cipher.decrypt(ciphertext[<span class="number">8</span>:]), ARC2.block_size)</span><br><span class="line">    <span class="keyword">return</span> plaintext</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例用法</span></span><br><span class="line">key = get_random_bytes(<span class="number">16</span>)  <span class="comment"># RC2密钥长度可变（通常8-128位）</span></span><br><span class="line">data = <span class="string">b&quot;Hello, RC2!&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">encrypted = rc2_encrypt(key, data)</span><br><span class="line">decrypted = rc2_decrypt(key, encrypted)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;RC2 Decrypted: <span class="subst">&#123;decrypted.decode()&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">########################### rc6：</span></span><br><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> ARC6</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.Padding <span class="keyword">import</span> pad, unpad</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rc6_encrypt</span>(<span class="params">key, plaintext, iv=<span class="literal">None</span>, mode=ARC6.MODE_CBC</span>):</span><br><span class="line">    <span class="keyword">if</span> iv <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        iv = get_random_bytes(<span class="number">16</span>)  <span class="comment"># RC6的IV通常为16字节</span></span><br><span class="line">    cipher = ARC6.new(key, mode, iv)</span><br><span class="line">    ciphertext = cipher.encrypt(pad(plaintext, ARC6.block_size))</span><br><span class="line">    <span class="keyword">return</span> iv + ciphertext</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rc6_decrypt</span>(<span class="params">key, ciphertext, mode=ARC6.MODE_CBC</span>):</span><br><span class="line">    iv = ciphertext[:<span class="number">16</span>]</span><br><span class="line">    cipher = ARC6.new(key, mode, iv)</span><br><span class="line">    plaintext = unpad(cipher.decrypt(ciphertext[<span class="number">16</span>:]), ARC6.block_size)</span><br><span class="line">    <span class="keyword">return</span> plaintext</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例用法</span></span><br><span class="line">key = get_random_bytes(<span class="number">32</span>)  <span class="comment"># RC6支持16/24/32字节密钥</span></span><br><span class="line">data = <span class="string">b&quot;Hello, RC6!&quot;</span></span><br><span class="line"></span><br><span class="line">encrypted = rc6_encrypt(key, data)</span><br><span class="line">decrypted = rc6_decrypt(key, encrypted)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;RC6 Decrypted: <span class="subst">&#123;decrypted.decode()&#125;</span>&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1>AES</h1>
+<h2 id="识别-4">识别</h2>
 <p>老生常谈，标准AES的识别就是其独有的S盒内容。其S盒和逆S盒数据如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F</span><br><span class="line">0 63 7c 77 7b f2 6b 6f c5 30  1 67 2b fe d7 ab 76</span><br><span class="line">1 ca 82 c9 7d fa 59 47 f0 ad d4 a2 af 9c a4 72 c0</span><br><span class="line">2 b7 fd 93 26 36 3f f7 cc 34 a5 e5 f1 71 d8 31 15</span><br><span class="line">3  4 c7 23 c3 18 96  5 9a  7 12 80 e2 eb 27 b2 75</span><br><span class="line">4  9 83 2c 1a 1b 6e 5a a0 52 3b d6 b3 29 e3 2f 84</span><br><span class="line">5 53 d1  0 ed 20 fc b1 5b 6a cb be 39 4a 4c 58 cf</span><br><span class="line">6 d0 ef aa fb 43 4d 33 85 45 f9  2 7f 50 3c 9f a8</span><br><span class="line">7 51 a3 40 8f 92 9d 38 f5 bc b6 da 21 10 ff f3 d2</span><br><span class="line">8 cd  c 13 ec 5f 97 44 17 c4 a7 7e 3d 64 5d 19 73</span><br><span class="line">9 60 81 4f dc 22 2a 90 88 46 ee b8 14 de 5e  b db</span><br><span class="line">a e0 32 3a  a 49  6 24 5c c2 d3 ac 62 91 95 e4 79</span><br><span class="line">b e7 c8 37 6d 8d d5 4e a9 6c 56 f4 ea 65 7a ae  8</span><br><span class="line">c ba 78 25 2e 1c a6 b4 c6 e8 dd 74 1f 4b bd 8b 8a</span><br><span class="line">d 70 3e b5 66 48  3 f6  e 61 35 57 b9 86 c1 1d 9e</span><br><span class="line">e e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df</span><br><span class="line">f 8c a1 89  d bf e6 42 68 41 99 2d  f b0 54 bb 16</span><br></pre></td></tr></table></figure>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F</span><br><span class="line">0 52  9 6a d5 30 36 a5 38 bf 40 a3 9e 81 f3 d7 fb</span><br><span class="line">1 7c e3 39 82 9b 2f ff 87 34 8e 43 44 c4 de e9 cb</span><br><span class="line">2 54 7b 94 32 a6 c2 23 3d ee 4c 95  b 42 fa c3 4e</span><br><span class="line">3  8 2e a1 66 28 d9 24 b2 76 5b a2 49 6d 8b d1 25</span><br><span class="line">4 72 f8 f6 64 86 68 98 16 d4 a4 5c cc 5d 65 b6 92</span><br><span class="line">5 6c 70 48 50 fd ed b9 da 5e 15 46 57 a7 8d 9d 84</span><br><span class="line">6 90 d8 ab  0 8c bc d3  a f7 e4 58  5 b8 b3 45  6</span><br><span class="line">7 d0 2c 1e 8f ca 3f  f  2 c1 af bd  3  1 13 8a 6b</span><br><span class="line">8 3a 91 11 41 4f 67 dc ea 97 f2 cf ce f0 b4 e6 73</span><br><span class="line">9 96 ac 74 22 e7 ad 35 85 e2 f9 37 e8 1c 75 df 6e</span><br><span class="line">a 47 f1 1a 71 1d 29 c5 89 6f b7 62  e aa 18 be 1b</span><br><span class="line">b fc 56 3e 4b c6 d2 79 20 9a db c0 fe 78 cd 5a f4</span><br><span class="line">c 1f dd a8 33 88  7 c7 31 b1 12 10 59 27 80 ec 5f</span><br><span class="line">d 60 51 7f a9 19 b5 4a  d 2d e5 7a 9f 93 c9 9c ef</span><br><span class="line">e a0 e0 3b 4d ae 2a f5 b0 c8 eb bb 3c 83 53 99 61</span><br><span class="line">f 17 2b  4 7e ba 77 d6 26 e1 69 14 63 55 21  c 7d</span><br></pre></td></tr></table></figure>
@@ -534,23 +545,26 @@
 <p>行移位和列混合算法的特征</p>
 </li>
 </ul>
-<h2 id="IO-3">IO</h2>
+<h2 id="IO-4">IO</h2>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Cipher <span class="keyword">import</span> AES</span><br><span class="line"><span class="keyword">from</span> Crypto.Random <span class="keyword">import</span> get_random_bytes</span><br><span class="line"><span class="keyword">from</span> Crypto.Util.Padding <span class="keyword">import</span> pad, unpad</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成一个随机密钥</span></span><br><span class="line">key = get_random_bytes(<span class="number">16</span>)  <span class="comment"># AES-128</span></span><br><span class="line">iv = get_random_bytes(<span class="number">16</span>)   <span class="comment"># 初始化向量</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化AES加密器</span></span><br><span class="line">cipher = AES.new(key, AES.MODE_CBC, iv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密数据</span></span><br><span class="line">data = <span class="string">&quot;Hello, World!&quot;</span></span><br><span class="line">padded_data = pad(data.encode(<span class="string">&#x27;utf-8&#x27;</span>), AES.block_size)</span><br><span class="line">encrypted_data = cipher.encrypt(padded_data)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted: <span class="subst">&#123;encrypted_data&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化AES解密器</span></span><br><span class="line">cipher = AES.new(key, AES.MODE_CBC, iv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解密数据</span></span><br><span class="line">decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size).decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted: <span class="subst">&#123;decrypted_data&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
 <h1>TEA</h1>
 <p>目前没遇见过，只能抄了</p>
 <p>tea也是一个简单的对称加密算法，初始化一个128位密钥，按64位分组处理明文。其中有一个magic_number DELTA：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> DELTA 0x9981abcd</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">tea_encrypt</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span>* v, <span class="type">unsigned</span> <span class="type">int</span>* key)</span> &#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> l = v[<span class="number">0</span>], r = v[<span class="number">1</span>], sum = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123; <span class="comment">//进行32次迭代加密，Tea算法作者的建议迭代次数</span></span><br><span class="line">    l += (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (sum + key[sum &amp; <span class="number">3</span>]);</span><br><span class="line">    sum += DELTA; <span class="comment">//累加Delta的值</span></span><br><span class="line">    r += (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (sum + key[(sum &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>]); <span class="comment">//利用多次双位移和异或将明文与密钥扩散混乱，并将两个明文互相加密</span></span><br><span class="line">  &#125;</span><br><span class="line">  v[<span class="number">0</span>] = l;</span><br><span class="line">  v[<span class="number">1</span>] = r;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">tea_decrypt</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span>* v, <span class="type">unsigned</span> <span class="type">int</span>* key)</span> &#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> l = v[<span class="number">0</span>], r = v[<span class="number">1</span>], sum = <span class="number">0</span>;</span><br><span class="line">  sum = DELTA * <span class="number">32</span>; <span class="comment">//32次迭代累加后delta的值</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">    r -= (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (sum + key[(sum &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>]);</span><br><span class="line">    sum -= DELTA;</span><br><span class="line">    l -= (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (sum + key[sum &amp; <span class="number">3</span>]);</span><br><span class="line">  &#125;</span><br><span class="line">  v[<span class="number">0</span>] = l;</span><br><span class="line">  v[<span class="number">1</span>] = r;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> key1[<span class="number">4</span>]=&#123;<span class="number">0xa3eeb7be</span>,<span class="number">0x50e7de9a</span>,<span class="number">0x6dbcc2bc</span>,<span class="number">0x78591fad</span>&#125;;<span class="comment">//key1</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> key2[<span class="number">4</span>]=&#123;<span class="number">0x78591fad</span>,<span class="number">0x6dbcc2bc</span>,<span class="number">0xa3eeb7be</span>,<span class="number">0x50e7de9a</span>&#125;;<span class="comment">//key2</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> v1[<span class="number">2</span>] = &#123;<span class="number">0x556E2853</span>,<span class="number">0x4393DF16</span>&#125;;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> v2[<span class="number">2</span>] = &#123;<span class="number">0x1989FB2B</span>,<span class="number">0x83F5A243</span>&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//encrypt(v1,key1);</span></span><br><span class="line">    <span class="comment">//printf(&quot;tea_encrypt:%x %x\n&quot;,v1[0],v1[1]);</span></span><br><span class="line">    <span class="comment">//encrypt(v2,key2);</span></span><br><span class="line">    <span class="comment">//printf(&quot;tea_encrypt:%x %x\n&quot;,v2[0],v2[1]);</span></span><br><span class="line">    tea_decrypt(v1,key1);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;tea_decrypt:%x %x\n&quot;</span>,v1[<span class="number">0</span>],v1[<span class="number">1</span>]);</span><br><span class="line">    tea_decrypt(v2,key2);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;tea_decrypt:%x %x\n&quot;</span>,v2[<span class="number">0</span>],v2[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//tea_decrypt:c0cacd59 38bb7623</span></span><br><span class="line"><span class="comment">//tea_decrypt:8757d16 a520cece</span></span><br></pre></td></tr></table></figure>
 <p>其中默认的DELTA一般为 0x9e3779b9 或者 0x61c88647（分别是加和减，其实影响是等价的）</p>
-<p>魔改算法一般会修改这个DELTA值，不过识别也很容易，这个值太孤立了。</p>
-<h2 id="IO-4">IO</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">DELTA = <span class="number">0x9981abcd</span>  <span class="comment"># 自定义 DELTA 值</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tea_encrypt</span>(<span class="params">v, key</span>):</span><br><span class="line">    l, r = v[<span class="number">0</span>], v[<span class="number">1</span>]</span><br><span class="line">    <span class="built_in">sum</span> = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">32</span>):  <span class="comment"># 进行32次迭代加密</span></span><br><span class="line">        l += (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (<span class="built_in">sum</span> + key[<span class="built_in">sum</span> &amp; <span class="number">3</span>])</span><br><span class="line">        <span class="built_in">sum</span> += DELTA</span><br><span class="line">        r += (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (<span class="built_in">sum</span> + key[(<span class="built_in">sum</span> &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>])</span><br><span class="line">    <span class="keyword">return</span> [l, r]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tea_decrypt</span>(<span class="params">v, key</span>):</span><br><span class="line">    l, r = v[<span class="number">0</span>], v[<span class="number">1</span>]</span><br><span class="line">    <span class="built_in">sum</span> = DELTA * <span class="number">32</span>  <span class="comment"># 32次迭代累加后delta的值</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">32</span>):</span><br><span class="line">        r -= (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (<span class="built_in">sum</span> + key[(<span class="built_in">sum</span> &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>])</span><br><span class="line">        <span class="built_in">sum</span> -= DELTA</span><br><span class="line">        l -= (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (<span class="built_in">sum</span> + key[<span class="built_in">sum</span> &amp; <span class="number">3</span>])</span><br><span class="line">    <span class="keyword">return</span> [l, r]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例数据</span></span><br><span class="line">key1 = [<span class="number">0xa3eeb7be</span>, <span class="number">0x50e7de9a</span>, <span class="number">0x6dbcc2bc</span>, <span class="number">0x78591fad</span>]</span><br><span class="line">key2 = [<span class="number">0x78591fad</span>, <span class="number">0x6dbcc2bc</span>, <span class="number">0xa3eeb7be</span>, <span class="number">0x50e7de9a</span>]</span><br><span class="line">v1 = [<span class="number">0x556E2853</span>, <span class="number">0x4393DF16</span>]</span><br><span class="line">v2 = [<span class="number">0x1989FB2B</span>, <span class="number">0x83F5A243</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密</span></span><br><span class="line">encrypted_v1 = tea_encrypt(v1, key1)</span><br><span class="line">encrypted_v2 = tea_encrypt(v2, key2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted v1: <span class="subst">&#123;encrypted_v1&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted v2: <span class="subst">&#123;encrypted_v2&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解密</span></span><br><span class="line">decrypted_v1 = tea_decrypt(encrypted_v1, key1)</span><br><span class="line">decrypted_v2 = tea_decrypt(encrypted_v2, key2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted v1: <span class="subst">&#123;decrypted_v1&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted v2: <span class="subst">&#123;decrypted_v2&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>魔改算法一般会修改这个DELTA值，不过识别也很容易，这个值太孤立了。除了DELTA，还有一个识别关键在于加密循环是32次。</p>
+<p>还有一些魔改会在每轮迭代中添加可逆运算，以及迭代完毕赋值时添加可逆运算。</p>
+<h2 id="IO-5">IO</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">DELTA = <span class="number">0x9981abcd</span>  <span class="comment"># 自定义 DELTA 值</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tea_encrypt</span>(<span class="params">v, key</span>):</span><br><span class="line">    l, r = v[<span class="number">0</span>], v[<span class="number">1</span>]</span><br><span class="line">    <span class="built_in">sum</span> = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">32</span>):  <span class="comment"># 进行32次迭代加密</span></span><br><span class="line">        l += (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (<span class="built_in">sum</span> + key[<span class="built_in">sum</span> &amp; <span class="number">3</span>]) <span class="comment"># 魔改1：l+=xxx ^ (sum+i)，要求解密^(sum+(31-i)</span></span><br><span class="line">        <span class="built_in">sum</span> += DELTA</span><br><span class="line">        r += (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (<span class="built_in">sum</span> + key[(<span class="built_in">sum</span> &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>])</span><br><span class="line">    <span class="keyword">return</span> [l, r] <span class="comment"># 魔改点2：return[l^v1,r^v2]</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tea_decrypt</span>(<span class="params">v, key</span>):</span><br><span class="line">    l, r = v[<span class="number">0</span>], v[<span class="number">1</span>]</span><br><span class="line">    <span class="built_in">sum</span> = DELTA * <span class="number">32</span>  <span class="comment"># 32次迭代累加后delta的值</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">32</span>):</span><br><span class="line">        r -= (((l &lt;&lt; <span class="number">4</span>) ^ (l &gt;&gt; <span class="number">5</span>)) + l) ^ (<span class="built_in">sum</span> + key[(<span class="built_in">sum</span> &gt;&gt; <span class="number">11</span>) &amp; <span class="number">3</span>])</span><br><span class="line">        <span class="built_in">sum</span> -= DELTA</span><br><span class="line">        l -= (((r &lt;&lt; <span class="number">4</span>) ^ (r &gt;&gt; <span class="number">5</span>)) + r) ^ (<span class="built_in">sum</span> + key[<span class="built_in">sum</span> &amp; <span class="number">3</span>])</span><br><span class="line">    <span class="keyword">return</span> [l, r]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例数据</span></span><br><span class="line">key1 = [<span class="number">0xa3eeb7be</span>, <span class="number">0x50e7de9a</span>, <span class="number">0x6dbcc2bc</span>, <span class="number">0x78591fad</span>]</span><br><span class="line">key2 = [<span class="number">0x78591fad</span>, <span class="number">0x6dbcc2bc</span>, <span class="number">0xa3eeb7be</span>, <span class="number">0x50e7de9a</span>]</span><br><span class="line">v1 = [<span class="number">0x556E2853</span>, <span class="number">0x4393DF16</span>]</span><br><span class="line">v2 = [<span class="number">0x1989FB2B</span>, <span class="number">0x83F5A243</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密</span></span><br><span class="line">encrypted_v1 = tea_encrypt(v1, key1)</span><br><span class="line">encrypted_v2 = tea_encrypt(v2, key2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted v1: <span class="subst">&#123;encrypted_v1&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Encrypted v2: <span class="subst">&#123;encrypted_v2&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解密</span></span><br><span class="line">decrypted_v1 = tea_decrypt(encrypted_v1, key1)</span><br><span class="line">decrypted_v2 = tea_decrypt(encrypted_v2, key2)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted v1: <span class="subst">&#123;decrypted_v1&#125;</span>&quot;</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Decrypted v2: <span class="subst">&#123;decrypted_v2&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h1>XTea/XXTea</h1>
 <h1>MD5</h1>
-<h2 id="识别-4">识别</h2>
+<h2 id="识别-5">识别</h2>
 <p>128位散列值，需要一个context结构体，分三步，init，updatestring和final</p>
 <p>其中init过程会将context初始化为4个固定的magic_number:</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">MD5Init</span> <span class="params">(MD5_CTX *context)</span></span><br><span class="line"><span class="comment">/*context*/</span></span><br><span class="line">&#123;</span><br><span class="line">    context-&gt;count[<span class="number">0</span>] = context-&gt;count[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/* Load magic initialization constants. */</span></span><br><span class="line">    context-&gt;state[<span class="number">0</span>] = <span class="number">0x67452301</span>;</span><br><span class="line">    context-&gt;state[<span class="number">1</span>] = <span class="number">0xefcdab89</span>;</span><br><span class="line">    context-&gt;state[<span class="number">2</span>] = <span class="number">0x98badcfe</span>;</span><br><span class="line">    context-&gt;state[<span class="number">3</span>] = <span class="number">0x10325476</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="IO-5">IO</h2>
+<h2 id="IO-6">IO</h2>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"></span><br><span class="line"><span class="comment"># 要计算哈希值的字符串</span></span><br><span class="line">data = <span class="string">&quot;Hello, World!&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个 MD5 哈希对象</span></span><br><span class="line">md5_hash = hashlib.md5()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 更新哈希对象</span></span><br><span class="line">md5_hash.update(data.encode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取十六进制的哈希值</span></span><br><span class="line">hash_value = md5_hash.hexdigest()</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;MD5 Hash: <span class="subst">&#123;hash_value&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
     </article>
     <!-- license -->
     
@@ -592,7 +606,7 @@
             <!--PC版-->
 
 
-            
+            <!-- partial('_partial/comment/custom') -->
             
 
             
@@ -709,7 +723,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Base64</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB"><span class="toc-number">1.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO"><span class="toc-number">1.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">RC4</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-2"><span class="toc-number">2.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-2"><span class="toc-number">2.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">AES</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-3"><span class="toc-number">3.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-3"><span class="toc-number">3.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">TEA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-4"><span class="toc-number">4.1.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">MD5</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-4"><span class="toc-number">5.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-5"><span class="toc-number">5.2.</span> <span class="toc-text">IO</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Base64</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB"><span class="toc-number">1.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO"><span class="toc-number">1.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">RC4</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-2"><span class="toc-number">2.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-2"><span class="toc-number">2.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">RC2&#x2F;RC5&#x2F;RC6</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-3"><span class="toc-number">3.1.</span> <span class="toc-text">识别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RC2"><span class="toc-number">3.1.1.</span> <span class="toc-text">RC2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rc5"><span class="toc-number">3.1.2.</span> <span class="toc-text">rc5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rc6"><span class="toc-number">3.1.3.</span> <span class="toc-text">rc6</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-3"><span class="toc-number">3.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">AES</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-4"><span class="toc-number">4.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-4"><span class="toc-number">4.2.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">TEA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-5"><span class="toc-number">5.1.</span> <span class="toc-text">IO</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">XTea&#x2F;XXTea</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">MD5</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB-5"><span class="toc-number">7.1.</span> <span class="toc-text">识别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IO-6"><span class="toc-number">7.2.</span> <span class="toc-text">IO</span></a></li></ol></li></ol>
             </div>
         
         <!-- sidebar -->
@@ -1068,7 +1082,69 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1733,7 +1809,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 69
+        Total : 73
         </div>
         <!-- search  -->
         
@@ -1749,8 +1825,32 @@
             
         
         <li class="archive-post-item">
-            <span class="archive-post-date">04/17</span>
-            <a class="archive-post-title" href="/2025/04/17/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
         </li>
     
         
@@ -2205,11 +2305,6 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Android">
                 <span class="iconfont-archer">&#xe606;</span>
                 Android
@@ -2218,6 +2313,11 @@
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="awd">
@@ -2230,14 +2330,14 @@
                 php
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="heap">
                 <span class="iconfont-archer">&#xe606;</span>
                 heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -2255,6 +2355,16 @@
                 Develop
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2268,16 +2378,6 @@
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2295,6 +2395,11 @@
                 kernel
             </span>
         
+            <span class="sidebar-tag-name" data-tags="exploits">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploits
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
@@ -2303,6 +2408,21 @@
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -2325,9 +2445,24 @@
                 Others
             </span>
         
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
             </span>
         
             <span class="sidebar-tag-name" data-tags="IDA">
@@ -2345,34 +2480,9 @@
                 ROP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="web">
-                <span class="iconfont-archer">&#xe606;</span>
-                web
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kdump">
-                <span class="iconfont-archer">&#xe606;</span>
-                kdump
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzz">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzz
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzzing">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzzing
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                develop
             </span>
         
     </div>
@@ -2411,9 +2521,19 @@
             Develop
         </span>
     
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
         </span>
     
         <span class="sidebar-category-name" data-categories="others">
@@ -2421,24 +2541,14 @@
             others
         </span>
     
-        <span class="sidebar-category-name" data-categories="Web">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Web
-        </span>
-    
         <span class="sidebar-category-name" data-categories="kernel">
             <span class="iconfont-archer">&#xe60a;</span>
             kernel
         </span>
     
-        <span class="sidebar-category-name" data-categories="Exploits">
+        <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
-            Exploits
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Exploit">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Exploit
+            Web
         </span>
     
     </div>

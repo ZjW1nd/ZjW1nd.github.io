@@ -1,0 +1,2717 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
+    
+    <meta name="description" content="">
+    <meta name="description" content="最近更新2025-04-05，基于ChatDBG和kdump-gdbserver实现了python便利地获取调试信息。最近更新2025-04-17，对脚本做了进一步封装且尝试新的思路最近更新2025-4-24，记录了思路的变化，现在思路从clang.cindex ast转换成使用clangd语言服务器做linux内核代码查找最近更新2025-4-30，记录了在lsp开发过程中问题的解决过程最近更">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于LLM的kdump分析开发日志（持续更新）">
+<meta property="og:url" content="https://zjw1nd.github.io/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="最近更新2025-04-05，基于ChatDBG和kdump-gdbserver实现了python便利地获取调试信息。最近更新2025-04-17，对脚本做了进一步封装且尝试新的思路最近更新2025-4-24，记录了思路的变化，现在思路从clang.cindex ast转换成使用clangd语言服务器做linux内核代码查找最近更新2025-4-30，记录了在lsp开发过程中问题的解决过程最近更">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://zjw1nd.github.io/images/kdump/src_from_bt.png">
+<meta property="article:published_time" content="2025-04-30T08:25:02.000Z">
+<meta property="article:modified_time" content="2025-05-30T15:28:26.341Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="kernel">
+<meta property="article:tag" content="develop">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjw1nd.github.io/images/kdump/src_from_bt.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>基于LLM的kdump分析开发日志（持续更新） · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">基于LLM的kdump分析开发日志（持续更新）</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                基于LLM的kdump分析开发日志（持续更新）
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="kernel">kernel</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="develop">develop</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/04/30</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>最近更新2025-04-05，基于ChatDBG和kdump-gdbserver实现了python便利地获取调试信息。最近更新2025-04-17，对脚本做了进一步封装且尝试新的思路最近更新2025-4-24，记录了思路的变化，现在思路从clang.cindex ast转换成使用clangd语言服务器做linux内核代码查找最近更新2025-4-30，记录了在lsp开发过程中问题的解决过程最近更新2025-5-21，记录了kgym相关内容</p>
+</blockquote>
+<h1>环境搭建</h1>
+<p>参考<a href="https://zjw1nd.github.io/2025/03/21/%E5%9F%BA%E4%BA%8Eqemu%E5%92%8Cubuntu-base%E7%9A%84kdump%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83/">这里</a></p>
+<h1>Kdump的分析流程</h1>
+<p>我对于AI相关的技术包括Agent之类一窍不通，所以先来看我熟悉的领域，内核的调试与分析。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/muahao/p/7452737.html">https://www.cnblogs.com/muahao/p/7452737.html</a></p>
+</blockquote>
+<p>“LLM分析崩溃转储现场”这件事有开源项目在做，<a target="_blank" rel="noopener" href="https://github.com/plasma-umass/ChatDBG">ChatDBG</a>就是一个例子。我先读了下这个项目的源码。更多的内容就不赘述，它是以gdb/pdb/lldb相关插件的形式工作的，以熟悉的gdb为例。它实现了一个&quot;why&quot;命令让LLM分析崩溃或者相关现场原因。</p>
+<h2 id="ChatDBG的实现">ChatDBG的实现</h2>
+<p>总体的思路是将相关的信息打包成结构化的数据发给LLM:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">build_initial_prompt</span>(<span class="params"></span></span><br><span class="line"><span class="params">    stack: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    error: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    details: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    command_line: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    inputs: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    history: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    extra: <span class="built_in">str</span> = <span class="string">&quot;&quot;</span>,</span></span><br><span class="line"><span class="params">    user_text: <span class="built_in">str</span> = <span class="string">&quot;&quot;</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="keyword">return</span> _concat_prompt(</span><br><span class="line">        _wrap_it(<span class="string">&quot;The program has this stack trace&quot;</span>, stack),</span><br><span class="line">        _wrap_it(<span class="string">&quot;The program encountered the following error&quot;</span>, error, details),</span><br><span class="line">        _wrap_it(<span class="string">&quot;This was the command line&quot;</span>, command_line),</span><br><span class="line">        _wrap_it(<span class="string">&quot;This was the program&#x27;s input&quot;</span>, inputs),</span><br><span class="line">        _wrap_it(<span class="string">&quot;This is the history of some debugger commands I ran&quot;</span>, history),</span><br><span class="line">        _wrap_it(<span class="string">&quot;&quot;</span>, extra),</span><br><span class="line">        _user_text_it(user_text),</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<p>这些传入的参数取决于各个调试器类自己的实现。对于gdb，其他的都好说，主要核心内容是它通过gdb-python接口对堆栈做了回溯，并且提取了对应的调试信息，将最顶部的三个堆栈处对应的上下十行的源代码加了行号之后都打包发给LLM。</p>
+<p><strong>核心的思路就是想办法将人做的东西用代码自动化获取，结构化打包发给LLM，让它吐东西出来</strong></p>
+<h2 id="问题">问题</h2>
+<p>首先，gdb只支持ELF格式的镜像，需要对makedumpfile做一些配置。其对于地址的映射关系写在ELF头的LOAD字段里面。但是vmcore是按照物理地址映射的，在关闭kaslr的情况下，ELF头中只有直接映射地址区域的内容，而没有vmalloc相关的地址。内核如果使用vmalloc，尤其是用vmalloc分配栈，这会导致我们的栈地址无法访问。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#0  0xffffffff811d440b in crash_setup_regs (newregs=0xffffc900003cfd18, oldregs=0x0 &lt;fixed_percpu_data&gt;) at ./arch/x86/include/asm/kexec.h:111</span><br><span class="line">#1  __crash_kexec (regs=0x0 &lt;fixed_percpu_data&gt;) at kernel/crash_core.c:119</span><br><span class="line">Backtrace stopped: Cannot access memory at address 0xffffc900003cfdd0</span><br></pre></td></tr></table></figure>
+<p>crash虽然没有这个问题，但是其操作很复杂且没有封装的api，模拟终端操作会很呆而且其不支持读取vmlinux的调试信息，要想把堆栈地址和源码对应，需要做单独的处理和转换，到时候还需要建立联系，非常麻烦。</p>
+<p>以我个人的经验来说，想办法让gdb能够调试vmcore，然后用gdb-python api会比后者方便很多。我甚至考虑过修改vmcore的文件头，但是这更麻烦，并且每个dump文件都要重复。在目前我考虑头痛医头脚痛医脚的方法，在内核编译选项里关闭了<code>CONFIG_VMAP_STACK</code>，让内核栈不用vmalloc去分配，这样<em>暂时性地</em>解决了gdb无法读取内核栈地址的问题。然后采用gdb-python的api去回溯堆栈就可以了。</p>
+<p>后续我发现了一个相关的库，有人以lib的形式实现了一个<a target="_blank" rel="noopener" href="https://github.com/ptesarik/libkdumpfile">libkdumpfile</a>并提供了pykdumpfile的api，安装之后就可以用这套api在python解析vmcore文件而不用单独操作crash了。同时，这里还有一个用CS结构思想实现的<a target="_blank" rel="noopener" href="https://github.com/ptesarik/kdump-gdbserver">kdump-gdbserver</a>,它能通过建立一个远程调试服务器的方法让gdb去attach vmcore，而且代码很轻量（建立在pykdumpfile的基础上）。</p>
+<p>这无疑成为了我们的首选，经过<strong>不懈地测试</strong>，我<em>暂时</em>跑通了这玩意，并且测试成功，能够靠gdb命令来获取内核崩溃现场的堆栈信息了。说暂时是因为这个项目提供的gdb命令还是存在问题，没办法很好地分析现场的其他线程/任务，但是目前不太需要这些信息。有了gdb-python这个工具之后后续的很多事都是很简单的了，直接api调用即可。</p>
+<blockquote>
+<p>甚至神智不清到将vmlinux和vmcore匹配错了还认真提了个issue给人家发邮件orz，Peter老哥人很好，专门回复了我</p>
+</blockquote>
+<p>效果如下，这是测试函数效果时用注册的测试命令在gdb内部的输出:</p>
+<p><img src="/images/kdump/src_from_bt.png" alt="src_from_bt.png"></p>
+<h1>更好，更智能，更符合人类思维的检索方式（？）——AST</h1>
+<p>文件路径获取还是比较僵硬的，下一步我们要为linux内核构建一个能够利用代码本身的依赖关系做查找的东西，利用AST。</p>
+<p>Auto-code-rover开源的部分（分析python项目）直接就是用的python官方的ast库来实现相关的查找，所以理所当然地我们的思路也会来到这里。但是我们要分析的是linux内核的C代码，所以要请出clang了。这个开源的编译器工具链应当可以帮助我们精准地查询linux内核庞大的代码。</p>
+<p>ast查询相关的内容有不少了，比如有一个rust实现的命令行工具<code>ast-grep</code>等等。而且clang有自己的python库，用<code>clang.cindex</code>模块就可以遍历ast进行查找。理所当然地我们能够用它查找一个C文件中的函数，结构体和宏：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 文档作者: wzx</span></span><br><span class="line"><span class="comment"># 时间: 2025年4月1日</span></span><br><span class="line"><span class="comment"># 文件: ClangAstParser.py</span></span><br><span class="line"><span class="comment"># 文件作用: 实现文件语法解析</span></span><br><span class="line"><span class="comment"># Modified by zjl (actually Claude-3.7 lol)</span></span><br><span class="line"><span class="keyword">from</span> DataType <span class="keyword">import</span> StructMember,StructDef,FunctionDef,MacroDef</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> clang.cindex <span class="keyword">import</span> Index, CursorKind, TranslationUnit, TypeKind, Cursor</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">List</span>, <span class="type">Dict</span>, <span class="type">Optional</span>, <span class="type">Tuple</span></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ParseError</span>(<span class="title class_ inherited__">Exception</span>):</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ClangASTParser</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, file_path: <span class="built_in">str</span>, kernel_root: <span class="type">Optional</span>[<span class="built_in">str</span>] = <span class="literal">None</span>, arch: <span class="built_in">str</span> = <span class="string">&#x27;x86&#x27;</span></span>):</span><br><span class="line">        self.file_path = os.path.abspath(file_path)</span><br><span class="line">        self.kernel_root = kernel_root <span class="keyword">or</span> self._auto_detect_kernel_root()</span><br><span class="line">        self.arch = arch</span><br><span class="line">        self.ast = self._parse_ast()</span><br><span class="line">        self.structs: <span class="type">List</span>[StructDef] = []</span><br><span class="line">        self.functions: <span class="type">List</span>[FunctionDef] = []</span><br><span class="line">        self.macros: <span class="type">List</span>[MacroDef] = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_auto_detect_kernel_root</span>(<span class="params">self</span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;自动检测内核根目录&quot;&quot;&quot;</span></span><br><span class="line">        current_dir = os.path.dirname(self.file_path)</span><br><span class="line">        <span class="keyword">while</span> current_dir != <span class="string">&#x27;/&#x27;</span>:</span><br><span class="line">            <span class="keyword">if</span> os.path.exists(os.path.join(current_dir, <span class="string">&#x27;Kbuild&#x27;</span>)):</span><br><span class="line">                <span class="keyword">return</span> current_dir</span><br><span class="line">            current_dir = os.path.dirname(current_dir)</span><br><span class="line">        <span class="keyword">raise</span> ParseError(<span class="string">&quot;无法自动检测内核根目录，请手动指定 kernel_root&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_get_include_args</span>(<span class="params">self</span>) -&gt; <span class="type">List</span>[<span class="built_in">str</span>]:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;生成内核头文件包含路径&quot;&quot;&quot;</span></span><br><span class="line">        includes = [</span><br><span class="line">            <span class="string">&#x27;-I&#x27;</span>, os.path.join(self.kernel_root, <span class="string">&#x27;include&#x27;</span>),</span><br><span class="line">            <span class="string">&#x27;-I&#x27;</span>, os.path.join(self.kernel_root, <span class="string">&#x27;arch&#x27;</span>, self.arch, <span class="string">&#x27;include&#x27;</span>),</span><br><span class="line">            <span class="string">&#x27;-I&#x27;</span>, os.path.join(self.kernel_root, <span class="string">&#x27;include/uapi&#x27;</span>),</span><br><span class="line">            <span class="string">&#x27;-include&#x27;</span>, os.path.join(self.kernel_root, <span class="string">&#x27;include/linux/kconfig.h&#x27;</span>)</span><br><span class="line">        ]</span><br><span class="line">        <span class="keyword">return</span> includes</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_parse_ast</span>(<span class="params">self</span>) -&gt; TranslationUnit:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;解析生成 AST&quot;&quot;&quot;</span></span><br><span class="line">        index = Index.create()</span><br><span class="line">        args = [</span><br><span class="line">            <span class="string">&#x27;-D__KERNEL__&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;-D__KASAN__&#x27;</span>,</span><br><span class="line">            <span class="string">f&#x27;-D__ARCH_<span class="subst">&#123;self.arch.upper()&#125;</span>_&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;-nostdinc&#x27;</span>,  <span class="comment"># 忽略标准头文件</span></span><br><span class="line">            <span class="string">&#x27;-Wno-everything&#x27;</span>,  <span class="comment"># 禁用警告</span></span><br><span class="line">            *self._get_include_args()</span><br><span class="line">        ]</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">return</span> index.parse(</span><br><span class="line">                self.file_path,</span><br><span class="line">                args=args,</span><br><span class="line">                options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD</span><br><span class="line">            )</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">raise</span> ParseError(<span class="string">f&quot;AST 解析失败: <span class="subst">&#123;<span class="built_in">str</span>(e)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_walk_ast</span>(<span class="params">self, cursor: Cursor</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;遍历 AST 并提取关键信息&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> cursor.location.file <span class="keyword">and</span> cursor.location.file.name != self.file_path:</span><br><span class="line">            <span class="keyword">return</span>  <span class="comment"># 跳过其他文件</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> cursor.kind == CursorKind.STRUCT_DECL <span class="keyword">and</span> cursor.is_definition():</span><br><span class="line">            self._process_struct(cursor)</span><br><span class="line">        <span class="keyword">elif</span> cursor.kind == CursorKind.TYPEDEF_DECL:</span><br><span class="line">            self._process_typedef(cursor)</span><br><span class="line">        <span class="keyword">elif</span> cursor.kind == CursorKind.FUNCTION_DECL:</span><br><span class="line">            self._process_function(cursor)</span><br><span class="line">        <span class="keyword">elif</span> cursor.kind == CursorKind.MACRO_DEFINITION:</span><br><span class="line">            self._process_macro(cursor)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 递归遍历子节点</span></span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> cursor.get_children():</span><br><span class="line">            self._walk_ast(child)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_process_struct</span>(<span class="params">self, cursor: Cursor</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;处理结构体定义&quot;&quot;&quot;</span></span><br><span class="line">        members = []</span><br><span class="line">        <span class="keyword">for</span> child <span class="keyword">in</span> cursor.get_children():</span><br><span class="line">            <span class="keyword">if</span> child.kind == CursorKind.FIELD_DECL:</span><br><span class="line">                member_type = self._get_type_name(child.<span class="built_in">type</span>)</span><br><span class="line">                bit_width = child.get_bitfield_width() <span class="keyword">if</span> child.is_bitfield() <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line">                members.append(StructMember(child.spelling, member_type, bit_width))</span><br><span class="line">        </span><br><span class="line">        self.structs.append(</span><br><span class="line">            StructDef(</span><br><span class="line">                name=cursor.spelling,</span><br><span class="line">                members=members,</span><br><span class="line">                line_range=(cursor.extent.start.line, cursor.extent.end.line)</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_process_typedef</span>(<span class="params">self, cursor: Cursor</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;处理 typedef 定义的结构体&quot;&quot;&quot;</span></span><br><span class="line">        underlying_type = cursor.underlying_typedef_type</span><br><span class="line">        <span class="keyword">if</span> underlying_type.get_declaration().kind == CursorKind.STRUCT_DECL:</span><br><span class="line">            struct_cursor = underlying_type.get_declaration()</span><br><span class="line">            <span class="keyword">if</span> struct_cursor.is_definition():</span><br><span class="line">                self._process_struct(struct_cursor)</span><br><span class="line">                <span class="comment"># 标记为 typedef</span></span><br><span class="line">                self.structs[-<span class="number">1</span>].is_typedef = <span class="literal">True</span></span><br><span class="line">                self.structs[-<span class="number">1</span>].name = cursor.spelling  <span class="comment"># 使用 typedef 名称</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_process_function</span>(<span class="params">self, cursor: Cursor</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;处理函数定义&quot;&quot;&quot;</span></span><br><span class="line">        return_type = self._get_type_name(cursor.result_type)</span><br><span class="line">        parameters = []</span><br><span class="line">        <span class="keyword">for</span> param <span class="keyword">in</span> cursor.get_arguments():</span><br><span class="line">            param_type = self._get_type_name(param.<span class="built_in">type</span>)</span><br><span class="line">            parameters.append((param.spelling, param_type))</span><br><span class="line">        </span><br><span class="line">        self.functions.append(</span><br><span class="line">            FunctionDef(</span><br><span class="line">                name=cursor.spelling,</span><br><span class="line">                return_type=return_type,</span><br><span class="line">                parameters=parameters,</span><br><span class="line">                line_range=(cursor.extent.start.line, cursor.extent.end.line),</span><br><span class="line">                <span class="comment"># 添加光标</span></span><br><span class="line">                cursor=cursor</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_process_macro</span>(<span class="params">self, cursor: Cursor</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;处理宏定义&quot;&quot;&quot;</span></span><br><span class="line">        macro_name = cursor.spelling</span><br><span class="line">        macro_token_generator = cursor.get_tokens()</span><br><span class="line">        macro_value = <span class="built_in">next</span>(macro_token_generator).spelling  </span><br><span class="line">        is_function_like = <span class="string">&#x27;)&#x27;</span> <span class="keyword">in</span> macro_name  <span class="comment"># 简单判断是否为函数式宏</span></span><br><span class="line">        </span><br><span class="line">        self.macros.append(</span><br><span class="line">            MacroDef(</span><br><span class="line">                name=macro_name,</span><br><span class="line">                value=macro_value,</span><br><span class="line">                line=cursor.location.line,</span><br><span class="line">                is_function_like=is_function_like</span><br><span class="line">            )</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_get_type_name</span>(<span class="params">self, clang_type</span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;获取类型的完整名称&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> clang_type.kind == TypeKind.POINTER:</span><br><span class="line">            pointee_type = self._get_type_name(clang_type.get_pointee())</span><br><span class="line">            <span class="keyword">return</span> <span class="string">f&quot;<span class="subst">&#123;pointee_type&#125;</span>*&quot;</span></span><br><span class="line">        <span class="keyword">elif</span> clang_type.kind == TypeKind.ELABORATED:</span><br><span class="line">            <span class="keyword">return</span> clang_type.get_declaration().spelling</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> clang_type.spelling</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">analyze</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;执行分析&quot;&quot;&quot;</span></span><br><span class="line">        self._walk_ast(self.ast.cursor)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get_call_graph</span>(<span class="params">self</span>) -&gt; <span class="type">Dict</span>[<span class="built_in">str</span>, <span class="type">List</span>[<span class="built_in">str</span>]]:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        获取函数调用图（示例扩展功能）</span></span><br><span class="line"><span class="string">        目前可用，和ida类似啊</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        call_graph = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> func <span class="keyword">in</span> self.functions:</span><br><span class="line">            caller = func.name</span><br><span class="line">            callees = []</span><br><span class="line">            <span class="comment"># 遍历函数体内的 CALL_EXPR 节点</span></span><br><span class="line">            <span class="keyword">for</span> cursor <span class="keyword">in</span> func.cursor.walk_preorder():</span><br><span class="line">                <span class="keyword">if</span> cursor.kind == CursorKind.CALL_EXPR:</span><br><span class="line">                    callee = cursor.spelling</span><br><span class="line">                    <span class="keyword">if</span> callee:</span><br><span class="line">                        callees.append(callee)</span><br><span class="line">            call_graph[caller] = callees</span><br><span class="line">        <span class="keyword">return</span> call_graph</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用示例</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="comment"># 这里Clang需要和电脑上的clang版本相符合</span></span><br><span class="line">    <span class="comment"># 配置 Clang 库路径（根据实际环境调整）</span></span><br><span class="line">    <span class="keyword">from</span> clang.cindex <span class="keyword">import</span> Config</span><br><span class="line">    <span class="comment"># Config.set_library_path(&quot;/usr/local/opt/llvm/lib&quot;)</span></span><br><span class="line">    Config.set_library_file(<span class="string">&quot;/usr/lib/libclang.so&quot;</span>)</span><br><span class="line">    <span class="comment"># 初始化解析器</span></span><br><span class="line">    parser = ClangASTParser(</span><br><span class="line">        file_path=<span class="string">&quot;/home/zjw1nd/MyWorkingFlow/Kernel/kdump/linux-6.13.7/fs/btrfs/accessors.c&quot;</span>,</span><br><span class="line">        kernel_root=<span class="string">&#x27;/home/zjw1nd/MyWorkingFlow/Kernel/kdump/linux-6.13.7/&#x27;</span>,</span><br><span class="line">        arch=<span class="string">&quot;x86&quot;</span></span><br><span class="line">    )</span><br><span class="line">    parser.analyze()</span><br><span class="line">    <span class="comment"># 输出结果</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;=== 结构体 ===&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> struct <span class="keyword">in</span> parser.structs:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;struct.name&#125;</span> (typedef=<span class="subst">&#123;struct.is_typedef&#125;</span>) @ lines <span class="subst">&#123;struct.line_range&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">for</span> member <span class="keyword">in</span> struct.members:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;  <span class="subst">&#123;member.<span class="built_in">type</span>&#125;</span> <span class="subst">&#123;member.name&#125;</span><span class="subst">&#123;<span class="string">f&#x27; : <span class="subst">&#123;member.bit_width&#125;</span>&#x27;</span> <span class="keyword">if</span> member.bit_width <span class="keyword">else</span> <span class="string">&#x27;&#x27;</span>&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n=== 函数 ===&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> func <span class="keyword">in</span> parser.functions:</span><br><span class="line">        params = <span class="string">&#x27;, &#x27;</span>.join([<span class="string">f&quot;<span class="subst">&#123;t&#125;</span> <span class="subst">&#123;n&#125;</span>&quot;</span> <span class="keyword">for</span> n, t <span class="keyword">in</span> func.parameters])</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;func.return_type&#125;</span> <span class="subst">&#123;func.name&#125;</span>(<span class="subst">&#123;params&#125;</span>) @ lines <span class="subst">&#123;func.line_range&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n=== 宏 ===&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> macro <span class="keyword">in</span> parser.macros:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;#define <span class="subst">&#123;macro.name&#125;</span> <span class="subst">&#123;macro.value&#125;</span> @ line <span class="subst">&#123;macro.line&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> funct <span class="keyword">in</span> parser.get_call_graph():</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Function <span class="subst">&#123;funct&#125;</span> calls: <span class="subst">&#123;<span class="string">&#x27;, &#x27;</span>.join(parser.get_call_graph()[funct])&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>这个脚本的工作是如此良好以至于我以为事情似乎解决了。</p>
+<h2 id="难以解决的问题？">难以解决的问题？</h2>
+<p>linux内核是一个有着复杂的关联关系的大项目，只实现一个文件的查找显然是不够的，现在的核心问题就变成了<strong>如何多文件/跨文件进行查询</strong>。崩溃现场的堆栈提供的源代码位置只是返回地址的位置，其实对于<em>定义</em>的支持并不好。如果定义在其他文件中呢？</p>
+<p>自然而然地浮现出两种思路，一是将所有的源码，不管用什么办法，集合成一个同一的查询实体，在其中进行查找。但是对于AST来说，clang的python库对于多个文件构建项目ast的支持没有那么好，而且linux内核源码太大了。二是想办法查找某种关联关系，接着对单独的文件逐个调用我们上面的脚本。但是这同样需要linux内核各个文件的依赖关系。</p>
+<h2 id="启发思路">启发思路</h2>
+<p>我当然是不相信这种工作没有前人做的，于是尝试搜索相关的开源项目。开源的没有找到，询问AI他告诉我可以参考“微软的scip”，我尝试搜索这个scip，却顺藤摸瓜找到了一个商业软件<a target="_blank" rel="noopener" href="https://sourcegraph.com/">sourcegraph</a>，是专门用来浏览源代码的。他在github上开源了一个插件叫<a target="_blank" rel="noopener" href="https://github.com/sourcegraph/scip-clang">scip-clang</a>，即用clang依据compile_commands.json生成整个项目的索引文件用来快速浏览。</p>
+<blockquote>
+<p>compile_commands.json就是用json文件记录所有编译过程中的命令。这个文件也被称为“编译数据库”。在比较新的linux内核中，已经可以直接通过为make命令添加compile_commands.json命令来生成这个文件了。对于更糟的版本，许就要借助bear工具进行编译。</p>
+</blockquote>
+<p>这个东西是我之前不知道的。这个插件虽然开源，但它生成的索引文件是一个二进制文件，软件本身是商业软件所以很可惜不能用。但是这给我们提供了一个方向，我们是否可以在这个编译数据库文件上做文章？</p>
+<h1>♿资料收集中的灵光一闪–Language Server</h1>
+<p>既然有成熟的商业化方案，我试图从sourcegraph这个软件开源的部分或者各种介绍中找到一些灵感。胡乱用关键词搜索的时候，我看到了一个用VSCode+clangd浏览linux内核源码的<a target="_blank" rel="noopener" href="https://www.cnblogs.com/yann-qu/p/17956726">帖子</a>。了解了一下，发现clangd是一个叫作“语言服务器”的东西。这个东西就是在IDE中提供那些快捷跳转的核心引擎。我自己复现了一下，用compile_commands.json和clangd去浏览linux内核源码，发现的确很好用，等待clangd构建好索引之后我在代码中可以随便跳转函数和结构的定义。<strong>这不就是我们想要的功能吗？</strong></p>
+<p>于是就有了现在的思路，查找了下python和clangd怎么通信，发现微软为语言服务器实现了一套协议标准：LSP(Language Server Protocol)，这是一套json格式的通信协议。并且linux下的语言服务器可以单独运行，而且其输入输出是直接通过stdin和stdout进行交互的。那下一步当然就是查找python的lsp通信协议库，不过这里没有找到很好的，只有一个简易的<a target="_blank" rel="noopener" href="https://github.com/yeger00/pylspclient">lsp客户端</a>，而且还没有任何接口文档和example。</p>
+<p>让AI读了下这个库并且大致编写了一些测试，发现果然好用。用这个语言服务器（其实是我们在模拟一个IDE浏览linux内核源码），我们可以省略掉所有的查找细节，底层的工作全交给clangd处理，查询全透明，我们只需要学习LSP协议的大致格式就可以了–甚至只要有合适的封装我们甚至不需要熟悉LSP协议。也是找到轮椅了。下面是第一版的测例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">List</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">from</span> pylspclient.lsp_endpoint <span class="keyword">import</span> LspEndpoint</span><br><span class="line"><span class="keyword">from</span> pylspclient.json_rpc_endpoint <span class="keyword">import</span> JsonRpcEndpoint</span><br><span class="line"><span class="keyword">from</span> pylspclient.lsp_client <span class="keyword">import</span> LspClient</span><br><span class="line"><span class="keyword">from</span> pylspclient.lsp_pydantic_strcuts <span class="keyword">import</span> (</span><br><span class="line">    TextDocumentItem, TextDocumentIdentifier, Position,</span><br><span class="line">    Location, DocumentSymbol</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="comment"># 启动 clangd 进程</span></span><br><span class="line">    server_process = subprocess.Popen(</span><br><span class="line">        [<span class="string">&quot;clangd&quot;</span>, <span class="string">&quot;--log=verbose&quot;</span>],</span><br><span class="line">        stdin=subprocess.PIPE,</span><br><span class="line">        stdout=subprocess.PIPE,</span><br><span class="line">        stderr=subprocess.PIPE</span><br><span class="line">    )</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 使用 JsonRpcEndpoint 包装标准输入/输出流</span></span><br><span class="line">    json_rpc_endpoint = JsonRpcEndpoint(server_process.stdin, server_process.stdout)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 使用 json_rpc_endpoint 创建 LSP 端点</span></span><br><span class="line">    lsp_endpoint = LspEndpoint(json_rpc_endpoint)</span><br><span class="line">    lsp_client = LspClient(lsp_endpoint)</span><br><span class="line">    </span><br><span class="line">    capabilities = &#123;</span><br><span class="line">        <span class="string">&quot;textDocument&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;synchronization&quot;</span>: &#123;</span><br><span class="line">                <span class="string">&quot;dynamicRegistration&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">                <span class="string">&quot;willSave&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">                <span class="string">&quot;willSaveWaitUntil&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">                <span class="string">&quot;didSave&quot;</span>: <span class="literal">True</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">&quot;completion&quot;</span>: &#123;</span><br><span class="line">                <span class="string">&quot;dynamicRegistration&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">                <span class="string">&quot;completionItem&quot;</span>: &#123;</span><br><span class="line">                    <span class="string">&quot;snippetSupport&quot;</span>: <span class="literal">True</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">&quot;definition&quot;</span>: &#123;<span class="string">&quot;dynamicRegistration&quot;</span>: <span class="literal">True</span>&#125;,</span><br><span class="line">            <span class="string">&quot;references&quot;</span>: &#123;<span class="string">&quot;dynamicRegistration&quot;</span>: <span class="literal">True</span>&#125;,</span><br><span class="line">            <span class="string">&quot;documentSymbol&quot;</span>: &#123;<span class="string">&quot;dynamicRegistration&quot;</span>: <span class="literal">True</span>&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    root_path = os.getcwd()</span><br><span class="line">    root_uri = <span class="string">f&quot;file://<span class="subst">&#123;root_path&#125;</span>&quot;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 发送初始化请求</span></span><br><span class="line">    init_result = lsp_client.initialize(</span><br><span class="line">        processId=os.getpid(),</span><br><span class="line">        rootPath=root_path,</span><br><span class="line">        rootUri=root_uri,</span><br><span class="line">        initializationOptions=<span class="literal">None</span>,</span><br><span class="line">        capabilities=capabilities,</span><br><span class="line">        trace=<span class="string">&quot;verbose&quot;</span>,</span><br><span class="line">        workspaceFolders=<span class="literal">None</span></span><br><span class="line">    )</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;服务器能力:&quot;</span>, init_result.get(<span class="string">&quot;capabilities&quot;</span>, &#123;&#125;))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 告诉服务器我们已经准备好</span></span><br><span class="line">    lsp_client.initialized()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建一个简单的 C 代码文件进行分析</span></span><br><span class="line">    c_file_path = os.path.join(root_path, <span class="string">&quot;example.c&quot;</span>)</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(c_file_path, <span class="string">&quot;w&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">#include &lt;stdio.h&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">struct Point &#123;</span></span><br><span class="line"><span class="string">    int x;</span></span><br><span class="line"><span class="string">    int y;</span></span><br><span class="line"><span class="string">&#125;;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">int add(int a, int b) &#123;</span></span><br><span class="line"><span class="string">    return a + b;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">int main() &#123;</span></span><br><span class="line"><span class="string">    struct Point p = &#123;10, 20&#125;;</span></span><br><span class="line"><span class="string">    int result = add(p.x, p.y);</span></span><br><span class="line"><span class="string">    printf(&quot;Result: %d\\n&quot;, result);</span></span><br><span class="line"><span class="string">    return 0;</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 通知服务器文件已打开</span></span><br><span class="line">    uri = <span class="string">f&quot;file://<span class="subst">&#123;c_file_path&#125;</span>&quot;</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(c_file_path, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        content = f.read()</span><br><span class="line"></span><br><span class="line">    text_document = TextDocumentItem(</span><br><span class="line">        uri=uri,</span><br><span class="line">        languageId=<span class="string">&quot;c&quot;</span>,</span><br><span class="line">        version=<span class="number">1</span>,</span><br><span class="line">        text=content</span><br><span class="line">    )</span><br><span class="line">    lsp_client.didOpen(text_document)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 等待服务器处理文件</span></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 获取文档中的符号</span></span><br><span class="line">    document_id = TextDocumentIdentifier(uri=uri)</span><br><span class="line">    symbols = lsp_client.documentSymbol(document_id)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n文档符号:&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> symbol <span class="keyword">in</span> symbols:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;  - <span class="subst">&#123;symbol.name&#125;</span> (<span class="subst">&#123;symbol.kind&#125;</span>)&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 查找 add 函数的定义</span></span><br><span class="line">    position = Position(line=<span class="number">13</span>, character=<span class="number">12</span>)  <span class="comment"># main 函数中调用 add 的位置</span></span><br><span class="line">    definitions = lsp_client.definition(document_id, position)</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;\n定义:&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(definitions, <span class="built_in">list</span>):</span><br><span class="line">        <span class="keyword">for</span> definition <span class="keyword">in</span> definitions:</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">hasattr</span>(definition, <span class="string">&quot;targetUri&quot;</span>):</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;  位于 <span class="subst">&#123;definition.targetUri&#125;</span> 的行 <span class="subst">&#123;definition.targetRange.start.line&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;  位于 <span class="subst">&#123;definition.uri&#125;</span> 的行 <span class="subst">&#123;definition.<span class="built_in">range</span>.start.line&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;  位于 <span class="subst">&#123;definitions.uri&#125;</span> 的行 <span class="subst">&#123;definitions.<span class="built_in">range</span>.start.line&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 关闭服务器</span></span><br><span class="line">    lsp_client.shutdown()</span><br><span class="line">    lsp_client.exit()</span><br><span class="line">    server_process.terminate()</span><br><span class="line">    server_process.wait()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<h2 id="测试实现">测试实现</h2>
+<p>这个过程就是一个不断让AI读pylspclient然后调优-阅读<a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17">文档</a>和读代码解决问题-再重新调整代码的一个循环。</p>
+<p>这个轻量级的pylspclient库有很多问题。不过好处是我们可以直接import它私有的部分来自己实现东西。</p>
+<h2 id="问题和解决">问题和解决</h2>
+<p>对于遇到的问题，一个很好的对比排错方法是开启<code>-log=verbose</code>之后，监控stderr的输出和vscode的输出对比，来观察和clangd通信的过程。毕竟组件都是一样的，vscode能做到的我们也能做到。</p>
+<h3 id="索引等待">索引等待</h3>
+<p>clangd能快速跳转定义的一个依赖就是其索引。但是索引的构建需要时间。vscode中实现的进度条是通过<code>$/progress</code>方法实现的。但是自己做的时候不清楚怎么填token（之前没有意识到观察vscode调试的方法）。</p>
+<p>最后选择的是通过监控stderr记录日志中<code>Indexed</code>关键字数量，和compile_commands.json的条目数量匹配来实现的进度统计。</p>
+<blockquote>
+<p>这里后续可以接着尝试$/progress方法</p>
+</blockquote>
+<h3 id="方法的转换">方法的转换</h3>
+<p>开始ai给的查找符号的核心方法是<code>workspace/symbol</code>，但是我发现这个方法有问题。最开始，触发索引是需要打开文件的，我们打开一些关键的文件来实现这一点，这些文件正好包含了我们的测试符号的定义，因此误打误撞以为对了，结果一测别的函数就查不到了。阅读<a target="_blank" rel="noopener" href="https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_symbol">文档</a>，这个方法只能在打开的工作区中去做符号匹配（不区分函数，宏…），如果要用这个方法，那就意味着需要打开所有的linux内核文件，这显然不现实。改来改去也没有用，本质上是调用的方法错了。</p>
+<p>从这里开始我意识到可以观察vscode的日志来对比了，我发现vscode查找定义使用的就是<code>textDocument</code>下面的方法，查定义用<code>definition</code>，查引用用<code>references</code>，而且返回的结果特别理想。于是我推翻了<code>workspace/symbol</code>方法，改用了<code>textDocument/definition</code>。</p>
+<h3 id="小问题">小问题</h3>
+<p>clangd会发送notify给客户端，我们需要注册相应的回调函数，否则<code>lsp_endpoint.call_method</code>会报错，我们注册一个函数处理<code>publishDiagnostics</code>，直接pass掉就行。</p>
+<p>另外，获取符号中间想也用LSP方法的，但是用了下<code>textdocument/documentSymbols</code>之后发现它只返回当前文档中定义了的符号就又重新换回字符串查找了。</p>
+<h3 id="最怪异的问题">最怪异的问题</h3>
+<p>最后一切执行妥当，但是查找定义和引用都遇到了以下现象：只能返回本文件及其头文件中的声明，无法返回外部的定义。</p>
+<p>dump日志和vscode对比发现，方法调用和初始化参数没有区别，我尝试了很多办法但是还是查不到定义。但是vscode的返回就是很好。</p>
+<p>这里不得不说多人组队开发的好处了。开会的时候我说了这个怪异的问题并且提供了日志对比，另一个负责这部分的队友试了下，发现他那边的程序在调用一次<code>textDocument/documentLinks</code>之后就可以查到定义了。结果我本地用它的程序仍然不行，我们对了一下全流程，我从头下载了一个源码，然后使用<code>bear -- make $(nproc) LLVM=1</code>来编译，用bear生成编译数据库而不用linux内核自带的compile_commands.json，并且用<code>LLVM=1</code>而非<code>CC=clang</code>来编译，结果令人惊奇，这一套下来就正常了。经过后续的测试，打开文件后的第一个命令（查找定义）一定是错的，在一个其他操作后再查询定义就会正常。</p>
+<p>然而我重新编译了一边之前用的linux内核源码，结果查还是查不到，居然有了更离谱的返回值：直接不演了返回我查询的原位置。这让我感觉这东西肯定和编译过程有关，目前的解决方法是：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>下载源码后使用<code>bear -- make $(nproc) LLVM=1</code>编译，用bear数据库不要用linux内核的</p>
+</li>
+</ul>
+<blockquote>
+<p>但是，对于我旧版的编译数据库，vscode也能正常运行并无大碍，原因不明，太诡异了，只能说能有一个稳定跑的方案就不要动了</p>
+</blockquote>
+<p>如果我自己研究可能相当长时间也解决不了（直到我试错试到更换编译数据库才会发现）.</p>
+<hr>
+<p>但是这个解决方法显然是不合理的，非常的程序员刻板印象笑话：tmd凭什么能跑？这些操作下来，就如同你要询问一个人一个问题的答案，他也没有不理你，只是一直坚定地回答同一个错误的答案。直到你下次提前拍了他两下然后扇自己一巴掌，你就得到了争取答案，而且这套流程总能得到正确答案，但是就是很怪异。</p>
+<p>最终在51假期最后一天我经过各种尝试和ai调教，试出来了关键问题所在：延迟。虽然我仍然不知道的是，<strong>为什么tmd clangd会返回错误答案</strong>，但是经过测试，关键点不在删的那一巴掌，你其实只要等一下就好：在打开文件后添加一个<code>time.sleep(0.5)</code>一切就都解决了，定义非常完好。我也不清楚clangd到底怎么做的机制，不阻塞或是提示没找到，反而对于我们调用definition方法的时候返回一个declaration？？？</p>
+<p>ok，通过在交互前添加延迟，引用和定义全拿下了。</p>
+<h3 id="添加-progress">添加$progress</h3>
+<p>对比vscode的日志来调方法，结果发现原来<code>window/workDoneProgress/create</code>是一个服务端给客户端的通知而不是请求。添加了俩功能，调了下生命周期的问题（回调函数需要只有一个param参数，但是类示例初始化就要注册这个函数），analyzer改成全局的，暂时性的问题解决了。</p>
+<h3 id="符号搜索">符号搜索</h3>
+<p>测试panic函数的时候发现会匹配到注释中的panic导致搜不到符号。</p>
+<h2 id="最终代码">最终代码</h2>
+<h1>KGym</h1>
+<h2 id="环境搭建（折磨）">环境搭建（折磨）</h2>
+<h3 id="google-cloud">google cloud</h3>
+<p>创建实例的命令需要做调整</p>
+<h2 id="原始论文的调用流程">原始论文的调用流程</h2>
+<p>我们的目标是把我们的agent替换进原始论文的LLM部分让它生成root cause（先）。这里根据github上的仓库来看，它有三个仓库。分别是</p>
+<p>根据readme，一套完整的客户端的复现流程大概是这样执行的：</p>
+<ol>
+<li class="lvl-3">
+<p><code>KGym-Kernel-Playground/populate_benchmark.py</code>。程序从ben这一程序从syzbot网站下载崩溃所需要的内核配置文件，syzreproducer和Creproducer等。</p>
+<ul class="lvl-2">
+<li class="lvl-5">读取JSON格式的bug数据</li>
+<li class="lvl-5">处理每个bug中的崩溃记录（crashes）</li>
+<li class="lvl-5">下载相关的重现代码和内核配置</li>
+<li class="lvl-5">将下载的数据添加到原始JSON中</li>
+<li class="lvl-5">保存更新后的JSON</li>
+</ul>
+</li>
+<li class="lvl-3">
+<p><code>$KBENCH_EXPR_PATH/inference/make_datasets/make_linux_dataset.py</code>。紧接着步骤1，进一步生成合适的dataset json文件，包含崩溃报告，内核补丁，提交信息，修改文件等等，存放在<code>$KBENCH_EXPR_PATH/dataset</code>目录下</p>
+</li>
+<li class="lvl-3">
+<p><code>$KBENCH_EXPR_PATH/inference/make_datasets/bm25_retrieval_modified.py</code>。使用bm25索引算法，将代码文件转成可搜索文档（构建全文索引）利用2生成的dataset, 用了一个叫pyserini的库来对特定的commit linux代码仓库做检索。每个问题返回最相关的20个文件并输出。</p>
+</li>
+</ol>
+<blockquote>
+<p>这里我们是否可以直接通过clangd搜索符号引用的方式来确定相关文件？源文档readme中说要大概3h</p>
+</blockquote>
+<ol start="4">
+<li class="lvl-3">
+<p><code>$KBENCH_EXPR_PATH/inference/make_datasets/create_text_dataset.py</code>. 这个程序生成最终发给大模型的内容。它应用了一些prompt模板，从3中生成的检索结果生成结构化的自然语言内容。</p>
+</li>
+<li class="lvl-3">
+<p><code>$KBENCH_EXPR_PATH/inference/run_api.py</code>. 这个程序将4生成的内容发给大模型并获取patch保存在文件。对不同模型做了兼容。</p>
+</li>
+<li class="lvl-3">
+<p><code>$BASE_PATH/run_prompt_predictions.py</code>。这里开始就是运行KGym去做复现了。这个程序用于生成合适的参数并运行<code>KReproducer.execute_bug_reproduction</code>在KGym平台做复现。</p>
+</li>
+<li class="lvl-3">
+<p><code>$BASE_PATH/perform_sample_build_and_reproduction.py</code> 跟踪任务状态。这个程序对每一个最初kGym架构图中的实例都做了一个类。</p>
+</li>
+<li class="lvl-3">
+<p><code>kernel_bench_evaluator.py</code> 从任务报告中读取执行结果并且跟踪重复测试，连续成功3次，最大尝试次数5.</p>
+</li>
+</ol>
+<h2 id="平台测试：">平台测试：</h2>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">export $KEBCH_EXPR_PATH=&quot;&quot;</span><br><span class="line">python $KBENCH_EXPR_PATH/inference/make_datasets/create_text_dataset.py \</span><br><span class="line">--dataset_name_or_path=&quot;$KBENCH_EXPR_PATH/dataset/kernel_bench_data.json&quot; \</span><br><span class="line">--splits=&quot;train&quot; \</span><br><span class="line">--output_dir=&quot;$KBENCH_EXPR_PATH/dataset_results/parent_commit&quot; \</span><br><span class="line">--retrieval_file=&quot;$KBENCH_EXPR_PATH/index_results/parent_commit/kernel_bench_data/file_name_and_contents.retrieval.jsonl&quot; \</span><br><span class="line">--read_linux_from=&quot;$KBENCH_EXPR_PATH/index_results/parent_commit/kernel_bench_data/file_name_and_contents_indexes&quot; \</span><br><span class="line">--file_source=&quot;oracle&quot; \</span><br><span class="line">--max_context_len=16000 \</span><br><span class="line">--tokenizer_name=&quot;cl100k&quot; \</span><br><span class="line">--problem_statement_max_tokens=10000 \</span><br><span class="line">--commit_type=&quot;parent_commit&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="我们的">我们的</h2>
+<h3 id="cur">cur</h3>
+<p>进一步添加vmcore信息提取工具，给出了寄存器信息。不过要考虑上下文压缩？不要太多没用的信息</p>
+<p>gdb mi命令？推翻重构，直接用MI命令实现</p>
+<p>kgym获取源代码信息靠的是崩溃dmesg在内核代码库中用bm25做全局相关度检索，我们用lsp直接可以拉出来函数引用，我们直接用代码本身的语义相关</p>
+<p>封装工具</p>
+<p>他是要拿到一个syzbot崩溃报告的具体复现环境然后给MCP服务器。思路上是从syzbot网站拿到相关的内容-&gt;自动化构建-&gt;qemu运行内核+poc连接gdb，同时提供源码搜索</p>
+<p>我们如果vmcore分析完全不需要那么多环境？我们不关心vmcore是哪来的，有一个vmcore现场</p>
+<p>更现代的包管理器-uv</p>
+<p>提供的项目是怎么做的？我们能不能快速地模仿？</p>
+<h2 id="1-提供的项目怎么做的？">1. 提供的项目怎么做的？</h2>
+<p>忽略ida-pro-mcp的部分后端逻辑大概懂了，改一下可以用。</p>
+<p>自动化提取vmcore？？先跑</p>
+<p>想办法搞一个开箱即用的环境，</p>
+<p>zjl</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>（尽可能）开箱即用的vmcore提取环境</p>
+</li>
+<li class="lvl-2">
+<p>顺序化的内核崩溃调试/vmcore分析逻辑</p>
+</li>
+</ul>
+<p>wjg：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>手动化 从一个配置 源码-&gt;build-&gt;测试poc-&gt;崩溃-&gt;</p>
+</li>
+</ul>
+<p>wzx:</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>ai</p>
+</li>
+</ul>
+<p>1 2 3 4</p>
+<h2 id="论文内容">论文内容</h2>
+<p>对于每个人实现的内容论文中要写：</p>
+<ul class="lvl-0">
+<li class="lvl-2">
+<p>特色描述</p>
+</li>
+<li class="lvl-2">
+<p>模块设计测试？？？？</p>
+</li>
+</ul>
+<p>系统设计最后再说</p>
+<p>图架构图</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="网安实践之简单的固件漏洞利用">
+                    <div class="nextTitle">网安实践之简单的固件漏洞利用</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/" title="从0开始的AFL++">
+                    <div class="prevTitle">从0开始的AFL++</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            <!-- partial('_partial/comment/custom') -->
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">环境搭建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Kdump的分析流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ChatDBG%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.1.</span> <span class="toc-text">ChatDBG的实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.</span> <span class="toc-text">问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">更好，更智能，更符合人类思维的检索方式（？）——AST</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%BE%E4%BB%A5%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">难以解决的问题？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8F%91%E6%80%9D%E8%B7%AF"><span class="toc-number">3.2.</span> <span class="toc-text">启发思路</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">♿资料收集中的灵光一闪–Language Server</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">4.1.</span> <span class="toc-text">测试实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%92%8C%E8%A7%A3%E5%86%B3"><span class="toc-number">4.2.</span> <span class="toc-text">问题和解决</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E7%AD%89%E5%BE%85"><span class="toc-number">4.2.1.</span> <span class="toc-text">索引等待</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-number">4.2.2.</span> <span class="toc-text">方法的转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E9%97%AE%E9%A2%98"><span class="toc-number">4.2.3.</span> <span class="toc-text">小问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E6%80%AA%E5%BC%82%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">4.2.4.</span> <span class="toc-text">最怪异的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0-progress"><span class="toc-number">4.2.5.</span> <span class="toc-text">添加$progress</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E6%90%9C%E7%B4%A2"><span class="toc-number">4.2.6.</span> <span class="toc-text">符号搜索</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%BB%A3%E7%A0%81"><span class="toc-number">4.3.</span> <span class="toc-text">最终代码</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">KGym</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%EF%BC%88%E6%8A%98%E7%A3%A8%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">环境搭建（折磨）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#google-cloud"><span class="toc-number">5.1.1.</span> <span class="toc-text">google cloud</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%A7%8B%E8%AE%BA%E6%96%87%E7%9A%84%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">原始论文的调用流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%8F%B0%E6%B5%8B%E8%AF%95%EF%BC%9A"><span class="toc-number">5.3.</span> <span class="toc-text">平台测试：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E4%BB%AC%E7%9A%84"><span class="toc-number">5.4.</span> <span class="toc-text">我们的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#cur"><span class="toc-number">5.4.1.</span> <span class="toc-text">cur</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%8F%90%E4%BE%9B%E7%9A%84%E9%A1%B9%E7%9B%AE%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9F"><span class="toc-number">5.5.</span> <span class="toc-text">1. 提供的项目怎么做的？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BA%E6%96%87%E5%86%85%E5%AE%B9"><span class="toc-number">5.6.</span> <span class="toc-text">论文内容</span></a></li></ol></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 73
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2025/04/14/DefCon33-Qual/">DefCon33 Qual</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/07</span>
+            <a class="archive-post-title" href="/2025/04/07/Algorithm-leetcode/">Algorithm-leetcode</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/28</span>
+            <a class="archive-post-title" href="/2025/03/28/SRC%E4%B8%8E%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%85%A5%E9%97%A8%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">漏洞挖掘入门（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span>
+            <a class="archive-post-title" href="/2025/03/24/%E5%86%85%E6%A0%B8fuzzing-Syzkaller%E5%88%9D%E6%8E%A2/">内核fuzzing--Syzkaller初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2025/03/21/%E5%9F%BA%E4%BA%8Eqemu%E5%92%8Cubuntu-base%E7%9A%84kdump%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83/">基于qemu和ubuntu-base的kdump分析环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span>
+            <a class="archive-post-title" href="/2025/03/17/2025ciscnccb%E5%A4%8D%E7%9B%98%E5%B0%8F%E8%AE%B0/">2025ciscnccb复盘小记</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span>
+            <a class="archive-post-title" href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密编码算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span>
+            <a class="archive-post-title" href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">Awdp-PWN准备技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/Arch%E5%AE%89%E8%A3%85%E5%A4%87%E5%BF%98%E6%89%8B%E5%86%8C/">Arch安装备忘手册</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/IDA-Better-printk%E6%8E%A8%E5%B9%BF/">IDA-Better_printk推广</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/ciscn-ccb2025%E5%88%9D%E8%B5%9B-avm%E9%87%8D%E5%81%9Awp/">ciscn_ccb2025初赛-avm重做wp</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2024/12/17/%E5%89%8D%E7%AB%AF%E5%B0%8F%E5%AE%9E%E8%B7%B5%E4%B9%8B%E4%BF%AE%E5%A4%8Dgithub%E5%88%97%E8%A1%A8%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF/">前端小实践之修复github列表渲染错误</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/12</span>
+            <a class="archive-post-title" href="/2024/12/12/rust-pwn-qwb2024-chat-with-me/">How2Heap-rust——qwb2024_chat-with-me</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span>
+            <a class="archive-post-title" href="/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">页表之上——Linux内核的内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2024/10/28/Algorithm-0/">Algorithm(0)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span>
+            <a class="archive-post-title" href="/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/">记录一次护网行动</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span>
+            <a class="archive-post-title" href="/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/">Android逆向入门之2015-AliCrackme</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span>
+            <a class="archive-post-title" href="/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/">Kernel Pwn从入门到入土-2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span>
+            <a class="archive-post-title" href="/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/">CVE-2024-26229青春版_WindowsKernelPWN</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span>
+            <a class="archive-post-title" href="/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/">现代内核安全机制——以Windows 11的kernel pwn为例</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span>
+            <a class="archive-post-title" href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/">ByteCTF2024——ezheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/">WMCTF2023evm非预期</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span>
+            <a class="archive-post-title" href="/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">Windows下的简单逆向分析入门——从PE开始</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-0/">Kernel Pwn从入门到入土-0</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-1/">Kernel Pwn从入门到入土-1</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="awdp">
+                <span class="iconfont-archer">&#xe606;</span>
+                awdp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="算法">
+                <span class="iconfont-archer">&#xe606;</span>
+                算法
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="php">
+                <span class="iconfont-archer">&#xe606;</span>
+                php
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="go">
+                <span class="iconfont-archer">&#xe606;</span>
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="basic">
+                <span class="iconfont-archer">&#xe606;</span>
+                basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploits">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploits
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                sandbox
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="前端">
+                <span class="iconfont-archer">&#xe606;</span>
+                前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="hvv">
+                <span class="iconfont-archer">&#xe606;</span>
+                hvv
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="kernel">
+            <span class="iconfont-archer">&#xe60a;</span>
+            kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Web">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Web
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://zjw1nd.github.io",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>

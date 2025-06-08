@@ -27,7 +27,7 @@
 <meta property="og:description" content="跟着nu1l的大佬们打了defcon预选。这是一周之后的记录了。队伍里没啥人来，和nu1l的大跌们和做了一把（虽然只是简单题）。 关于题目风格 首先，defcon很明显的，题目的种类很多而且很新。很多东西都很小众变态。 而且常规题目是不提供类型的，除了web以外剩下的多多少少都很综合（观察频道中的师傅们交流得出的结论）。我自己做的两道题目感觉非常misc，俄罗斯方块那道题很好玩。 关于我参与的题目">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-04-14T03:07:52.000Z">
-<meta property="article:modified_time" content="2025-04-21T13:53:03.165Z">
+<meta property="article:modified_time" content="2025-04-22T02:30:02.336Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="wp">
 <meta name="twitter:card" content="summary">
@@ -498,7 +498,7 @@
 <p>首先，defcon很明显的，题目的种类很多而且<strong>很新</strong>。很多东西都很小众变态。</p>
 <p>而且常规题目是不提供类型的，除了web以外剩下的多多少少都很综合（观察频道中的师傅们交流得出的结论）。我自己做的两道题目感觉非常misc，俄罗斯方块那道题很好玩。</p>
 <h2 id="关于我参与的题目">关于我参与的题目</h2>
-<p>Nu1l的师傅们很厉害而且人巨多，各个还都是48h连轴转的精力怪物，很多题开题没有跟着做也就没必要讨论了（）。我看的两道题恰好还都是misc，有一个出的很好玩。</p>
+<p>Nu1l的师傅们很厉害而且人多，各个还都是48h连轴转的多线程精力怪物，很多题开题没有跟着做也就没必要讨论了（）。我看的两道题恰好还都是misc，有一个出的很好玩。</p>
 <h3 id="tetrx">tetrx</h3>
 <p>题不难但是很有意思，逆向分析可以发现这玩意实现了一个终端俄罗斯方块，同时用一块0x30的，mmap出来的bitmap存储当前的地形状态信息。</p>
 <p>很简单的测试跑完就会发现报错segfault，跟进一下就可以知道，这个bitmap给了可执行权限。在失败之后会直接去执行这块地址！换句话说，只需要一个<strong>精简且合适</strong>的shellcode，然后通过玩俄罗斯方块的形式，就能直接执行sc，甚至这个程序还给了后门。</p>
@@ -521,11 +521,11 @@
 <p>第三关则是最抽象的，时钟侧信道。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#x27;type&#x27;: &#x27;PULL&#x27;, &#x27;if_empty&#x27;: 0, &#x27;block&#x27;: 1, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;OUT&#x27;, &#x27;dest&#x27;: &#x27;PINS&#x27;, &#x27;bitcount&#x27;: 32, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;IN&#x27;, &#x27;src&#x27;: &#x27;PINS&#x27;, &#x27;bitcount&#x27;: 2, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;MOV&#x27;, &#x27;dest&#x27;: &#x27;Y&#x27;, &#x27;op&#x27;: &#x27;&#x27;, &#x27;src&#x27;: &#x27;ISR&#x27;, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;JMP&#x27;, &#x27;cond&#x27;: &#x27;Y--&#x27;, &#x27;addr&#x27;: 4, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 delay: 5 sideset: 5&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;SET&#x27;, &#x27;dest&#x27;: &#x27;PINS&#x27;, &#x27;data&#x27;: 0, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;IN&#x27;, &#x27;src&#x27;: &#x27;PINS&#x27;, &#x27;bitcount&#x27;: 32, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;MOV&#x27;, &#x27;dest&#x27;: &#x27;PINS&#x27;, &#x27;op&#x27;: &#x27;&#x27;, &#x27;src&#x27;: &#x27;NULL&#x27;, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 sideset: 0&#x27;&#125;</span><br><span class="line">&#123;&#x27;type&#x27;: &#x27;PUSH&#x27;, &#x27;if_full&#x27;: 0, &#x27;block&#x27;: 1, &#x27;sideset&#x27;: &#x27;do sideset count: 0x0 value: 0x0 mask: 0x0 delay: 10 sideset: 10&#x27;&#125;</span><br></pre></td></tr></table></figure>
 <p>它将数据读取到32个引脚之后，用set抹去了两位（置为0了）。然后这两位会做为变量去jmp循环。所以我们只要从时钟对齐拿到循环次数就能推算出这缺的两位是多少。</p>
-<p>问题是怎么去标记这个起止时间。最后的想法是利用autopull机制，自动拉取数据（不用手动拉取，并且省时钟），然后用jmp判断OSR寄存器是否为空。精确控制时钟之后</p>
+<p>问题是怎么去标记这个起止时间。最后的想法是利用autopull机制，自动拉取数据（不用手动拉取，并且省时钟），然后用jmp判断OSR寄存器是否为空来决定什么时候开始计时。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">program = [</span><br><span class="line">        asm.set(DstReg.Y, 7),  # set Y = 3</span><br><span class="line">        asm.set(DstReg.X, 11), </span><br><span class="line">        asm.label(&quot;start&quot;),</span><br><span class="line">        asm.jmp(Cond.X_DEC_NZ, &quot;start&quot;),  # jmp x--</span><br><span class="line">        # 原始状态机中第 9条指令执行后即push 数据</span><br><span class="line">        # autopull 需要在第9条指令后第10条指令前才能自动获取数据</span><br><span class="line">        # ins count: 10</span><br><span class="line">        asm.jmp(Cond.OSRE, &quot;n_0&quot;),  # osr 非空则跳转, n=0</span><br><span class="line">        asm.set(DstReg.X, 0, sideset=5),</span><br><span class="line">        asm.jmp(Cond.OSRE, &quot;n_1&quot;),  # osr 非空则跳转, n=1</span><br><span class="line">        asm.set(DstReg.X, 0, sideset=5),</span><br><span class="line">        asm.jmp(Cond.OSRE, &quot;n_2&quot;),  # osr 非空则跳转, n=2</span><br><span class="line">        asm.set(DstReg.X, 0, sideset=5),</span><br><span class="line">        # n=3</span><br><span class="line">        asm.out(DstReg.PINS, 32),</span><br><span class="line">        asm.set(DstReg.PINS, 3),</span><br><span class="line">        asm.jmp(Cond.ALWAYS, &quot;n_end&quot;),</span><br><span class="line">        # n=2</span><br><span class="line">        asm.label(&quot;n_2&quot;),</span><br><span class="line">        asm.out(DstReg.PINS, 32),</span><br><span class="line">        asm.set(DstReg.PINS, 2),</span><br><span class="line">        asm.jmp(Cond.ALWAYS, &quot;n_end&quot;),</span><br><span class="line">        # n=1</span><br><span class="line">        asm.label(&quot;n_1&quot;),</span><br><span class="line">        asm.out(DstReg.PINS, 32),</span><br><span class="line">        asm.set(DstReg.PINS, 1),</span><br><span class="line">        asm.jmp(Cond.ALWAYS, &quot;n_end&quot;),</span><br><span class="line">        # n=0</span><br><span class="line">        asm.label(&quot;n_0&quot;),</span><br><span class="line">        asm.out(DstReg.PINS, 32),</span><br><span class="line">        asm.label(&quot;n_end&quot;),</span><br><span class="line">        asm.mov(DstReg.ISR, MovOp.NONE, SrcReg.PINS),</span><br><span class="line">        asm.push(),</span><br><span class="line">        asm.mov(DstReg.PINS, MovOp.NONE, SrcReg.NULL),</span><br><span class="line">        asm.wait(1, 1, 0),</span><br><span class="line">    ]</span><br></pre></td></tr></table></figure>
 <h2 id="一些总结">一些总结</h2>
 <p>48h连轴转首先肯定不是专门打或者有一个人很多的team肯定遭不住，打高分肯定是要连轴转的。另外这些师傅是真的nb。</p>
-<p>defcon的题目风格和国内差的挺多的，</p>
+<p>defcon qual的题目风格和国内差的挺多的，感觉重点都是技术本身而不是国内这种卷更加复杂的板子利用，比如去符号的rust之类。</p>
 
     </article>
     <!-- license -->
@@ -535,8 +535,8 @@
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href="/2025/04/17/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/" title="基于LLM的kdump分析开发日志（持续更新）">
-                    <div class="nextTitle">基于LLM的kdump分析开发日志（持续更新）</div>
+                <a href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/" title="RouterOS固件逆向记录">
+                    <div class="nextTitle">RouterOS固件逆向记录</div>
                 </a>
             
         </li>
@@ -568,7 +568,7 @@
             <!--PC版-->
 
 
-            
+            <!-- partial('_partial/comment/custom') -->
             
 
             
@@ -1044,7 +1044,69 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -1709,7 +1771,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 69
+        Total : 73
         </div>
         <!-- search  -->
         
@@ -1725,8 +1787,32 @@
             
         
         <li class="archive-post-item">
-            <span class="archive-post-date">04/17</span>
-            <a class="archive-post-title" href="/2025/04/17/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
         </li>
     
         
@@ -2181,11 +2267,6 @@
                 算法
             </span>
         
-            <span class="sidebar-tag-name" data-tags="linux">
-                <span class="iconfont-archer">&#xe606;</span>
-                linux
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="Android">
                 <span class="iconfont-archer">&#xe606;</span>
                 Android
@@ -2194,6 +2275,11 @@
             <span class="sidebar-tag-name" data-tags="逆向">
                 <span class="iconfont-archer">&#xe606;</span>
                 逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
             </span>
         
             <span class="sidebar-tag-name" data-tags="awd">
@@ -2206,14 +2292,14 @@
                 php
             </span>
         
-            <span class="sidebar-tag-name" data-tags="chop">
-                <span class="iconfont-archer">&#xe606;</span>
-                chop
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="heap">
                 <span class="iconfont-archer">&#xe606;</span>
                 heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
             </span>
         
             <span class="sidebar-tag-name" data-tags="CSAPP">
@@ -2231,6 +2317,16 @@
                 Develop
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2244,16 +2340,6 @@
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2271,6 +2357,11 @@
                 kernel
             </span>
         
+            <span class="sidebar-tag-name" data-tags="exploits">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploits
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
@@ -2279,6 +2370,21 @@
             <span class="sidebar-tag-name" data-tags="Rust">
                 <span class="iconfont-archer">&#xe606;</span>
                 Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
             </span>
         
             <span class="sidebar-tag-name" data-tags="vm">
@@ -2301,9 +2407,24 @@
                 Others
             </span>
         
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="前端">
                 <span class="iconfont-archer">&#xe606;</span>
                 前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
             </span>
         
             <span class="sidebar-tag-name" data-tags="IDA">
@@ -2321,34 +2442,9 @@
                 ROP
             </span>
         
-            <span class="sidebar-tag-name" data-tags="web">
-                <span class="iconfont-archer">&#xe606;</span>
-                web
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="hvv">
                 <span class="iconfont-archer">&#xe606;</span>
                 hvv
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="kdump">
-                <span class="iconfont-archer">&#xe606;</span>
-                kdump
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzz">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzz
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="fuzzing">
-                <span class="iconfont-archer">&#xe606;</span>
-                fuzzing
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="develop">
-                <span class="iconfont-archer">&#xe606;</span>
-                develop
             </span>
         
     </div>
@@ -2387,9 +2483,19 @@
             Develop
         </span>
     
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
         <span class="sidebar-category-name" data-categories="pwn">
             <span class="iconfont-archer">&#xe60a;</span>
             pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
         </span>
     
         <span class="sidebar-category-name" data-categories="others">
@@ -2397,24 +2503,14 @@
             others
         </span>
     
-        <span class="sidebar-category-name" data-categories="Web">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Web
-        </span>
-    
         <span class="sidebar-category-name" data-categories="kernel">
             <span class="iconfont-archer">&#xe60a;</span>
             kernel
         </span>
     
-        <span class="sidebar-category-name" data-categories="Exploits">
+        <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
-            Exploits
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Exploit">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Exploit
+            Web
         </span>
     
     </div>

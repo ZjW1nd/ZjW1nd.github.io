@@ -1,0 +1,2584 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
+    
+    <meta name="description" content="">
+    <meta name="description" content="📖学习路线 AFL++ -&gt; LibAFL -&gt; libgoafl  安装和使用以及基本概念 arch一键allin就行。 afl++是一个基于afl的改进版开源模糊测试工具。对于fuzz来说，分为有源码和无源码的版本。afl基于clang实现了一个定制的编译器afl-clang系列。afl-clang能通过编译时插桩来为afl提供代码覆盖率监控等功能。同时它还有qemu mode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从0开始的AFL++">
+<meta property="og:url" content="https://zjw1nd.github.io/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="📖学习路线 AFL++ -&gt; LibAFL -&gt; libgoafl  安装和使用以及基本概念 arch一键allin就行。 afl++是一个基于afl的改进版开源模糊测试工具。对于fuzz来说，分为有源码和无源码的版本。afl基于clang实现了一个定制的编译器afl-clang系列。afl-clang能通过编译时插桩来为afl提供代码覆盖率监控等功能。同时它还有qemu mode">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://zjw1nd.github.io/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/images/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus.md/afl-screenshot.png">
+<meta property="og:image" content="https://zjw1nd.github.io/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/images/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus.md/overview.svg">
+<meta property="article:published_time" content="2025-04-30T07:42:49.000Z">
+<meta property="article:modified_time" content="2025-05-20T02:20:44.684Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="fuzz">
+<meta property="article:tag" content="exploit">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zjw1nd.github.io/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/images/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus.md/afl-screenshot.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>从0开始的AFL++ · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">从0开始的AFL++</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                从0开始的AFL++
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="fuzz">fuzz</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="exploit">exploit</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/04/30</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>📖学习路线 AFL++ -&gt; LibAFL -&gt; libgoafl</p>
+</blockquote>
+<h1>安装和使用以及基本概念</h1>
+<p>arch一键allin就行。</p>
+<p>afl++是一个基于afl的改进版开源模糊测试工具。对于fuzz来说，分为有源码和无源码的版本。afl基于clang实现了一个定制的编译器<code>afl-clang</code>系列。afl-clang能通过编译时插桩来为afl提供代码覆盖率监控等功能。同时它还有qemu mode能提供无源码fuzz，</p>
+<p>有一个<a target="_blank" rel="noopener" href="https://github.com/mykter/afl-training">afl-training</a>项目可以帮我们上手掌握相关的内容，这里以quckstart为例简单介绍afl++执行的入门流程。</p>
+<h2 id="Quickstart">Quickstart</h2>
+<p>在有源码（c）的情况下，我们要使用<code>CC=afl-clang-fast</code>来编译我们需要测试的程序。在afl编译器完成插桩编译之后，执行<code>afl-fuzz -i inputs -o out ./vulnerable</code>即可。<code>-i</code>指定了输入种子的文件夹，<code>-o</code>指定了崩溃输出的文件夹。快速启动就这么容易。我们应当看到如下内容：<br>
+<img src="images/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus.md/afl-screenshot.png" alt="alt text"></p>
+<p>如果不做任何处理，afl默认会对标准输入进行fuzz。</p>
+<h2 id="Harness">Harness</h2>
+<p>harness的英文正式翻译是“系带/（马）挽具”或是“控制/利用…的动力”。在fuzz中指的是一个“接口”。AFL并不知道我们具体要测试什么函数，也不知道函数的输入是什么样的如何输入，因此这就需要我们编写harness。</p>
+<p>对于fuzz一个接口/函数需要准备什么，afl-training给出了以下三条：</p>
+<ol>
+<li class="lvl-3">
+<p>代码需要是可执行的——需要编译成一个程序。</p>
+</li>
+<li class="lvl-3">
+<p>为了让 AFL 有效工作，代码需要被插桩（instrumented）——所以我们必须用 afl-clang-fast、afl-clang 或 afl-gcc 之一进行编译。</p>
+</li>
+<li class="lvl-3">
+<p>为了让 AFL 生成的数据真正测试到库函数，我们需要编写一个 harness，它能接收外部输入并传递给库。这可以通过命令行指定的文件，或者直接从标准输入（stdin）读取。</p>
+</li>
+</ol>
+<p>所以我们编写harness的过程，其实是想办法让标准输入缓冲区和目标函数对接，并且在终端更加用户友好。对于一个标准的harness示例，我们现在要尝试fuzz自定义的<code>lib_echo</code>和<code>lib_mul</code>函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;library.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于对目标函数最大可能输入大小的假设，定义固定大小的缓冲区</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIZE 100</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> &#123;</span><br><span class="line">    <span class="keyword">if</span>((argc == <span class="number">2</span>) &amp;&amp; <span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">&quot;echo&quot;</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 确保缓冲区初始化，消除与输入无关的变量行为</span></span><br><span class="line">        <span class="type">char</span> input[SIZE] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"></span><br><span class="line">        <span class="type">ssize_t</span> length;</span><br><span class="line">        length = read(STDIN_FILENO, input, SIZE);</span><br><span class="line"></span><br><span class="line">        lib_echo(input, length);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((argc == <span class="number">2</span>) &amp;&amp; <span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">&quot;mul&quot;</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">int</span> a,b = <span class="number">0</span>;</span><br><span class="line">        read(STDIN_FILENO, &amp;a, <span class="number">4</span>);</span><br><span class="line">        read(STDIN_FILENO, &amp;b, <span class="number">4</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, lib_mul(a,b));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;Usage: %s mul|echo\n&quot;</span>, argv[<span class="number">0</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来我们只需要调用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">afl-fuzz -i in -o out ./harness echo</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">afl-fuzz -i in -o out ./harness mul</span><br></pre></td></tr></table></figure>
+<p>就能让afl对这两个函数做fuzz。而这个主函数就是我们写的harness。</p>
+<h2 id="注意事项">注意事项</h2>
+<p>一般来说，终端执行afl-fuzz如果报错它会输出错误原因的。</p>
+<h2 id="常见的参数">常见的参数</h2>
+<p>@@： 占位符</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2483298">https://cloud.tencent.com/developer/article/2483298</a><br>
+qemu纯二进制下，关于fuzz的调优。比如设置afl入口点，选择要覆盖的动态库，设定code起止地址。也就是说我们通过逆向+设定一大堆环境变量也可以实现针对性的fuzz</p>
+</blockquote>
+<h1>原理</h1>
+<p>这是afl++的架构图：<br>
+<img src="images/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus.md/overview.svg" alt="alt text"></p>
+<h1>实战尝试</h1>
+<h1>LibAFL</h1>
+<p>LibAFL是一个用rust编写的fuzzing工具，提供了高自定义的很多工具用于构建自己的fuzz环境。</p>
+<h1>golibafl</h1>
+<h1>fuzz101</h1>
+<p>这是一套fuzz的教程</p>
+
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/" title="基于LLM的kdump分析开发日志（持续更新）">
+                    <div class="nextTitle">基于LLM的kdump分析开发日志（持续更新）</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/" title="RouterOS固件逆向记录">
+                    <div class="prevTitle">RouterOS固件逆向记录</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            <!-- partial('_partial/comment/custom') -->
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">安装和使用以及基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quickstart"><span class="toc-number">1.1.</span> <span class="toc-text">Quickstart</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Harness"><span class="toc-number">1.2.</span> <span class="toc-text">Harness</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">1.3.</span> <span class="toc-text">注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8F%82%E6%95%B0"><span class="toc-number">1.4.</span> <span class="toc-text">常见的参数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">实战尝试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">LibAFL</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">golibafl</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">fuzz101</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 73
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2025/04/14/DefCon33-Qual/">DefCon33 Qual</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/07</span>
+            <a class="archive-post-title" href="/2025/04/07/Algorithm-leetcode/">Algorithm-leetcode</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/28</span>
+            <a class="archive-post-title" href="/2025/03/28/SRC%E4%B8%8E%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%85%A5%E9%97%A8%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">漏洞挖掘入门（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span>
+            <a class="archive-post-title" href="/2025/03/24/%E5%86%85%E6%A0%B8fuzzing-Syzkaller%E5%88%9D%E6%8E%A2/">内核fuzzing--Syzkaller初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2025/03/21/%E5%9F%BA%E4%BA%8Eqemu%E5%92%8Cubuntu-base%E7%9A%84kdump%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83/">基于qemu和ubuntu-base的kdump分析环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span>
+            <a class="archive-post-title" href="/2025/03/17/2025ciscnccb%E5%A4%8D%E7%9B%98%E5%B0%8F%E8%AE%B0/">2025ciscnccb复盘小记</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span>
+            <a class="archive-post-title" href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密编码算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span>
+            <a class="archive-post-title" href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">Awdp-PWN准备技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/Arch%E5%AE%89%E8%A3%85%E5%A4%87%E5%BF%98%E6%89%8B%E5%86%8C/">Arch安装备忘手册</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/IDA-Better-printk%E6%8E%A8%E5%B9%BF/">IDA-Better_printk推广</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/ciscn-ccb2025%E5%88%9D%E8%B5%9B-avm%E9%87%8D%E5%81%9Awp/">ciscn_ccb2025初赛-avm重做wp</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2024/12/17/%E5%89%8D%E7%AB%AF%E5%B0%8F%E5%AE%9E%E8%B7%B5%E4%B9%8B%E4%BF%AE%E5%A4%8Dgithub%E5%88%97%E8%A1%A8%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF/">前端小实践之修复github列表渲染错误</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/12</span>
+            <a class="archive-post-title" href="/2024/12/12/rust-pwn-qwb2024-chat-with-me/">How2Heap-rust——qwb2024_chat-with-me</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span>
+            <a class="archive-post-title" href="/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">页表之上——Linux内核的内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2024/10/28/Algorithm-0/">Algorithm(0)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span>
+            <a class="archive-post-title" href="/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/">记录一次护网行动</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span>
+            <a class="archive-post-title" href="/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/">Android逆向入门之2015-AliCrackme</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span>
+            <a class="archive-post-title" href="/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/">Kernel Pwn从入门到入土-2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span>
+            <a class="archive-post-title" href="/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/">CVE-2024-26229青春版_WindowsKernelPWN</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span>
+            <a class="archive-post-title" href="/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/">现代内核安全机制——以Windows 11的kernel pwn为例</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span>
+            <a class="archive-post-title" href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/">ByteCTF2024——ezheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/">WMCTF2023evm非预期</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span>
+            <a class="archive-post-title" href="/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">Windows下的简单逆向分析入门——从PE开始</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-0/">Kernel Pwn从入门到入土-0</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-1/">Kernel Pwn从入门到入土-1</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="awdp">
+                <span class="iconfont-archer">&#xe606;</span>
+                awdp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="算法">
+                <span class="iconfont-archer">&#xe606;</span>
+                算法
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="php">
+                <span class="iconfont-archer">&#xe606;</span>
+                php
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="go">
+                <span class="iconfont-archer">&#xe606;</span>
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="basic">
+                <span class="iconfont-archer">&#xe606;</span>
+                basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploits">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploits
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                sandbox
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="前端">
+                <span class="iconfont-archer">&#xe606;</span>
+                前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="hvv">
+                <span class="iconfont-archer">&#xe606;</span>
+                hvv
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="kernel">
+            <span class="iconfont-archer">&#xe60a;</span>
+            kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Web">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Web
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://zjw1nd.github.io",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
