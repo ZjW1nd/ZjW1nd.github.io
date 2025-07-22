@@ -27,7 +27,7 @@
 <meta property="og:description" content="虽然失败了但是还是简单记录下遇到的问题 awdp 首先，这是最无语的环节，等过几天选手的blog可能会有wp研究下，最简单的题目10次用完了都一直操作失败是真的不懂。整个程序只有add，edit和delete。delete虽然没有UAF但是谨慎起见我也把free nop了。而add则不允许输入，只有一个idx。 edit里存在漏洞，snprintf他迷惑人，将fmt和实际read的0x100两个参">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-03-17T14:28:55.000Z">
-<meta property="article:modified_time" content="2025-03-20T03:03:22.971Z">
+<meta property="article:modified_time" content="2025-07-22T08:39:35.410Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="wp">
 <meta name="twitter:card" content="summary">
@@ -1056,22 +1056,7 @@
         
         
         
-        
-        
-        
-        
-        
     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         
         
@@ -1768,7 +1753,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 73
+        Total : 72
         </div>
         <!-- search  -->
         
@@ -1798,12 +1783,6 @@
         <li class="archive-post-item">
             <span class="archive-post-date">04/30</span>
             <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">04/30</span>
-            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
         </li>
     
         
@@ -2354,11 +2333,6 @@
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="exploits">
-                <span class="iconfont-archer">&#xe606;</span>
-                exploits
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
@@ -2508,6 +2482,16 @@
         <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
             Web
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="How2Heap">
+            <span class="iconfont-archer">&#xe60a;</span>
+            How2Heap
         </span>
     
     </div>

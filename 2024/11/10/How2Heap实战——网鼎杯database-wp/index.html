@@ -27,7 +27,7 @@
 <meta property="og:description" content="题目分析 Glibc2.27，64位保护全开，沙箱ban掉了execve和execveat，打orw。 爆破用户名和密码 这个程序上来先在远程打开了用户名和密码的文件要我们输入，找了半天没找到题目里能有什么提示，还是当时队里做逆向的师傅搞定的。观察发现，函数比较输入的逻辑比较奇怪。先调用了一个自己实现的strcmp，这里对我们的用户输入调用了strlen，然后按照用户输入的长度去比较： 12345">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-11-10T15:29:18.000Z">
-<meta property="article:modified_time" content="2024-11-14T11:57:33.270Z">
+<meta property="article:modified_time" content="2025-07-22T08:46:18.222Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="wp">
@@ -1113,22 +1113,7 @@ free_hook(rdi=chunk2_addr)<br>
         
         
         
-        
-        
-        
-        
-        
     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         
         
@@ -1825,7 +1810,7 @@ free_hook(rdi=chunk2_addr)<br>
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 73
+        Total : 72
         </div>
         <!-- search  -->
         
@@ -1855,12 +1840,6 @@ free_hook(rdi=chunk2_addr)<br>
         <li class="archive-post-item">
             <span class="archive-post-date">04/30</span>
             <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
-        </li>
-    
-        
-        <li class="archive-post-item">
-            <span class="archive-post-date">04/30</span>
-            <a class="archive-post-title" href="/2025/04/30/RouterOS%E5%9B%BA%E4%BB%B6%E9%80%86%E5%90%91%E8%AE%B0%E5%BD%95/">RouterOS固件逆向记录</a>
         </li>
     
         
@@ -2411,11 +2390,6 @@ free_hook(rdi=chunk2_addr)<br>
                 kernel
             </span>
         
-            <span class="sidebar-tag-name" data-tags="exploits">
-                <span class="iconfont-archer">&#xe606;</span>
-                exploits
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="llvm">
                 <span class="iconfont-archer">&#xe606;</span>
                 llvm
@@ -2565,6 +2539,16 @@ free_hook(rdi=chunk2_addr)<br>
         <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
             Web
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="WP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="How2Heap">
+            <span class="iconfont-archer">&#xe60a;</span>
+            How2Heap
         </span>
     
     </div>
