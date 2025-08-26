@@ -431,6 +431,44 @@
             
         
         <article class="index-post">
+            <a class="abstract-title" href="/2024/04/17/How2Heap-6/">
+                
+                <span class="abstract-title-text">How2Heap(6)——House of Roman &amp; House of Rabbit</span>
+            </a>
+            <div class="abstract-content">
+                House of Roman是fastbin dup和Unsortedbin attack利用的组合，是一种将malloc_hook写为main_arena+88后再写其低三字节改成one_gadget的攻击方式。该方法不需要泄露地址且能绕过ASLR，但是代价是需要爆破。House of Rabbit是一种fastbin的overlap攻击，通过修改fastbin的size域或者fd指针然后触发malloc_consolidate，能够将我们伪造的chunk变成合法的chunk。
+            </div>
+            <!-- read more -->
+            
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2025/07/22">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/04/17</span>
+                </div>
+                <!-- tags -->
+                
+                    <div class= abstract-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="heap">heap</a>
+    
+</div>
+
+                
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    
+        
+        
+        
+        
+            
+            
+        
+        <article class="index-post">
             <a class="abstract-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">
                 
                 <span class="abstract-title-text">栈溢出ROP熟练度提升总结</span>
@@ -1242,7 +1280,16 @@
         
         
         
+        
+        
+        
+        
+        
     
+        
+        
+        
+        
         
         
         
@@ -1955,7 +2002,7 @@
     
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 73
+        Total : 74
         </div>
         <!-- search  -->
         
@@ -1969,6 +2016,12 @@
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
             
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span>
+            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的</a>
+        </li>
+    
         
         <li class="archive-post-item">
             <span class="archive-post-date">08/07</span>
@@ -2501,16 +2554,6 @@
                 Develop
             </span>
         
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
-            </span>
-        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2524,6 +2567,16 @@
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2569,6 +2622,11 @@
             <span class="sidebar-tag-name" data-tags="vm">
                 <span class="iconfont-archer">&#xe606;</span>
                 vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Vuln">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vuln
             </span>
         
             <span class="sidebar-tag-name" data-tags="shellcode">
@@ -2637,14 +2695,19 @@
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="pwn">
+        <span class="sidebar-category-name" data-categories="WP">
             <span class="iconfont-archer">&#xe60a;</span>
-            pwn
+            WP
         </span>
     
         <span class="sidebar-category-name" data-categories="linux">
             <span class="iconfont-archer">&#xe60a;</span>
             linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
         </span>
     
         <span class="sidebar-category-name" data-categories="CSAPP">
@@ -2657,9 +2720,24 @@
             Reverse
         </span>
     
+        <span class="sidebar-category-name" data-categories="Kernel">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="How2Heap">
+            <span class="iconfont-archer">&#xe60a;</span>
+            How2Heap
+        </span>
+    
         <span class="sidebar-category-name" data-categories="Develop">
             <span class="iconfont-archer">&#xe60a;</span>
             Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Android">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Android
         </span>
     
         <span class="sidebar-category-name" data-categories="Exploits">
@@ -2690,26 +2768,6 @@
         <span class="sidebar-category-name" data-categories="Web">
             <span class="iconfont-archer">&#xe60a;</span>
             Web
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="WP">
-            <span class="iconfont-archer">&#xe60a;</span>
-            WP
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="How2Heap">
-            <span class="iconfont-archer">&#xe60a;</span>
-            How2Heap
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Kernel">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Kernel
-        </span>
-    
-        <span class="sidebar-category-name" data-categories="Android">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Android
         </span>
     
     </div>

