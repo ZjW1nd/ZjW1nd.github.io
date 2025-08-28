@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制,Exploit,漏洞,漏洞挖掘,漏洞利用,网络安全,ctf">
     
     <meta name="description" content="">
     <meta name="description" content="~~摆了，~~可以参考：  https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-272098.htm#msg_header_h3_31 高版本的思路，包括libcgot表，_rtld_global的攻击等：https:&#x2F;&#x2F;www.cnblogs.com&#x2F;LynneHuan&#x2F;p&#x2F;17822172.html#:~:text&#x3D;可以在 Bi 上文的总结对于细节更丰富也更好用，我自己也会参考。我自己">
@@ -209,6 +209,19 @@
     <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
     <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
     <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":8}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts(What do we have here?)","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: '4CMNJ0QIY9',
+                apiKey: '19191cef6d927de55474d5c2d39f1742',
+                indexName: 'MyBlog',
+                hits: hits,
+                labels: labels
+            }
+        </script>
     
     <!-- 百度统计  -->
     
@@ -2055,6 +2068,14 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
     
     
     
@@ -2064,6 +2085,10 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         Total : 73
         </div>
         <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
         
     </div>
     
@@ -2078,7 +2103,7 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         
         <li class="archive-post-item">
             <span class="archive-post-date">08/26</span>
-            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的</a>
+            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">"Vibe SecurityReserch": 我是如何用ai发现0day并撰写poc的</a>
         </li>
     
         
@@ -2607,6 +2632,16 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
                 Develop
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2620,16 +2655,6 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2763,14 +2788,14 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
             CSAPP
         </span>
     
-        <span class="sidebar-category-name" data-categories="Reverse">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Reverse
-        </span>
-    
         <span class="sidebar-category-name" data-categories="Kernel">
             <span class="iconfont-archer">&#xe60a;</span>
             Kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
         </span>
     
         <span class="sidebar-category-name" data-categories="How2Heap">
@@ -2846,6 +2871,28 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
         <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
         <!-- algolia -->
         
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+
+            <script src="/scripts/search.js?v=20211217" defer></script>
+        
         <!-- busuanzi -->
         
             <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
@@ -2857,6 +2904,13 @@ rtld_global的第一字段是linkmap结构体的地址，无论是伪造linkmap�
             <script src="/scripts/share.js?v=20211217" async></script>
         
         <!-- mermaid -->
+        
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js'></script>
+            <script>
+                if (window.mermaid) {
+                    mermaid.initialize({theme: 'dark'});
+                }
+            </script>
         
     </body>
 </html>

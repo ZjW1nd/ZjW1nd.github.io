@@ -16,7 +16,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="John Doe">
     
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,blog,pwn,heap,wp,Reverse,Kernel,reverse,PWN,NetWorkSecurity,linux,arch,archlinux,逆向,二进制,Exploit,漏洞,漏洞挖掘,漏洞利用,网络安全,ctf">
     
     <meta name="description" content="">
     <meta property="og:type" content="website">
@@ -202,6 +202,19 @@
     <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
     <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
     <!-- algolia -->
+    
+        <script>
+            var hits = JSON.parse('{"per_page":8}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts(What do we have here?)","hits_empty":"We did not find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}')
+
+            var algolia = {
+                applicationID: '4CMNJ0QIY9',
+                apiKey: '19191cef6d927de55474d5c2d39f1742',
+                indexName: 'MyBlog',
+                hits: hits,
+                labels: labels
+            }
+        </script>
     
     <!-- 百度统计  -->
     
@@ -1627,6 +1640,14 @@
         
         
         
+        
+        
+        
+        
+        
+        
+        
+        
     
     
     
@@ -1636,6 +1657,10 @@
         Total : 73
         </div>
         <!-- search  -->
+        
+            <div class="site-search site-search-loading popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
         
     </div>
     
@@ -1650,7 +1675,7 @@
         
         <li class="archive-post-item">
             <span class="archive-post-date">08/26</span>
-            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">Vibe SecurityReserch: 我是如何用ai发现0day并撰写poc的</a>
+            <a class="archive-post-title" href="/2025/08/26/Vibe-SecurityReserch-%E6%88%91%E6%98%AF%E5%A6%82%E4%BD%95%E7%94%A8ai%E5%8F%91%E7%8E%B00day%E5%B9%B6%E6%92%B0%E5%86%99poc%E7%9A%84/">"Vibe SecurityReserch": 我是如何用ai发现0day并撰写poc的</a>
         </li>
     
         
@@ -2179,6 +2204,16 @@
                 Develop
             </span>
         
+            <span class="sidebar-tag-name" data-tags="Windows">
+                <span class="iconfont-archer">&#xe606;</span>
+                Windows
+            </span>
+        
+            <span class="sidebar-tag-name" data-tags="CVE">
+                <span class="iconfont-archer">&#xe606;</span>
+                CVE
+            </span>
+        
             <span class="sidebar-tag-name" data-tags="go">
                 <span class="iconfont-archer">&#xe606;</span>
                 go
@@ -2192,16 +2227,6 @@
             <span class="sidebar-tag-name" data-tags="basic">
                 <span class="iconfont-archer">&#xe606;</span>
                 basic
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="Windows">
-                <span class="iconfont-archer">&#xe606;</span>
-                Windows
-            </span>
-        
-            <span class="sidebar-tag-name" data-tags="CVE">
-                <span class="iconfont-archer">&#xe606;</span>
-                CVE
             </span>
         
             <span class="sidebar-tag-name" data-tags="protobuf">
@@ -2335,14 +2360,14 @@
             CSAPP
         </span>
     
-        <span class="sidebar-category-name" data-categories="Reverse">
-            <span class="iconfont-archer">&#xe60a;</span>
-            Reverse
-        </span>
-    
         <span class="sidebar-category-name" data-categories="Kernel">
             <span class="iconfont-archer">&#xe60a;</span>
             Kernel
+        </span>
+    
+        <span class="sidebar-category-name" data-categories="Reverse">
+            <span class="iconfont-archer">&#xe60a;</span>
+            Reverse
         </span>
     
         <span class="sidebar-category-name" data-categories="How2Heap">
@@ -2417,6 +2442,28 @@
         <!-- fancybox -->
         <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
         <!-- algolia -->
+        
+            <div class="site-search site-search-loading">
+    <div class="algolia-popup popup">
+        <div class="algolia-search">
+            <div class="algolia-search-input-icon">
+                <i class="fa fa-search"></i>
+            </div>
+            <div class="algolia-search-input" id="algolia-search-input"></div>
+            <div class="popup-btn-close">
+                <i class="iconfont-archer">&#xe609;</i>
+            </div>
+        </div>
+
+        <div class="algolia-results">
+            <div id="algolia-stats" class="algolia-stats"></div>
+            <div id="algolia-hits"></div>
+            <div id="algolia-pagination" class="algolia-pagination"></div>
+        </div>
+    </div>
+</div>
+
+            <script src="/scripts/search.js?v=20211217" defer></script>
         
         <!-- busuanzi -->
         
